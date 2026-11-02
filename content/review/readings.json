@@ -1,0 +1,156 @@
+{
+  "mandarin": {
+    "划不出": "huà bu chū",
+    "该尽的": "gāi jìn de",
+    "供应商": "gōngyìngshāng"
+  },
+  "heteronyms": {
+    "close": {
+      "verb": {
+        "phones": "K L OW1 Z",
+        "primary": 1
+      }
+    },
+    "conflict": {
+      "noun": {
+        "phones": "K AA1 N F L IH0 K T",
+        "primary": 1,
+        "weak": [2]
+      },
+      "verb": {
+        "phones": "K AH0 N F L IH1 K T",
+        "primary": 2,
+        "weak": [1]
+      }
+    },
+    "contracts": {
+      "noun": {
+        "phones": "K AA1 N T R AE2 K T S",
+        "primary": 1,
+        "secondary": [2]
+      }
+    },
+    "delegate": {
+      "verb": {
+        "phones": "D EH1 L AH0 G EY2 T",
+        "primary": 1,
+        "secondary": [3],
+        "weak": [2]
+      }
+    },
+    "delegated": {
+      "verb": {
+        "phones": "D EH1 L AH0 G EY2 T IH0 D",
+        "primary": 1,
+        "secondary": [3],
+        "weak": [2, 4]
+      }
+    },
+    "duplicates": {
+      "verb": {
+        "phones": "D UW1 P L AH0 K EY2 T S",
+        "primary": 1,
+        "secondary": [3],
+        "weak": [2]
+      }
+    },
+    "leads": {
+      "noun": {
+        "phones": "L IY1 D Z",
+        "primary": 1
+      },
+      "verb": {
+        "phones": "L IY1 D Z",
+        "primary": 1
+      }
+    },
+    "read": {
+      "present": {
+        "phones": "R IY1 D",
+        "primary": 1
+      }
+    },
+    "subject": {
+      "noun": {
+        "phones": "S AH1 B JH IH0 K T",
+        "primary": 1,
+        "weak": [2]
+      }
+    }
+  },
+  "variants": {
+    "records": {
+      "verb": {
+        "phones": "R IH0 K AO1 R D Z",
+        "primary": 2,
+        "weak": [1]
+      }
+    },
+    "uses": {
+      "verb": {
+        "phones": "Y UW1 Z IH0 Z",
+        "primary": 1,
+        "weak": [2]
+      }
+    }
+  },
+  "grammar": {
+    "close": {
+      "04:866": "verb"
+    },
+    "conflict": {
+      "03:1542": "verb",
+      "03:1563": "noun"
+    },
+    "contracts": {
+      "03:287": "noun"
+    },
+    "delegate": {
+      "02:132": "verb",
+      "07:546": "verb"
+    },
+    "delegated": {
+      "07:100": "verb"
+    },
+    "duplicates": {
+      "08:849": "verb"
+    },
+    "leads": {
+      "03:681": "noun"
+    },
+    "read": {
+      "07:865": "present",
+      "07:984": "present"
+    },
+    "record": {
+      "03:1604": "noun",
+      "04:972": "noun",
+      "04:1163": "noun",
+      "06:781": "noun"
+    },
+    "records": {
+      "03:336": "noun",
+      "03:491": "noun",
+      "03:655": "noun",
+      "03:752": "verb"
+    },
+    "subject": {
+      "03:549": "noun",
+      "04:180": "noun",
+      "06:982": "noun",
+      "06:1219": "noun",
+      "08:827": "noun"
+    },
+    "use": {
+      "05:250": "noun",
+      "05:588": "noun",
+      "05:688": "verb",
+      "06:1098": "noun",
+      "06:1112": "noun",
+      "08:1190": "noun"
+    },
+    "uses": {
+      "06:1080": "verb"
+    }
+  }
+}

@@ -8,7 +8,7 @@ The 25-minute DDWG films, which `ddwg-film` builds on `filmkit`, explain the Dat
 
 **Goals:**
 
-- Two independent editions, Chinese and English, each exactly 600 seconds at 60 fps, 2D only, narration without music, with small single-line captions.
+- Two independent editions, Chinese and English, each exactly 660 seconds at 60 fps, 2D only, narration without music, with small single-line captions.
 - What the guidelines are for and why they hold, before how to follow them, carried by one incident that the narration calls made up.
 - Every claim traced to a cited section of the guidelines at `v8.0.0`, and every concept the film names kept in its source meaning, in each edition's one approved rendering.
 - A repository that rebuilds both films from tracked sources and pinned supply, as `ddwg-film` and `ethos-film` do.
@@ -29,9 +29,9 @@ The toolchain matches `filmkit` at `v0.3.0`: Node 26.13.0, CPython 3.12.16 and u
 
 ### Story and sources
 
-The script is revision 7 as the user approved it, in eight parts under four chapters:
+The script is revision 7 as the user approved it: eight parts under the draft's four headings.
 
-| Chapter                                | Part | Chinese title        | English title                        | Paragraphs |
+| Heading                                | Part | Chinese title        | English title                        | Paragraphs |
 | -------------------------------------- | ---- | -------------------- | ------------------------------------ | ---------: |
 | 1 一次延迟 · One delay                 | 01   | 晚了两个小时         | Two hours late                       |          4 |
 | 2 指南是什么 · What the guidelines are | 02   | 工作的价值           | What the work is worth               |          5 |
@@ -42,9 +42,9 @@ The script is revision 7 as the user approved it, in eight parts under four chap
 |                                        | 07   | 人与人工智能的协作   | Human–AI collaboration               |          4 |
 | 4 下一次 · Next time                   | 08   | 让下一次做得更好     | Making the next attempt better       |          4 |
 
-The opening's four failures each meet their answer later: the choice made before the facts in 03, which separates a fact, a hypothesis and a choice; the meeting without a decision, also in 03; the patch that leaves the mechanism untouched in 06, with the three layers of a fix; and the ten pages in 07, which name the decision an analysis must support. Each paragraph of the draft, a group between blank lines, is cut into thoughts where the idea shifts, at the same places in both editions. The ⊕ marks and the draft's notes are review aids and are not narrated.
+The opening's four failures each meet their answer later: the choice made before the facts in 03, which separates a fact, a hypothesis and a choice; the meeting without a decision, also in 03; the patch that leaves the mechanism untouched in 06, with the three layers of a fix; and the ten pages in 07, which name the decision an analysis must support. Each of the draft's four headings is a chapter of the film and each part one segment. Each paragraph of the draft, a group between blank lines, is spoken as one thought, as it was in the samples the user approved, so the engine joins thoughts at the samples' paragraph pause and parts at their part pause. A paragraph longer than the longest thoughts the narrator has qualified, about 18 seconds, is cut once at a sentence end, at the same place in both editions; nine paragraphs are cut so, into 48 thoughts in all, and no word or mark changes. The ⊕ marks and the draft's notes are review aids and are not narrated.
 
-Each part is one segment whose `source_sections` name the guideline sections its Sources line names and whose `concepts` name the contract entries it uses. `content/source-manifest.json` records the guidelines' repository, the commit `v8.0.0` names (`b9da15d`) and the SHA-256 of each cited document: the README, the seven documents under `docs/` and DR-0001. The draft was written against that release, and each part's cited sections are checked to exist there.
+Each segment's `source_sections` name the sections its part's Sources line names, and its `concepts` name the contract entries both editions of it say. `content/source-manifest.json` records the guidelines' repository, the commit `v8.0.0` names (`b9da15d`) and the SHA-256 of each cited document: the README, the seven documents under `docs/` and DR-0001. The draft was written against that release, and each segment's cited sections are checked to exist there.
 
 The script follows the rules the DDWG and ETHOS reviews established. A claim keeps the conditions, modality and scope of its section. The late price data and the example delegation in 07 are illustrations, and the narration says the incident is made up. Each concept keeps one rendering in each edition, and a term is explained the first time it is heard. The Chinese is spoken Chinese, written on its own, not translated from the English. The text is adopted before any synthesis: an independent sentence-by-sentence review of both scripts as written must score at least 90 in fidelity, concept fidelity, clarity on first hearing and idiom, with no material finding. A repair that changes approved words goes back to the user, and an adopted text change reopens narration, the picture cues and every later acceptance.
 
@@ -56,13 +56,15 @@ The review readings declare the reading in context of every ambiguous Chinese ch
 
 ### Runtime and pace
 
-Each edition is exactly 600 seconds: 597 seconds of narration and designed quiet, then 3 seconds of credits. The narrator keeps its native articulation and the pauses inside each take. At 0.8 seconds between the thoughts of a paragraph, 1.6 seconds between paragraphs and 2.6 seconds between parts, revision 7 runs about 10.2 minutes in Chinese and 9.6 minutes in English. On 2026-11-02 the user allowed a runtime to change in whole minutes; nine minutes cannot hold the Chinese, so both editions keep ten. The Chinese pauses therefore settle near 0.7, 1.4 and 2.25 seconds and the English near 1.0, 2.0 and 3.3 seconds, and each part takes its natural length. These are the pauses of the samples that came with revision 7 when the user approved it.
+Each edition is exactly 660 seconds: 657 seconds of narration and designed quiet, then 3 seconds of credits. The narrator keeps its native articulation and its own pauses between the sentences of a take; a cap of 0.6 seconds in Chinese and 0.7 seconds in English, above the longest pause the samples hold, only guards against an outlier.
 
-The runtime is fitted with the engine's designed pauses: speech is never time-stretched, pauses inside a thought keep their floors, and no necessary punctuation is removed. The fitted pauses stay within a fifth of those values. A fit outside that range, or a pace the user's listening rejects, changes the text, which is adopted again, or, by the user's decision, the runtime.
+Revision 7 was planned at ten minutes from the speaking rate of the clear reference. The samples that came with it, which the user approved, were narrated from the identity root, and they join the paragraphs of part 01 with about 1.7 seconds of heard quiet in Chinese and 2.2 seconds in English. On 2026-11-02 one take of every thought, narrated with the samples' settings, measured 540 seconds of speech in Chinese and 536 seconds in English. At the samples' pauses, with the planned 2.25 and 3.3 seconds between parts, the editions run about 10.5 and 10.9 minutes, and ten minutes would need every pause cut nearly in half. The user allowed a runtime to change in whole minutes, so both editions run eleven. The English keeps its samples' pauses, about 2.15 seconds between thoughts and up to 4 seconds between parts. The Chinese has nearly the same speech and the same runtime, so it needs nearly the same quiet: about 2.1 seconds between thoughts, a quarter longer than its samples and within the range of the paragraph pauses of the released ETHOS film, and up to about 4 seconds between parts.
+
+The runtime is fitted with the engine's designed pauses: speech is never time-stretched, no quiet is inserted inside a take, and no necessary punctuation is removed. The pauses between thoughts stay between four fifths and four thirds of the samples' pauses between paragraphs, and each pause between parts is longer than the thought pauses and at most 5 seconds. A fit outside those bounds, or a pace the user's listening rejects, changes the text, which is adopted again, or, by the user's decision, the runtime.
 
 ### Narrator
 
-Both editions use the narrator the DDWG and ETHOS films share. The Chinese cast speaks from the clear in-context reference (`7ff6347e`) derived from the unchanged identity root (`a355801a`); the English cast speaks from the unmodified English reference (`a763e48e`). Both carry the qualified model revision of Qwen3-TTS 12 Hz 1.7B Base (`a6eb4f68`) and temperature 0.46, the Chinese cast also its repetition penalty of 1.05, with this film's own seeds. The user listens to both narrations before the picture is planned.
+Both editions use the narrator the DDWG and ETHOS films share, set as it was for the revision-7 samples the user approved. The Chinese cast speaks from the unchanged identity root (`a355801a`) with the transcript those samples used, and the English cast from the unmodified English reference (`a763e48e`). Both carry the qualified model revision of Qwen3-TTS 12 Hz 1.7B Base (`a6eb4f68`), temperature 0.46 and an in-context repetition penalty of 1.05, with this film's own seeds, so a thought the samples hold is narrated again as the same take. The 25-minute films speak from a clear reference (`7ff6347e`) whose inner silences are all shortened to 0.12 seconds; a narration from it speaks through its commas, which the samples do not, so this film does not use it. The user listens to both narrations before the picture is planned.
 
 ### Picture
 
@@ -96,7 +98,7 @@ Code is MIT, the film content (script, narration, picture, covers and captions) 
 ## Risks / Trade-offs
 
 - [The guidelines change after `v8.0.0`] → The manifest names one commit; a later change reaches the film only through a new adopted text.
-- [The speech and the pauses do not fill 600 seconds within a fifth of the samples' pauses] → The text changes and is adopted again, or the user decides the runtime; the voice is never forced.
+- [The selected takes and the pauses do not fill 660 seconds within the declared bounds] → The text changes and is adopted again, or the user decides the runtime; the voice is never forced.
 - [The full narration differs in voice or pace from the samples] → The model revision, the references and the sampling settings are pinned, and the user listens to both full narrations before the picture.
 - [The copied concept contract drifts from `ddwg-film`'s] → It names its source commit, a rendering changes there first, and the engine checks the copy on every build.
 - [The voice misreads a heteronym or a name] → The declared readings, the auditions before full narration, the comparison with homophones and the user's ear.

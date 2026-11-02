@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Explain the essentials of the Data Department Work Guidelines, as their documents state them at one pinned release, through two independently understandable ten-minute films in Chinese and English, built on `filmkit` with verified media, explicit review limits and governed delivery.
+Explain the essentials of the Data Department Work Guidelines, as their documents state them at one pinned release, through two independently understandable eleven-minute films in Chinese and English, built on `filmkit` with verified media, explicit review limits and governed delivery.
 
 ## ADDED Requirements
 
@@ -68,7 +68,7 @@ The film SHALL keep the DDWG films' concept contract, which binds each guideline
 
 ### Requirement: Each edition meets the media contract
 
-Each edition SHALL be exactly 600 seconds at native progressive 60 fps, in four chapters, with a UHD master and a captioned 1080p viewing edition, 48 kHz stereo narration only, no music and purposeful 2D motion. Each film SHALL carry the release metadata its script declares, small single-line captions, a designed cover with the author Yang HENG, a transcript, chapters and a player.
+Each edition SHALL be exactly 660 seconds at native progressive 60 fps, in four chapters, with a UHD master and a captioned 1080p viewing edition, 48 kHz stereo narration only, no music and purposeful 2D motion. Each film SHALL carry the release metadata its script declares, small single-line captions, a designed cover with the author Yang HENG, a transcript, chapters and a player.
 
 #### Scenario: A packaged edition reads back its contract
 
@@ -78,28 +78,32 @@ Each edition SHALL be exactly 600 seconds at native progressive 60 fps, in four 
 
 ### Requirement: The runtime is fitted with designed pauses
 
-Each edition SHALL be spoken at the narrator's native articulation, keeping the natural pauses inside each take, and its runtime SHALL be fitted only through the designed pauses between thoughts, paragraphs and parts. Those pauses SHALL stay within a fifth of the pauses in the samples the user approved: about 0.7, 1.4 and 2.25 seconds in Chinese and 1.0, 2.0 and 3.3 seconds in English. Speech SHALL NOT be time-stretched, and necessary punctuation SHALL NOT be removed to fit the runtime.
+Each edition SHALL be spoken at the narrator's native articulation, keeping the natural pauses inside each take, and its runtime SHALL be fitted only through the designed pauses between thoughts and between parts. Speech SHALL NOT be time-stretched, and necessary punctuation SHALL NOT be removed to fit the runtime.
 
 #### Scenario: Speech that does not fit refuses
 
-- **WHEN** an edition's recorded speech and its designed pauses cannot fill exactly 600 seconds within those limits
+- **WHEN** an edition's recorded speech and its designed pauses cannot fill exactly 660 seconds within the bounds of its pace
 - **THEN** the assembly refuses before output, and the text or, by the user's decision, the runtime changes before the next assembly
+
+### Requirement: The pauses keep the approved samples' pace
+
+The pauses between thoughts SHALL lie between four fifths and four thirds of the pauses between paragraphs in the samples the user approved, about 1.7 seconds in Chinese and 2.2 seconds in English, and each pause between parts SHALL be longer than them and at most 5 seconds.
 
 #### Scenario: A qualified narration meets its pace
 
 - **WHEN** an edition's assembled narration is measured
-- **THEN** its median pauses between thoughts, between paragraphs and between parts each lie within a fifth of the edition's approved values
+- **THEN** its median pause between thoughts lies within those bounds of the edition's approved value, and each pause between parts is longer than that median and at most 5 seconds
 - **AND** every selected take is native model output without a tempo transform
 
 ### Requirement: Both editions speak with one narrator
 
-Both editions SHALL use the narrator that the DDWG and ETHOS films share: the Chinese cast speaks from the clear in-context reference derived from the unchanged identity root, and the English cast from the unmodified English reference, each with the qualified model revision and sampling settings.
+Both editions SHALL use the narrator that the DDWG and ETHOS films share, set as it was for the samples the user approved: the Chinese cast speaks from the unchanged identity root with the transcript those samples used, and the English cast from the unmodified English reference, each with the qualified model revision, temperature 0.46 and an in-context repetition penalty of 1.05.
 
 #### Scenario: The narrator's identity is bound
 
 - **WHEN** a cast is checked
 - **THEN** each reference recording has its recorded SHA-256
-- **AND** the clear Chinese reference records its derivation from the identity root
+- **AND** its reference, transcript and sampling settings are those the approved samples were narrated with, so a thought the samples hold is narrated again as the same take
 
 ### Requirement: Each take is complete and read in context
 

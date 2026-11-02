@@ -1,0 +1,42 @@
+{
+  "repository": "https://github.com/HengYangDS/data-department-work-guidelines",
+  "commit": "b9da15d3a57ed2a056af64d6c8adc3684a7b4f42",
+  "members": [
+    {
+      "path": "README.md",
+      "sha256": "e74fbb51b11f2a66a2040661482cafa495914e167c0fa2c7e6cd438b598f36c0"
+    },
+    {
+      "path": "docs/charter.md",
+      "sha256": "b9055fcc9568319e9b364a54236b8c1a0788c720cc7bba8130f76c35ff6796ba"
+    },
+    {
+      "path": "docs/decide.md",
+      "sha256": "0510f7bede8caa65173c24071633431552addfccd65888cac851cee72e2c2a43"
+    },
+    {
+      "path": "docs/data.md",
+      "sha256": "0ee83aedf62e2642d6eb7cc09fbc295f129ab79491054569e1c604a1b58c85ac"
+    },
+    {
+      "path": "docs/deliver.md",
+      "sha256": "5c9299a687bf3c0d25693c58e5becf5286a760ee79c1241198426788f6a7b584"
+    },
+    {
+      "path": "docs/human-agent.md",
+      "sha256": "509f8c938e912a6a1b3cc9d7629ac42f64193185dd1e7300d8aee3f6ab88d786"
+    },
+    {
+      "path": "docs/communicate.md",
+      "sha256": "ba7029f4b9e1b199b2bfebf9cf7b0eedc193101ed01a9f29249d6408c039d0da"
+    },
+    {
+      "path": "docs/evolve.md",
+      "sha256": "4f2d3fba5fbf9c5787a12386f561fd9e3cd355686f0248675a1ac36f72dbb7e0"
+    },
+    {
+      "path": "docs/decisions/dr-0001-human-ai-collaboration.md",
+      "sha256": "41ca2dda309b2318d0256e3b29719a3dd391753e2644c8bda3916a0358e98fff"
+    }
+  ]
+}

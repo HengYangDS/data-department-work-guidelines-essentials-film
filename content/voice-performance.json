@@ -1,0 +1,1071 @@
+{
+  "pronunciation": {
+    "schema_version": 2,
+    "status": "planned-not-listened",
+    "control_boundary": "Dictionary and occurrence targets are acceptance criteria. Native Qwen Base does not consume IPA or SSML. No normalization is proposed without an actually heard error.",
+    "sources": [
+      {
+        "id": "cmudict",
+        "url": "https://raw.githubusercontent.com/cmusphinx/cmudict/74790861f652b15e4ac49015a90074ad62a27690/cmudict.dict",
+        "sha256": "81917843c7f44ce2b094ac63873c2c7a4cf802040792c455ba3ca406891c3d22",
+        "bytes": 3618488
+      },
+      {
+        "id": "macos-dictionary",
+        "provider": "Installed public macOS DictionaryServices exact whole-word lookup",
+        "families": [
+          "The Standard Dictionary of Contemporary Chinese",
+          "Simplified Chinese-English"
+        ],
+        "qualification": "First returned single-character sense is not a universal reading."
+      },
+      {
+        "id": "contextual-composition",
+        "qualification": "Explicitly inferred compound recognition; not a dictionary headword."
+      }
+    ],
+    "languages": {
+      "Chinese": {
+        "language": "Chinese",
+        "normalization": [],
+        "targets": [
+          {
+            "term": "一种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yì zhǒng"
+          },
+          {
+            "term": "三种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "sān zhǒng"
+          },
+          {
+            "term": "不了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bù liǎo"
+          },
+          {
+            "term": "不要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bú yào"
+          },
+          {
+            "term": "两种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "liǎng zhǒng"
+          },
+          {
+            "term": "中",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhōng"
+          },
+          {
+            "term": "为了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "wèi le"
+          },
+          {
+            "term": "为什么",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "wèi shén me"
+          },
+          {
+            "term": "为止",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "wéi zhǐ"
+          },
+          {
+            "term": "了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "le"
+          },
+          {
+            "term": "互相",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "hù xiāng"
+          },
+          {
+            "term": "交给",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiāo gěi"
+          },
+          {
+            "term": "什么",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shén me"
+          },
+          {
+            "term": "什么时候",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shén me shí hòu"
+          },
+          {
+            "term": "会",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huì"
+          },
+          {
+            "term": "供应",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gōngyìng",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "信号",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xìn hào"
+          },
+          {
+            "term": "修好",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xiū hǎo"
+          },
+          {
+            "term": "修正",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xiū zhèng"
+          },
+          {
+            "term": "假",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiǎ"
+          },
+          {
+            "term": "偏好",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "piān hào",
+            "dictionary_disagreement": "偏好 is a preference, piānhào; the dictionary reads 好 as hǎo here."
+          },
+          {
+            "term": "做得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zuò de",
+            "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "充分",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chōng fèn"
+          },
+          {
+            "term": "冲突",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chōng tū"
+          },
+          {
+            "term": "几",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jǐ"
+          },
+          {
+            "term": "几种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jǐ zhǒng"
+          },
+          {
+            "term": "出了事",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chū le shì",
+            "dictionary_disagreement": "了 is the aspect particle le: 出了事 means something has gone wrong"
+          },
+          {
+            "term": "分",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fēn"
+          },
+          {
+            "term": "分开",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fēn kāi"
+          },
+          {
+            "term": "分析",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fēn xī"
+          },
+          {
+            "term": "分清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fēn qīng"
+          },
+          {
+            "term": "划不",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huà bù"
+          },
+          {
+            "term": "划定",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huà dìng"
+          },
+          {
+            "term": "划清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huà qīng"
+          },
+          {
+            "term": "刚好",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gāng hǎo"
+          },
+          {
+            "term": "创造",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chuàng zào"
+          },
+          {
+            "term": "到了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dào le"
+          },
+          {
+            "term": "发了言",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fā le yán"
+          },
+          {
+            "term": "发布",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fā bù"
+          },
+          {
+            "term": "发现",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fā xiàn"
+          },
+          {
+            "term": "发生",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "fā shēng"
+          },
+          {
+            "term": "取舍",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "qǔshě",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "变得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "biàn de",
+            "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "变更",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "biàn gēng"
+          },
+          {
+            "term": "只做",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ zuò"
+          },
+          {
+            "term": "只听",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ tīng"
+          },
+          {
+            "term": "只在",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ zài"
+          },
+          {
+            "term": "只是",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ shì"
+          },
+          {
+            "term": "只查",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ chá"
+          },
+          {
+            "term": "只能",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ néng"
+          },
+          {
+            "term": "只说",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ shuō"
+          },
+          {
+            "term": "和",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "hé"
+          },
+          {
+            "term": "四种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "sì zhǒng"
+          },
+          {
+            "term": "回答",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huí dá"
+          },
+          {
+            "term": "地方",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dì fāng"
+          },
+          {
+            "term": "场面",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chǎng miàn"
+          },
+          {
+            "term": "处理",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chǔ lǐ"
+          },
+          {
+            "term": "多少",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "duō shǎo"
+          },
+          {
+            "term": "大",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dà"
+          },
+          {
+            "term": "大家",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dà jiā"
+          },
+          {
+            "term": "好看",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "hǎo kàn"
+          },
+          {
+            "term": "完了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "wán le"
+          },
+          {
+            "term": "对得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "duì de",
+            "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "少",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shǎo"
+          },
+          {
+            "term": "并为",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bìng wèi"
+          },
+          {
+            "term": "强制性",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "qiáng zhì xìng"
+          },
+          {
+            "term": "当前",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dāng qián"
+          },
+          {
+            "term": "当时",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dāng shí",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "得不偿失",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dé bù cháng shī"
+          },
+          {
+            "term": "得更好",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "de gèng hǎo",
+            "dictionary_disagreement": "得 is the complement particle de: 处理得更好 means handle it better"
+          },
+          {
+            "term": "快要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "kuài yào"
+          },
+          {
+            "term": "成为",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chéng wéi"
+          },
+          {
+            "term": "把",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bǎ"
+          },
+          {
+            "term": "把握",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bǎ wò"
+          },
+          {
+            "term": "摘要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhāi yào"
+          },
+          {
+            "term": "撑得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chēng de",
+            "dictionary_disagreement": "得 is the complement particle de in 撑得住; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "救场",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiù chǎng"
+          },
+          {
+            "term": "散会",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "sàn huì"
+          },
+          {
+            "term": "数据",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shù jù"
+          },
+          {
+            "term": "时间",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shí jiān"
+          },
+          {
+            "term": "更",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gèng"
+          },
+          {
+            "term": "有的",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yǒu de"
+          },
+          {
+            "term": "查得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chá de",
+            "dictionary_disagreement": "得 is the complement particle de: 查得再清楚 means however clearly the facts are checked"
+          },
+          {
+            "term": "模型",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "mó xíng"
+          },
+          {
+            "term": "没",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "méi"
+          },
+          {
+            "term": "没人",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "méi rén"
+          },
+          {
+            "term": "没有",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "méi yǒu"
+          },
+          {
+            "term": "用了",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yòng le"
+          },
+          {
+            "term": "的",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "de"
+          },
+          {
+            "term": "目的",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "mù dì"
+          },
+          {
+            "term": "省掉",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shěng diào"
+          },
+          {
+            "term": "看",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "kàn"
+          },
+          {
+            "term": "看看",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "kàn kàn"
+          },
+          {
+            "term": "看起来",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "kàn qǐ lái"
+          },
+          {
+            "term": "着",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhe"
+          },
+          {
+            "term": "答得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dá de",
+            "dictionary_disagreement": "得 is the complement particle de in 答得上来; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "系统",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xì tǒng"
+          },
+          {
+            "term": "纠正",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiū zhèng"
+          },
+          {
+            "term": "经得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jīng de",
+            "dictionary_disagreement": "得 is the complement particle de in 经得起; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "结果",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jié guǒ"
+          },
+          {
+            "term": "结论",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jié lùn"
+          },
+          {
+            "term": "给",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gěi"
+          },
+          {
+            "term": "背后",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bèi hòu"
+          },
+          {
+            "term": "背景",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "bèi jǐng"
+          },
+          {
+            "term": "落到",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "luò dào"
+          },
+          {
+            "term": "行动",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xíng dòng"
+          },
+          {
+            "term": "要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yào"
+          },
+          {
+            "term": "要不",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yào bù"
+          },
+          {
+            "term": "要是",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yào shì"
+          },
+          {
+            "term": "要求",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yāo qiú"
+          },
+          {
+            "term": "角色",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "juésè",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "解决",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiě jué"
+          },
+          {
+            "term": "计划",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jì huà"
+          },
+          {
+            "term": "讲得清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiǎng de qīng",
+            "dictionary_disagreement": "得 is the complement particle de after 讲, as in 说得清"
+          },
+          {
+            "term": "话说",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "huà shuō"
+          },
+          {
+            "term": "该尽",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gāi jìn",
+            "dictionary_disagreement": "尽 in 尽义务 is jìn, to fulfil; the dictionary reads jǐn here."
+          },
+          {
+            "term": "说",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō"
+          },
+          {
+            "term": "说不清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō bù qīng"
+          },
+          {
+            "term": "说好",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō hǎo"
+          },
+          {
+            "term": "说得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō de",
+            "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "说明",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō míng"
+          },
+          {
+            "term": "说法",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shuō fǎ"
+          },
+          {
+            "term": "谁",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shéi"
+          },
+          {
+            "term": "调度",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "diàodù",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "调查",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "diào chá"
+          },
+          {
+            "term": "调用",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "diào yòng"
+          },
+          {
+            "term": "谈得",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "tán de",
+            "dictionary_disagreement": "得 is the complement particle de in 谈得上; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "质量",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhì liàng"
+          },
+          {
+            "term": "转移",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhuǎn yí"
+          },
+          {
+            "term": "转述",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhuǎn shù"
+          },
+          {
+            "term": "运行",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yùn xíng"
+          },
+          {
+            "term": "还",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "hái"
+          },
+          {
+            "term": "还是",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "hái shì"
+          },
+          {
+            "term": "这",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhè"
+          },
+          {
+            "term": "这种",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhè zhǒng"
+          },
+          {
+            "term": "那",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "nà"
+          },
+          {
+            "term": "那场",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "nà chǎng"
+          },
+          {
+            "term": "都",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dōu"
+          },
+          {
+            "term": "重复",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "chóngfù",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "重大",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhòng dà"
+          },
+          {
+            "term": "重要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhòngyào",
+            "source": "macos-dictionary",
+            "status": "planned-not-listened"
+          },
+          {
+            "term": "降级",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "jiàng jí"
+          },
+          {
+            "term": "需要",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "xū yào"
+          },
+          {
+            "term": "靠得住",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "kào de zhù"
+          }
+        ],
+        "sandhi": "Natural Mandarin connected-speech tone sandhi and weak grammatical syllables; never force isolated citation tones.",
+        "embedded_english_targets": [],
+        "target_scope": "Every Chinese segment's spoken text; every watched character resolves to a declared word."
+      },
+      "English": {
+        "language": "English",
+        "normalization": [],
+        "targets": [
+          {
+            "term": "authorization",
+            "kind": "lexical",
+            "lexical_stress": {
+              "arpabet": [
+                "AO2",
+                "TH",
+                "ER0",
+                "AH0",
+                "Z",
+                "EY1",
+                "SH",
+                "AH0",
+                "N"
+              ],
+              "syllable_count": 5,
+              "primary_syllable": 4,
+              "secondary_syllables": [
+                1
+              ],
+              "weak_syllables": [
+                2,
+                3,
+                5
+              ],
+              "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "hypothesis",
+            "kind": "lexical",
+            "lexical_stress": {
+              "arpabet": [
+                "HH",
+                "AY0",
+                "P",
+                "AA1",
+                "TH",
+                "AH0",
+                "S",
+                "AH0",
+                "S"
+              ],
+              "syllable_count": 4,
+              "primary_syllable": 2,
+              "secondary_syllables": [],
+              "weak_syllables": [
+                1,
+                3,
+                4
+              ],
+              "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "irreversible",
+            "kind": "lexical",
+            "lexical_stress": {
+              "arpabet": [
+                "IH2",
+                "R",
+                "IH0",
+                "V",
+                "ER1",
+                "S",
+                "AH0",
+                "B",
+                "AH0",
+                "L"
+              ],
+              "syllable_count": 5,
+              "primary_syllable": 3,
+              "secondary_syllables": [
+                1
+              ],
+              "weak_syllables": [
+                2,
+                4,
+                5
+              ],
+              "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "record",
+            "kind": "contextual-homograph",
+            "lexical_stress": {
+              "noun": {
+                "arpabet": [
+                  "R",
+                  "EH1",
+                  "K",
+                  "ER0",
+                  "D"
+                ],
+                "syllable_count": 2,
+                "primary_syllable": 1,
+                "secondary_syllables": [],
+                "weak_syllables": [
+                  2
+                ],
+                "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+              },
+              "verb": [
+                {
+                  "arpabet": [
+                    "R",
+                    "AH0",
+                    "K",
+                    "AO1",
+                    "R",
+                    "D"
+                  ],
+                  "syllable_count": 2,
+                  "primary_syllable": 2,
+                  "secondary_syllables": [],
+                  "weak_syllables": [
+                    1
+                  ],
+                  "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+                },
+                {
+                  "arpabet": [
+                    "R",
+                    "IH0",
+                    "K",
+                    "AO1",
+                    "R",
+                    "D"
+                  ],
+                  "syllable_count": 2,
+                  "primary_syllable": 2,
+                  "secondary_syllables": [],
+                  "weak_syllables": [
+                    1
+                  ],
+                  "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+                }
+              ]
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "records",
+            "kind": "contextual-homograph",
+            "lexical_stress": {
+              "noun": {
+                "arpabet": [
+                  "R",
+                  "EH1",
+                  "K",
+                  "ER0",
+                  "D",
+                  "Z"
+                ],
+                "syllable_count": 2,
+                "primary_syllable": 1,
+                "secondary_syllables": [],
+                "weak_syllables": [
+                  2
+                ],
+                "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+              }
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "use",
+            "kind": "contextual-homograph",
+            "lexical_stress": {
+              "noun": {
+                "arpabet": [
+                  "Y",
+                  "UW1",
+                  "S"
+                ],
+                "syllable_count": 1,
+                "primary_syllable": 1,
+                "secondary_syllables": [],
+                "weak_syllables": [],
+                "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+              },
+              "verb": {
+                "arpabet": [
+                  "Y",
+                  "UW1",
+                  "Z"
+                ],
+                "syllable_count": 1,
+                "primary_syllable": 1,
+                "secondary_syllables": [],
+                "weak_syllables": [],
+                "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+              }
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "uses",
+            "kind": "contextual-homograph",
+            "lexical_stress": {
+              "noun": [
+                {
+                  "arpabet": [
+                    "Y",
+                    "UW1",
+                    "S",
+                    "AH0",
+                    "Z"
+                  ],
+                  "syllable_count": 2,
+                  "primary_syllable": 1,
+                  "secondary_syllables": [],
+                  "weak_syllables": [
+                    2
+                  ],
+                  "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+                },
+                {
+                  "arpabet": [
+                    "Y",
+                    "UW1",
+                    "S",
+                    "IH0",
+                    "Z"
+                  ],
+                  "syllable_count": 2,
+                  "primary_syllable": 1,
+                  "secondary_syllables": [],
+                  "weak_syllables": [
+                    2
+                  ],
+                  "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+                }
+              ]
+            },
+            "source": "cmudict"
+          },
+          {
+            "term": "used",
+            "kind": "lexical",
+            "lexical_stress": {
+              "arpabet": [
+                "Y",
+                "UW1",
+                "Z",
+                "D"
+              ],
+              "syllable_count": 1,
+              "primary_syllable": 1,
+              "secondary_syllables": [],
+              "weak_syllables": [],
+              "basis": "CMU dictionary pinned source; valid listed accent variants remain admissible"
+            },
+            "source": "cmudict",
+            "grammar": "past-participle of use"
+          },
+          {
+            "term": "AI",
+            "kind": "letter-name",
+            "target_reading": "A /eɪ/ + I /aɪ/, not an ordinary word",
+            "source": "standard English letter names",
+            "lexical_stress": {}
+          }
+        ]
+      }
+    },
+    "acceptance": [
+      "Listen to every listed occurrence in its complete clause and a short waveform window, including the connected lead-in and natural phrase tail.",
+      "Bind actual script and spoken-text hashes, selected reference, generated WAV hash, exact time window, target, observation, listener/modality and decision.",
+      "ASR spelling, alignment, F0, dictionary targets and model praise alone cannot certify pronunciation or natural flow.",
+      "Qualify raw complete paragraphs, assembled within-chapter joins and chapter boundaries separately. No isolated-word splice or forced overall speed.",
+      "Full-film bilingual listening remains required after a pilot; targets are not a claim that all words were heard."
+    ],
+    "occurrence_plan": {
+      "count": 0,
+      "entries": []
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "reference_text": "Ethos以证据连接人的判断与agent的行动。OpenSpec保存正式接受的意图，证据记录实际发生的事，看清关系，决定下一步，条件改变就重新判断。",
+  "reference_text_sha256": "8c12aad945d90f05a32a0ab327e9bacc54caeeb572ca0f4e77c92a86577f1d5e",
+  "reference_mode": "icl",
+  "narration_language": "Chinese",
+  "full_narration_seed": 4677,
+  "full_narration_temperature": 0.46,
+  "full_narration_max_tokens": 1900,
+  "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
+  "revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48",
+  "reference_language": "Chinese",
+  "reference_audio": "assets/audio/narration-reference.wav",
+  "reference_sha256": "a355801a8b16ca11925457678516329c04c4f2b2a66e76ef60457eea4872aa25",
+  "scope": "Approved synthetic narrator identity root used unmodified, with the transcript, temperature and in-context repetition penalty that the revision-7 samples the user approved on 2026-11-02 were narrated with: no time-stretch, pitch shift or recast. Pronunciation and listening quality are qualified separately from this input binding.",
+  "icl_repetition_penalty": 1.05,
+  "performance_recording": {
+    "receipt": "build/evidence/editions/zh/ear-first/narration-receipt.json",
+    "alignment": "build/evidence/editions/zh/ear-first/alignment.json"
+  }
+}

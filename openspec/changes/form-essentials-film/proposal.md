@@ -2,12 +2,12 @@
 
 ## Why
 
-The 25-minute DDWG films explain the Data Department Work Guidelines in full. On 2026-11-01 the user asked for a ten-minute essentials film beside them that puts what the guidelines are for and why they hold before how to follow them, carried by one incident: price data that arrived two hours late. The user approved its outline that day and its bilingual text on 2026-11-02, revision 4 and then revision 7 with its samples and runtime. `filmkit` builds one film per repository, with two editions of equal length, so the essentials film cannot be extra editions of `ddwg-film`; it needs a repository of its own.
+The 25-minute DDWG films explain the Data Department Work Guidelines in full. On 2026-11-01 the user asked for a ten-minute essentials film beside them that puts what the guidelines are for and why they hold before how to follow them, carried by one incident: price data that arrived two hours late. The user approved its outline that day and its bilingual text on 2026-11-02, revision 4 and then revision 7 with its samples and runtime; on 2026-11-02 the user also allowed a runtime to change in whole minutes, and the film runs eleven minutes because its samples' pace does not fit ten. `filmkit` builds one film per repository, with two editions of equal length, so the essentials film cannot be extra editions of `ddwg-film`; it needs a repository of its own.
 
 ## What Changes
 
 - Build out `ddwg-essentials-film`, which `ethos adopt --create` formed under ETHOS `0.2.0-alpha.27`: bind the toolchain through Mise, depend on the released `filmkit` 0.3.0 through a uv Git source at its tag, and pin the renderer, browser automation, browser build, bundler and animation library through npm.
-- Declare the film in `content/film.toml`: two independent editions, Chinese and English, each exactly 600 seconds at 60 fps, 2D only, narration without music, in four chapters and eight parts.
+- Declare the film in `content/film.toml`: two independent editions, Chinese and English, each exactly 660 seconds at 60 fps, 2D only, narration without music, in four chapters and eight parts.
 - Adopt the approved revision-7 text, with every part bound to the guideline sections it states, and pin the guidelines' repository at its `v8.0.0` release with each cited document's SHA-256 in `content/source-manifest.json`.
 - Bind every concept the film names to its passage at that release in a concept contract, with the renderings the user approved for the 25-minute films, and declare the reading of every ambiguous Chinese character and the spoken form of every name.
 - Narrate with the narrator the DDWG and ETHOS films share, at its native pace, and have the user listen to both narrations before the picture is composed.
