@@ -6,7 +6,7 @@ The 25-minute DDWG films explain the Data Department Work Guidelines in full. On
 
 ## What Changes
 
-- Build out `ddwg-essentials-film`, which `ethos adopt --create` formed under ETHOS `0.2.0-alpha.27`: bind the toolchain through Mise, depend on the released `filmkit` 0.3.0 through a uv Git source at its tag, and pin the renderer, browser automation, browser build, bundler and animation library through npm.
+- Build out `ddwg-essentials-film`, which `ethos adopt --create` formed under ETHOS `0.2.0-alpha.27`: bind the toolchain through Mise, depend on the released `filmkit` 0.4.0 through a uv Git source at its tag, and pin the renderer, browser automation, browser build, bundler and animation library through npm.
 - Declare the film in `content/film.toml`: two independent editions, Chinese and English, each exactly 660 seconds at 60 fps, 2D only, narration without music, in four chapters and eight parts.
 - Adopt the approved revision-7 text, with every part bound to the guideline sections it states, and pin the guidelines' repository at its `v8.0.0` release with each cited document's SHA-256 in `content/source-manifest.json`.
 - Bind every concept the film names to its passage at that release in a concept contract, with the renderings the user approved for the 25-minute films, and declare the reading of every ambiguous Chinese character and the spoken form of every name.
@@ -30,7 +30,7 @@ None.
 ## Impact
 
 - Repository `ddwg-essentials-film`, governed by ETHOS `0.2.0-alpha.27`. Its forge remotes are added only after the user confirms the push; the owner, namespace, name and visibility are decided then.
-- Dependencies: `filmkit` 0.3.0, the release that checks concept contracts and readings; npm `hyperframes` 0.8.225, `puppeteer-core`, `@puppeteer/browsers`, `esbuild` and `gsap`; Python `pydantic` and `pypinyin` through the engine.
+- Dependencies: `filmkit` 0.4.0, which checks concept contracts and readings and renders with HyperFrames 0.9.3; npm `hyperframes` 0.9.3, `puppeteer-core`, `@puppeteer/browsers`, `esbuild` and `gsap`; Python `pydantic` and `pypinyin` through the engine.
 - A new Documents folder, `~/Documents/ddwg-essentials-film/`, receives the films; `~/Documents/ddwg-introduction-film/` and its 25-minute editions are not touched.
 - The guidelines' repository is read only, at `v8.0.0`. `ddwg-film` is read only: its concept contract, casts and pronunciation contract are copied, not shared at build time.
 - Out of scope: changes to the 25-minute films, changes to `filmkit` beyond its own Changes and releases, a shared library of picture primitives, music, 3D, and publishing before the user confirms.
