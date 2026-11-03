@@ -18,5 +18,30 @@
   "performance_recording": {
     "receipt": "build/evidence/editions/en/ear-first/narration-receipt.json",
     "alignment": "build/evidence/editions/en/ear-first/alignment.json"
+  },
+  "retakes": {
+    "03": {
+      "groups": {
+        "1": {
+          "seed": 107627,
+          "text_sha256": "6a5b2ad58ac24ec5b1b3d60f1e146a5f829f7bfbfd3b638e0abd8b1b037e6b95",
+          "spoken_sha256": "6a5b2ad58ac24ec5b1b3d60f1e146a5f829f7bfbfd3b638e0abd8b1b037e6b95"
+        },
+        "5": {
+          "seed": 99708,
+          "text_sha256": "175ae61437d34b93314746b850e5f52e598bca578429ca0fc4db58eeffcb1c45",
+          "spoken_sha256": "175ae61437d34b93314746b850e5f52e598bca578429ca0fc4db58eeffcb1c45"
+        }
+      }
+    },
+    "06": {
+      "groups": {
+        "5": {
+          "seed": 131387,
+          "text_sha256": "7c92e4f2a656b252c0f5c23dda4dae5344efa0e9db9555f942bcd6b2896c1d50",
+          "spoken_sha256": "7c92e4f2a656b252c0f5c23dda4dae5344efa0e9db9555f942bcd6b2896c1d50"
+        }
+      }
+    }
   }
 }

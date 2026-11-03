@@ -27,7 +27,22 @@
     "languages": {
       "Chinese": {
         "language": "Chinese",
-        "normalization": [],
+        "normalization": [
+          {
+            "display": "划不出",
+            "spoken": "画不出",
+            "kind": "homophone",
+            "reading": "huà bu chū",
+            "source": "measured-misreading"
+          },
+          {
+            "display": "调用",
+            "spoken": "掉用",
+            "kind": "homophone",
+            "reading": "diào yòng",
+            "source": "measured-misreading"
+          }
+        ],
         "targets": [
           {
             "term": "一种",
@@ -183,11 +198,6 @@
             "term": "分清",
             "kind": "contextual-mandarin-word",
             "target_reading": "fēn qīng"
-          },
-          {
-            "term": "划不",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "huà bù"
           },
           {
             "term": "划定",
@@ -686,11 +696,6 @@
             "term": "调查",
             "kind": "contextual-mandarin-word",
             "target_reading": "diào chá"
-          },
-          {
-            "term": "调用",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "diào yòng"
           },
           {
             "term": "谈得",
