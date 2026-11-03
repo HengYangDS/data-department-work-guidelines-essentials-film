@@ -30,7 +30,7 @@ None.
 ## Impact
 
 - Repository `ddwg-essentials-film`, governed by ETHOS `0.2.0-alpha.28` since 2026-11-03. Its forge remotes are added only after the user confirms the push; the owner, namespace, name and visibility are decided then.
-- Dependencies: `filmkit` 0.5.0, which checks concept contracts and readings and renders with HyperFrames 0.9.5; npm `hyperframes` 0.9.5, `puppeteer-core`, `@puppeteer/browsers`, `esbuild` and `gsap`; Python `pydantic` and `pypinyin` through the engine.
+- Dependencies: `filmkit` 0.6.0, which checks concept contracts and readings, checks each edition's picture before it renders and renders with HyperFrames 0.9.6; npm `hyperframes` 0.9.6, `puppeteer-core`, `@puppeteer/browsers`, `esbuild` and `gsap`; Python `pydantic` and `pypinyin` through the engine.
 - A new Documents folder, `~/Documents/ddwg-essentials-film/`, receives the films; `~/Documents/ddwg-introduction-film/` and its 25-minute editions are not touched.
 - The guidelines' repository is read only, at `v8.0.0`. `ddwg-film` is read only: its concept contract, casts and pronunciation contract are copied, not shared at build time.
 - Out of scope: changes to the 25-minute films, changes to `filmkit` beyond its own Changes and releases, a shared library of picture primitives, music, 3D, and publishing before the user confirms.
