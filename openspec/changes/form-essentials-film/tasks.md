@@ -31,7 +31,7 @@
 ## 5. Render, review and delivery
 
 - [ ] 5.1 Render, package and verify both editions; verify the technical checks and that the tracked tree is unchanged.
-- [ ] 5.2 Pass the independent production review of the exact build at 90 or more overall and in every declared dimension, concept fidelity among them; a fixed build is reviewed again.
+- [ ] 5.2 Pass the independent production review of the exact build at 95 or more overall and in every declared dimension, concept fidelity among them; a fixed build is reviewed again.
 - [ ] 5.3 Deliver both editions to `~/Documents/ddwg-essentials-film/` and read them back; verify every delivered file's SHA-256 and both players in a real browser.
 - [ ] 5.4 Record the user's acceptance of the delivered films; verify that the record names both editions' delivered films.
 
