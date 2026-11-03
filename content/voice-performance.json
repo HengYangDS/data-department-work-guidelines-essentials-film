@@ -85,11 +85,6 @@
             "target_reading": "hù xiāng"
           },
           {
-            "term": "交给",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "jiāo gěi"
-          },
-          {
             "term": "什么",
             "kind": "contextual-mandarin-word",
             "target_reading": "shén me"
@@ -310,7 +305,7 @@
           {
             "term": "地方",
             "kind": "contextual-mandarin-word",
-            "target_reading": "dì fāng"
+            "target_reading": "dì fang"
           },
           {
             "term": "场面",
@@ -359,9 +354,19 @@
             "target_reading": "shǎo"
           },
           {
+            "term": "属于",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "shǔ yú"
+          },
+          {
             "term": "并为",
             "kind": "contextual-mandarin-word",
             "target_reading": "bìng wèi"
+          },
+          {
+            "term": "弄清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "nòng qīng"
           },
           {
             "term": "强制性",
@@ -410,6 +415,16 @@
             "term": "把握",
             "kind": "contextual-mandarin-word",
             "target_reading": "bǎ wò"
+          },
+          {
+            "term": "抹不掉",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "mǒ bu diào"
+          },
+          {
+            "term": "挑着",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "tiāo zhe"
           },
           {
             "term": "摘要",
@@ -638,11 +653,6 @@
             "term": "说不清",
             "kind": "contextual-mandarin-word",
             "target_reading": "shuō bù qīng"
-          },
-          {
-            "term": "说好",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "shuō hǎo"
           },
           {
             "term": "说得",
