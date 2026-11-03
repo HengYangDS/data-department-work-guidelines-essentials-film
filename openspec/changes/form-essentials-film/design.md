@@ -87,7 +87,7 @@ Text with a Chinese character uses Noto Sans CJK SC subset to the characters the
 
 ### Review and delivery
 
-The production review scores the exact build in the nine dimensions `ddwg-film` declares, concept fidelity among them, with the subject dimension stated for the essentials; every dimension and the overall mean must reach 90. At most one round of fixes follows, and a fixed build is reviewed again: unchanged frames are first proved identical, and the review covers the change.
+The production review scores the exact build in the nine dimensions `ddwg-film` declares, concept fidelity among them, with the subject dimension stated for the essentials; every dimension and the overall mean must reach 95, a bar the owner raised from 90 on 2026-11-03. At most one round of fixes follows, and a fixed build is reviewed again: unchanged frames are first proved identical, and the review covers the change.
 
 Both editions are delivered to `~/Documents/ddwg-essentials-film/`, a new folder, through the engine's delivery with whole-file readback; both players are opened in a real browser. `~/Documents/ddwg-introduction-film/` and the 25-minute films are not touched.
 

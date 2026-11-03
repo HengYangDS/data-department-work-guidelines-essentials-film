@@ -174,7 +174,7 @@ Text with a Chinese character SHALL be drawn in Noto Sans CJK SC subset to the c
 
 ### Requirement: The final films earn an evidence-bound review
 
-The final films SHALL meet the review contract the declaration states: every declared dimension at least 90, concept fidelity among them, and the overall score, the mean of the dimensions, at least 90, scored against the exact final files. The review SHALL keep observed modalities separate from unassessed ones, and human listening SHALL be reported as recorded, never inferred from model review or measurements.
+The final films SHALL meet the review contract the declaration states: every declared dimension at least 95, concept fidelity among them, and the overall score, the mean of the dimensions, at least 95, scored against the exact final files. The review SHALL keep observed modalities separate from unassessed ones, and human listening SHALL be reported as recorded, never inferred from model review or measurements.
 
 #### Scenario: A review that binds the final films qualifies
 
