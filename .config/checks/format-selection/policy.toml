@@ -1,12 +1,14 @@
 # Sources whose SHA-256 the film's build records bind and that film-media checks against a
-# build's receipts: the reference recordings, fonts, scripts and casts, the source manifest, the
-# player and entry pages, and the composition and its page. The covers join them when they are
-# painted. A new production changes them together, through a full render and review.
+# build's receipts: the reference recordings, covers and fonts, the scripts and casts, the source
+# manifest, the player and entry pages, and the composition and its page. A new production changes
+# them together, through a full render and review.
 [[ownership]]
 id = "film-media-bound-sources"
 paths = [
   "assets/audio/en/narration-reference.wav",
   "assets/audio/narration-reference.wav",
+  "assets/cover/ddwg-essentials-cover-en.png",
+  "assets/cover/ddwg-essentials-cover.png",
   "assets/fonts/ibm-plex-sans-bold.ttf",
   "assets/fonts/ibm-plex-sans-regular.ttf",
   "assets/fonts/noto-sans-cjk-sc-subset-bold.otf",
