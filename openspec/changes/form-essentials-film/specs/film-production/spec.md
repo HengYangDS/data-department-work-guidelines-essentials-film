@@ -174,13 +174,24 @@ Text with a Chinese character SHALL be drawn in Noto Sans CJK SC subset to the c
 
 ### Requirement: The final films earn an evidence-bound review
 
-The final films SHALL meet the review contract the declaration states: every declared dimension at least 95, concept fidelity among them, and the overall score, the mean of the dimensions, at least 95, scored against the exact final files. The review SHALL keep observed modalities separate from unassessed ones, and human listening SHALL be reported as recorded, never inferred from model review or measurements.
+The final films SHALL meet the review contract the declaration states: every declared dimension, each stating what an excellent film shows, at least 95, and the overall score, their mean, at least 95, scored against the exact final files. The reviewer SHALL check every pattern the owner has rejected in an earlier film. The review SHALL keep observed modalities apart from unassessed ones, and human listening SHALL be reported as recorded, never inferred from model review or measurements.
 
 #### Scenario: A review that binds the final films qualifies
 
 - **WHEN** the production review of both editions is verified
 - **THEN** it names both editions' movie hashes, the current scripts, the concept contract and the composition
 - **AND** a missing dimension, a mismatched mean, a score below its floor or a material finding refuses
+
+#### Scenario: Each quality is scored on its own
+
+- **WHEN** the review contract is read
+- **THEN** it scores faithfulness, concept fidelity, narrative clarity, language quality, voice quality, narration performance, pronunciation, visual explanation, typography, visual aesthetics and colour, sound-picture continuity, and credits and delivery craft as separate dimensions
+- **AND** voice quality states the measured clarity a narration must reach
+
+#### Scenario: A rejected pattern cannot pass
+
+- **WHEN** a reviewer finds in either edition a pattern the owner has rejected, such as a hoarse voice, a swallowed phrase tail, a ground with a colour cast or an opening without its title card
+- **THEN** the finding is material and the review refuses
 
 ### Requirement: The delivery reads back from Documents
 
