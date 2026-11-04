@@ -1,7 +1,7 @@
 # Sources whose SHA-256 the film's build records bind and that film-media checks against a
-# build's receipts: the reference recordings, fonts, scripts and casts, the source manifest, and
-# the player and entry pages. The covers and the composition join them when they are made. A new
-# production changes them together, through a full render and review.
+# build's receipts: the reference recordings, fonts, scripts and casts, the source manifest, the
+# player and entry pages, and the composition and its page. The covers join them when they are
+# painted. A new production changes them together, through a full render and review.
 [[ownership]]
 id = "film-media-bound-sources"
 paths = [
@@ -20,6 +20,9 @@ paths = [
   "content/source-manifest.json",
   "content/voice-performance.json",
   "content/voice-reference.json",
+  "picture/film.css",
+  "picture/film.js",
+  "picture/index.html",
 ]
 format_owner = "immutable-carrier"
 format_command = "not-applicable:film-media-bound"
