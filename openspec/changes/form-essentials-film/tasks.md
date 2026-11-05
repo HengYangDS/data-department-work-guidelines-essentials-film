@@ -19,7 +19,7 @@
 - [x] 3.1 Add the casts with the narrator's references and settings; verify each reference's SHA-256 and, for a derived reference, its recorded derivation from the identity root. Since 2026-11-05 the Chinese cast speaks from the derived natural reference `8b50cf9a…` (design § Narrator), whose two steps the cast records; the English cast is unchanged.
 - [ ] 3.2 Audition every declared name and reading; verify that each is heard as declared, comparing a flagged reading with takes of its homophones and leaving what stays unsettled to the user's ear. Reopened on 2026-11-05 for the new reference.
 - [ ] 3.3 Narrate both editions and select each thought's take; verify that every selected take ends on its own, matches its text by recognition and keeps its pauses within the declared caps. Reopened on 2026-11-05 for the ten-minute edition.
-- [ ] 3.4 Assemble each soundtrack and its captions at exactly 600 seconds; verify the runtime, the fitted pauses within the declared bounds of the approved samples' pauses, the program loudness, the caption timing and that no thought's tail is released. Reopened on 2026-11-05 for the ten-minute edition.
+- [x] 3.4 Assemble each soundtrack and its captions at exactly 600 seconds; verify the runtime, the fitted pauses within the declared bounds of the approved samples' pauses, the program loudness, the caption timing and that no thought's tail is released. On 2026-11-05 both soundtracks last 600.000 s at −16.5 LUFS (Chinese `3b4d5c97…`, English `4debcd5c…`); the heard medians between thoughts, 1.76 s in Chinese and 2.33 s in English, stand within the bounds of the samples' 1.7 s and 2.2 s, every gap between parts is longer than those joins and at most 5 s, no thought's tail is released, and the 148 Chinese and 199 English captions follow the assembled timing.
 - [ ] 3.5 Have the user listen to both narrations and confirm the titles, and record the decision; verify that the record names both soundtracks and the titles, and reopen 2.2 or 3.3 for a requested change. Reopened on 2026-11-05 for the ten-minute edition.
 
 ## 4. Picture
@@ -37,7 +37,7 @@
 
 ## 6. Publication
 
-- [ ] 6.1 Write the README with the supply, build and comparison steps, `LICENSE`, `NOTICE`, the CC BY 4.0 legal code, the fonts' licenses and `CHANGELOG.md`; verify that `ethos lane repair-paradigm --json` reports no gap.
+- [x] 6.1 Write the README with the supply, build and comparison steps, `LICENSE`, `NOTICE`, the CC BY 4.0 legal code, the fonts' licenses and `CHANGELOG.md`; verify that `ethos lane repair-paradigm --json` reports no gap. On 2026-11-05 the README, `CONTRIBUTING.md` and `CHANGELOG.md` join the license files, and `repair-paradigm` reports the lane conforming with no gap.
 - [ ] 6.2 Record the release manifest from the accepted films and verify a rebuild against it with `film:compare`; prepare `v1.0.0` with `.ethos/release.toml` and the release folder with `SHA256SUMS`.
 - [ ] 6.3 Once the user has named the forges, project the portable gates into their CI; verify that `ethos lane project --check` passes and that each projection validates against its forge's schema.
 
