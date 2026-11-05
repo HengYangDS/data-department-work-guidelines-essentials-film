@@ -245,13 +245,6 @@
             "target_reading": "fā shēng"
           },
           {
-            "term": "取舍",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "qǔshě",
-            "source": "macos-dictionary",
-            "status": "planned-not-listened"
-          },
-          {
             "term": "变得",
             "kind": "contextual-mandarin-word",
             "target_reading": "biàn de",
@@ -316,11 +309,6 @@
             "term": "地方",
             "kind": "contextual-mandarin-word",
             "target_reading": "dì fang"
-          },
-          {
-            "term": "场面",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "chǎng miàn"
           },
           {
             "term": "处理",
@@ -412,11 +400,6 @@
             "target_reading": "kuài yào"
           },
           {
-            "term": "成为",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "chéng wéi"
-          },
-          {
             "term": "把",
             "kind": "contextual-mandarin-word",
             "target_reading": "bǎ"
@@ -425,11 +408,6 @@
             "term": "把握",
             "kind": "contextual-mandarin-word",
             "target_reading": "bǎ wò"
-          },
-          {
-            "term": "抹不掉",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "mǒ bu diào"
           },
           {
             "term": "挑着",
@@ -519,11 +497,6 @@
             "target_reading": "mù dì"
           },
           {
-            "term": "省掉",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "shěng diào"
-          },
-          {
             "term": "看",
             "kind": "contextual-mandarin-word",
             "target_reading": "kàn"
@@ -553,11 +526,6 @@
             "term": "系统",
             "kind": "contextual-mandarin-word",
             "target_reading": "xì tǒng"
-          },
-          {
-            "term": "纠正",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "jiū zhèng"
           },
           {
             "term": "经得",
@@ -609,11 +577,6 @@
             "term": "要不",
             "kind": "contextual-mandarin-word",
             "target_reading": "yào bù"
-          },
-          {
-            "term": "要是",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "yào shì"
           },
           {
             "term": "要求",
@@ -671,11 +634,6 @@
             "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
           },
           {
-            "term": "说明",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "shuō míng"
-          },
-          {
             "term": "说法",
             "kind": "contextual-mandarin-word",
             "target_reading": "shuō fǎ"
@@ -707,11 +665,6 @@
             "term": "质量",
             "kind": "contextual-mandarin-word",
             "target_reading": "zhì liàng"
-          },
-          {
-            "term": "转移",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "zhuǎn yí"
           },
           {
             "term": "转述",
