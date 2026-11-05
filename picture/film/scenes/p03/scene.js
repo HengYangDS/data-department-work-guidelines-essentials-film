@@ -65,13 +65,10 @@ function caseCues(s) {
     hypothesis: cue(s, "假设", "a hypothesis"),
     checks: cue(s, "查过发布时间", "checks the publication time"),
     observation: cueFrom(s, "观察", "observation", checked(s)),
-    onTime: cue(s, "按时发布了", "vendor on time"),
-    fails: cue(s, "不成立", "hypothesis fails"),
+    refute: cue(s, "推翻", "refute"),
     choice,
     isChoice: cue(s, "选择", "a choice"),
     owner: cueFrom(s, "决策负责人", "decision owner", choice),
-    tradeoff: cue(s, "取舍", "trade-off"),
-    revisit: cue(s, "回头再看", "revisiting"),
   };
 }
 function closeCues(s, c) {

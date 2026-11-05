@@ -2,19 +2,18 @@
  * whole; the Agent works inside a delegated boundary that grows with what it holds, extends what people can do, gives
  * no organizational authorization and makes no commitments; what stays with people builds under them. B: the ten pages
  * return, and the decision they should have served comes before them. C: a clear boundary, not a pile of context; the
- * five things a consequential delegation states build inside it, and "just handle it" is refused. */
+ * five things a consequential delegation states build inside it. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, fill, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, fill, measure, ring, stroke } from "../../drawing/strokes.js";
 import { agent, documentIcon } from "../../drawing/symbols.js";
-import { bubble } from "../../drawing/workspace.js";
-import { beats, listIn, named } from "../../naming/lists.js";
+import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, early, flowOf, glide } from "../p05/kit.js";
+import { early, flowOf, glide } from "../p05/kit.js";
 
 /* People drawn as one mark: their heads one fill and their shoulders one stroke, so a group named once does not read
  * as members that each wait for a name. Each person is [x, y]. */
@@ -83,7 +82,7 @@ export function collaborationStage(s, t, c, g) {
   // repeat the line that says it.
   const left = px + 110,
     right = ax - halfW - 10,
-    collab = g * (en ? named(t, c.agent + 0.12) : early(t, c.first1, c.collab));
+    collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab));
   link(left, y, right, y, { alpha: g, flow: flowOf(t, 0.3), width: 2.5 });
   nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + right) / 2, y - NAME_GAP, {
     valign: "bottom",
@@ -100,7 +99,6 @@ export function collaborationStage(s, t, c, g) {
     alpha: inBoundary,
   });
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
-  beats(t, ax, y, 40, c.kinds, { color: P.evidence, alpha: g });
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach((v, i) =>
     rejectedName(v, ax, y + 180 + i * 48, {
       alpha: g * listIn(t, c.refusals, i),
@@ -132,9 +130,8 @@ export function collaborationStage(s, t, c, g) {
 
 /* B: the ten pages return, an Agent beside its stack, which climbs a page at a time as the thought begins; the stage
  * stands centred on them. The decision they should have served arrives at the left, a ring with its point, and the
- * stage glides to hold both; its link runs to the pages, the decision first. Collecting information, as a goal, is
- * refused under them. */
-const B = { y: 470 };
+ * stage glides to hold both; its link runs to the pages, the decision first. */
+const B = { y: 505 };
 const PAGE = [190, 250];
 function stack(x, y, pages, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
@@ -178,19 +175,13 @@ export function pagesStage(s, t, c, g) {
     upto: soon(t, c.decision, 0.7),
     flow: t > c.decision + 0.8 ? flowOf(t, 0.4) : null,
   });
-  rejectedName(L("收集信息", "Collecting information"), x + 40, B.y + 185 + NAME_GAP, {
-    valign: "top",
-    alpha: g * named(t, c.collecting),
-    mark: ramp(t, c.notGoal + 0.05, 0.4),
-  });
 }
 
-/* C: a clear boundary round the Agent, at first sized to it; the pile of context at the left, refused; the five things
- * a consequential delegation states build as one list in a column inside the boundary, which widens as they are
- * announced and deepens just before each is said; and "just handle it", a speech mark whose way toward the boundary
- * keeps running into a bar on its edge. The boundary stands centred alone and glides right as the pile arrives; the
- * whole stage stands centred in height as the boundary deepens. */
-const C = { x: 1160, pile: 700 };
+/* C: a clear boundary round the Agent, at first sized to it; the pile of context at the left, refused; and the five
+ * things a consequential delegation states build as one list in a column inside the boundary, which widens as they are
+ * announced and deepens just before each is said. The boundary stands centred alone and glides right as the pile
+ * arrives; the boundary deepens about one height, and the pile stands at that height. */
+const C = { x: 1160, pile: 700, pileY: 466 };
 export function boundaryStage(s, t, c, g) {
   const ats = c.five,
     shift = glide(t, 960 - C.x, [[c.pile, 0]]),
@@ -222,33 +213,13 @@ export function boundaryStage(s, t, c, g) {
   stroke(
     () => {
       for (let k = 0; k < 5; k++)
-        ctx.roundRect(px - 60 + (k % 2) * 14, y + 10 - k * 16, 110, 12, 3);
+        ctx.roundRect(px - 60 + (k % 2) * 14, C.pileY + 10 - k * 16, 110, 12, 3);
     },
     { color: P.muted, alpha: pile, width: 2.5 },
   );
-  rejectedName(L("一堆背景材料", "A pile of context"), px, y + 40 + NAME_GAP, {
+  rejectedName(L("一堆背景材料", "A pile of context"), px, C.pileY + 40 + NAME_GAP, {
     valign: "top",
     alpha: pile,
     mark: pile,
-  });
-  // "Just handle it": a speech mark whose way to the boundary keeps running into a bar on its edge.
-  const said = g * named(t, c.handle),
-    by = y + 230,
-    edge = x - width - 8;
-  bubble(px, by, 26, { alpha: said, color: P.ink });
-  line(px + 44, by, mix(px + 44, edge, soon(t, c.handle + 0.2, 0.6)), by, {
-    color: P.line,
-    alpha: said,
-    width: 2.5,
-  });
-  if (t > c.handle + 0.8) {
-    const q = flowOf(t, 0.45);
-    flowDot(mix(px + 44, edge - 6, q), by, 5, q, { color: P.unknown, alpha: said });
-  }
-  bar(edge, by, { alpha: g * named(t, c.notSet), vertical: true, length: 44 });
-  rejectedName(L("帮我搞定", "Just handle it"), px, by + 30 + NAME_GAP, {
-    valign: "top",
-    alpha: said,
-    mark: ramp(t, c.notSet + 0.05, 0.4),
   });
 }

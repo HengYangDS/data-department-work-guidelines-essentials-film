@@ -9,7 +9,7 @@ import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { callerStage, delegationStage, transferStage } from "./delegation.js";
+import { callerStage, delegationStage } from "./delegation.js";
 import { boundaryStage, collaborationStage, pagesStage } from "./people.js";
 
 /* The spoken cues, in the order they are said; words the part says more than once are cued from their thought. */
@@ -22,14 +22,6 @@ function cuesOf(s) {
     agent: cue(s, "智能体", "Agents"),
     boundary: cue(s, "委托的范围", "a delegated boundary"),
     extend: cue(s, "调查、推理和动手", "investigate"),
-    kinds: cues(s, [
-      ["查资料", "search"],
-      ["分析", "analysis"],
-      ["起草", "drafting"],
-      ["实现", "implementation"],
-      ["测试", "testing"],
-      ["评审", "review"],
-    ]),
     refusals: cues(s, [
       ["组织的授权", "organizational authorization"],
       ["承诺", "commitments"],
@@ -38,8 +30,6 @@ function cuesOf(s) {
     first2: cue(s, "开头那十页分析", "Before the ten pages"),
     pages: cue(s, "十页分析", "the ten pages"),
     decision: cue(s, "哪个决定", "which decision"),
-    collecting: cue(s, "收集信息", "Collecting information"),
-    notGoal: cue(s, "本身不是目的", "is not the goal"),
     first3: cue(s, "委托时要划清边界", "So delegate with a clear boundary"),
     clear: cue(s, "边界", "a clear boundary"),
     pile: cue(s, "别丢过去", "not a pile of context"),
@@ -51,8 +41,6 @@ function cuesOf(s) {
       ["怎么验收", "how the result will be accepted"],
       ["什么时候必须停", "when to stop"],
     ]),
-    handle: cue(s, "帮我搞定", "just handle it"),
-    notSet: cue(s, "划不出", "does not set"),
     first4: cue(s, "比如这样委托", "A delegation for last night"),
     delegation: cue(s, "这样委托", "A delegation for last night"),
     purposeClause: cue(s, "为了决定要不要换供应商", "To help decide whether to change vendors"),
@@ -75,8 +63,6 @@ function cuesOf(s) {
       ["检查过", "checked"],
       ["为后果负责", "accept responsibility"],
     ]),
-    first5b: cue(s, "委托转移的是工作", "Delegation transfers"),
-    duty: cue(s, "这份责任", "that duty"),
   };
   const from = (zh, en, at) => cueFrom(s, zh, en, at);
   c.stays = [
@@ -92,7 +78,6 @@ function cuesOf(s) {
     from("核验", "verification", c.first5),
     from("结果", "result", c.first5),
   ];
-  c.work = from("工作", "the work", c.first5b);
   return c;
 }
 
@@ -102,13 +87,11 @@ scenes["07"] = function (s, t) {
     B = stageIn(t, c.first2) * stageOut(t, c.first3),
     C = stageIn(t, c.first3) * stageOut(t, c.first4),
     D = stageIn(t, c.first4) * stageOut(t, c.first5),
-    E1 = stageIn(t, c.first5) * stageOut(t, c.first5b),
-    E2 = stageIn(t, c.first5b);
+    E = stageIn(t, c.first5);
   if (A > 0) collaborationStage(s, t, c, A);
   if (B > 0) pagesStage(s, t, c, B);
   if (C > 0) boundaryStage(s, t, c, C);
   if (D > 0) delegationStage(s, t, c, D);
-  if (E1 > 0) callerStage(s, t, c, E1);
-  if (E2 > 0) transferStage(s, t, c, E2);
+  if (E > 0) callerStage(s, t, c, E);
   illustrative(B + D);
 };

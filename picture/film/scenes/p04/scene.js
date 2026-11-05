@@ -1,7 +1,7 @@
 /* 04 四条底线 / Four boundaries. A (04.1): the field of the four boundaries, four separate sides that count in one after
  * another, centred, named on their words; a point inside runs to a side and stops at it. B (04.2-04.3, from 「说真话」/
  * "tell the truth"): the field at the left, its sides lighting one by one as a column of the four boundaries builds at
- * its right (lines.js). C (04.4): the field and the three cases, inside it, near a side and across one (lines.js). D
+ * its right (lines.js). C (04.4): the field and the two cases, inside it and near a side (lines.js). D
  * (04.5-04.7): the ladder of risk and the record each tier needs; E (04.8): last night's case in the highest tier, and
  * the independent review that examines the work, not its authors' account (ladder.js). F (04.9, from 「风险高低」/
  * "Whatever the risk"): three tiers' documents, each inside the same field, every field's sides lit together. */
@@ -23,8 +23,7 @@ import { field, fieldRow, tierDoc } from "./marks.js";
 /* Each edition's cues where the two editions say a list in different parts; only the edition drawn is resolved. */
 const each = (zh, en) => L(zh, en)();
 function cuesOf(s) {
-  const crossed = cue(s, "要是已经越了线", "If one has already been crossed"),
-    lastCase = cue(s, "昨晚的事", "Last night's case");
+  const lastCase = cue(s, "昨晚的事", "Last night's case");
   return {
     four: cue(s, "四条底线", "Four boundaries"),
     never: cue(s, "不能越过", "never be crossed"),
@@ -62,13 +61,6 @@ function cuesOf(s) {
     free: cue(s, "自主", "autonomy"),
     near: cue(s, "快要越线时", "When an action would cross one"),
     halt: cue(s, "停下来", "stop"),
-    crossed,
-    steps: [
-      cue(s, "停下受影响", "stop the affected action"),
-      cueFrom(s, "讲出来", "disclose it", crossed),
-      cue(s, "权限内纠正", "correct it"),
-      cue(s, "按风险", "according to the risk"),
-    ],
     ladder: cue(s, "要留多少记录", "Risk sets the process"),
     risk: cue(s, "多少记录", "Risk sets the process"),
     riskWord: cue(s, "看风险", "Risk sets the process"),
@@ -85,7 +77,6 @@ function cuesOf(s) {
     ],
     oneClear: cue(s, "一次讲清", "one clear exchange"),
     clearQual: cue(s, "结论", "conclusion"),
-    downplay: cue(s, "说成小事", "downplay"),
     record: cue(s, "现有的工作记录", "existing work record"),
     recordQual: cue(s, "问题", "the problem"),
     written: [

@@ -1,9 +1,9 @@
-/* 05 Data that means what it says. Saying data is usable takes evidence, and what merely looks right establishes nothing
- * (05.1); before using it, six questions, and data that cannot answer stays inside its authorized scope (05.2); last
- * night's prices, on the timeline and in a backtest, with the history of the patched data (05.3); what could be known
- * then against what is seen in hindsight (05.4); and the views derived from data, none of which may quietly become the
- * source of truth (05.5). Each thought's stage cuts in on its first words. The Illustrative chip stands while the
- * made-up case shows (05.3-05.4). */
+/* 05 Data that means what it says. Saying data is usable takes evidence, and what merely looks right establishes
+ * nothing (05.1); before using it, six questions, and data that cannot answer stays inside its authorized scope
+ * (05.2); last night's prices, on the timeline and in a backtest (05.3); what could be known then against what is seen
+ * in hindsight (05.4); and the views that hang from data, none of which may quietly become the source of truth (05.5).
+ * Each thought's stage cuts in on its first words. The Illustrative chip stands while the made-up case shows
+ * (05.3-05.4). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
@@ -59,24 +59,20 @@ function cuesOf(s) {
     usual: cue(s, "平时", "usual"),
     backtest: cue(s, "回测", "backtest"),
     later: cue(s, "晚到的时间", "that later time"),
-    patched: cue(s, "连夜补上的数据", "The data patched in overnight"),
-    who: cue(s, "谁补的", "who added it"),
-    where: cue(s, "从哪里补的", "from where"),
     first4: cue(s, "做历史研究", "In historical research"),
     then: cue(s, "当时能知道什么", "what could have been known"),
     hindsight: cue(s, "事后看到了什么", "seen in hindsight"),
     corrected: cue(s, "修正过价格", "corrected its prices"),
     series: cue(s, "修正后的数据", "corrected series"),
     cannot: cue(s, "就证明不了", "cannot show"),
-    first5: cue(s, "报告", "Reports"),
+    first5: cue(s, "报告", "No report"),
     views: cues(s, [
-      ["报告", "Reports"],
-      ["数据目录", "catalogs"],
-      ["缓存", "caches"],
-      ["智能体的摘要", "Agent summaries"],
+      ["报告", "report"],
+      ["数据目录", "catalog"],
+      ["缓存", "cache"],
+      ["智能体的摘要", "Agent summary"],
     ]),
-    derived: cue(s, "派生出来的", "derived"),
-    become: cue(s, "不能悄悄变成", "none may quietly become"),
+    become: cue(s, "不能悄悄变成", "may quietly become"),
     truth: cue(s, "权威来源", "source of truth"),
   };
   c.fit2 = cueFrom(s, "证明它适合", "shown fit", c.first2b);

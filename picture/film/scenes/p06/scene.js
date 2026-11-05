@@ -1,15 +1,15 @@
 /* 06 Evidence sets the limit of the claim. Back to last night: the publication was on time and our own job started
- * late (06.1); the fix's three layers on the timeline (06.2); the chain of trust (06.3); last night's late run stays
- * on the record (06.4); report the state, and what verification, publication and use each establish (06.5); a
- * completion claim and its questions (06.6); and two states that do not make the next (06.7). Each thought's stage
- * cuts in on its first words. The Illustrative chip stands while the made-up case shows (06.1, 06.2, 06.4). */
+ * late (06.1); the fix's three layers on the timeline (06.2); the chain of trust (06.3); report the state, and what
+ * verification, publication and use each establish (06.4); a completion claim and its questions (06.5); and two states
+ * that do not make the next (06.6). Each thought's stage cuts in on its first words. The Illustrative chip stands while
+ * the made-up case shows (06.1, 06.2). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { chainStage, claimStage, pairsStage, stateStage, verifiedStage } from "./claims.js";
-import { backStage, layersStage, recordStage } from "./night.js";
+import { backStage, layersStage } from "./night.js";
 
 /* The spoken cues, in the order they are said. */
 function cuesOf(s) {
@@ -41,7 +41,6 @@ function cuesOf(s) {
       ["发现", "catch"],
     ]),
     first3: cue(s, "决策负责人批准", "The decision owner approves"),
-    approved: cue(s, "任务提前启动", "an earlier start"),
     stations: cues(s, [
       ["决策负责人批准", "The decision owner approves"],
       ["也划定了范围", "and sets its limits"],
@@ -55,19 +54,10 @@ function cuesOf(s) {
     chain: cue(s, "信任链", "chain of trust"),
     lighter: cue(s, "手续可以随风险变轻", "lower risk means less process"),
     skip: cue(s, "但一环都不能少", "but the chain cannot skip"),
-    first4: cue(s, "昨晚延迟的那次记录", "Last night's late run"),
-    record: cue(s, "延迟的那次记录", "Last night's late run"),
-    laterRuns: cue(s, "后面几次都按时了", "later runs that start on time"),
-    erase: cue(s, "也抹不掉它", "do not erase it"),
     first5: cue(s, "汇报时", "Report the state"),
     stateClause: cue(s, "说做到哪一步", "Report the state"),
     state: cue(s, "做到哪一步", "the state"),
     effort: cue(s, "不说花了多少力气", "not the effort"),
-    phrases: cues(s, [
-      ["积极推进", "Actively progressing"],
-      ["基本完成", "almost done"],
-    ]),
-    sayNothing: cue(s, "都说明不了状态", "say nothing about state"),
     first5b: cue(s, "核验通过了", "Verified means"),
     bounds: cues(s, [
       ["对象", "subject"],
@@ -95,6 +85,8 @@ function cuesOf(s) {
     agentSays: cue(s, "智能体说完成了", "And an Agent reporting completion"),
     complete: cueFrom(s, "也不等于完成了", "does not make the work complete", 0),
   };
+  // The earlier start is first said in 06.2 in Chinese, so the one that is approved is cued from 06.3's first words.
+  c.approved = cueFrom(s, "任务提前启动", "an earlier start", c.first3);
   // "limits" is said in 06.3 already, so the bound is cued from the words that verify.
   c.bounds[3] = cueFrom(s, "限度", "limit", c.first5b);
   return c;
@@ -104,8 +96,7 @@ scenes["06"] = function (s, t) {
   const c = cuesOf(s);
   const A = stageOut(t, c.first2),
     B = stageIn(t, c.first2) * stageOut(t, c.first3),
-    C = stageIn(t, c.first3) * stageOut(t, c.first4),
-    D = stageIn(t, c.first4) * stageOut(t, c.first5),
+    C = stageIn(t, c.first3) * stageOut(t, c.first5),
     E1 = stageIn(t, c.first5) * stageOut(t, c.first5b),
     E2 = stageIn(t, c.first5b) * stageOut(t, c.first6),
     F = stageIn(t, c.first6) * stageOut(t, c.first7),
@@ -113,10 +104,9 @@ scenes["06"] = function (s, t) {
   if (A > 0) backStage(s, t, c, A);
   if (B > 0) layersStage(s, t, c, B);
   if (C > 0) chainStage(s, t, c, C);
-  if (D > 0) recordStage(s, t, c, D);
   if (E1 > 0) stateStage(s, t, c, E1);
   if (E2 > 0) verifiedStage(s, t, c, E2);
   if (F > 0) claimStage(s, t, c, F);
   if (G > 0) pairsStage(s, t, c, G);
-  illustrative(A + B + D);
+  illustrative(A + B);
 };

@@ -5,7 +5,7 @@
  * hands over refused below it, one thing on each one's words; on its words a signal from the world runs in at the
  * way's left. B2, from 「变成」/ "into judgments": the refused things leave whole and what the signal becomes hangs from
  * the way where they stood, judgments, data assets and actions, carried along the way to the others at its end, with
- * the qualities the others rely on under them. C, C2 and D (02.3-02.5) are drawn by tasks.js. */
+ * the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
 import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
@@ -21,7 +21,7 @@ import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { glide } from "../p01/failures.js";
 import { agents, guidePage, handedMark, outputMark, people, toAndFro, wave } from "./marks.js";
-import { stageForm, stageOutcomes, taskCues } from "./tasks.js";
+import { stageOutcomes, taskCues } from "./tasks.js";
 
 /* The spoken cues of 02.1 and 02.2. The seal's rim stands with its name on the words that begin to say what the
  * contract is about (工作质量 / "contract") and is stamped on the next (契约 / "quality"), so the page never stands
@@ -223,5 +223,4 @@ scenes["02"] = function (s, t) {
   if (B > 0) stageHanded(t, B, c);
   if (B2 > 0) stageOutputs(t, B2, c);
   stageOutcomes(t, c);
-  stageForm(t, c);
 };

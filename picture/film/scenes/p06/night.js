@@ -1,20 +1,19 @@
-/* Part 06, stages A, B and D, the made-up case on its timeline. A: back to last night, the publication on the due hour
+/* Part 06, stages A and B, the made-up case on its timeline. A: back to last night, the publication on the due hour
  * and the job log over the hour the job started, the publication on time and the job late. B: the timeline moves to
  * the top band and the fix's three layers stack below it, each acting on the timeline as it is said: the missing data
  * patched, the job's start moved before the due hour, and the lightest safeguard on the due hour; doing only the first
- * two is refused as a systemic fix. D: night after night, last night's late run keeps its record, and the later runs
- * that start on time do not erase it. */
+ * two is refused as a systemic fix. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, line, stroke } from "../../drawing/strokes.js";
+import { box, dot, line, measure, stroke } from "../../drawing/strokes.js";
 import { check, documentIcon } from "../../drawing/symbols.js";
-import { lastNight, lastNightExtent, nights } from "../../drawing/timeline.js";
+import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { listIn, named, speaking } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, early, flowOf, missingPage, openMark, patchMark } from "../p05/kit.js";
+import { centring, early, flowOf, glide, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
 export function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
@@ -92,7 +91,8 @@ export function backStage(s, t, c, g) {
  * missing data's place (dashed, the missing thing the narration names) stands over the due hour and its patch fills
  * it; the job's start moves from its late hour to before the due hour and the late measure withdraws; the safeguard
  * stands on the due hour. Doing only the first two: they take their checks, the third its open mark, and a bracket
- * gathering the first two is refused as the systemic fix. */
+ * gathering the first two is refused as the systemic fix. The timeline stands centred with its name, and the layers
+ * stand centred with theirs and glide left as the refusal comes at their right. */
 const B = {
   scale: 0.75,
   x: 960,
@@ -102,13 +102,16 @@ const B = {
   ys: [458, 588, 718],
   h: 84,
 };
+const THREE = () => L("三层", "Three layers"),
+  LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
+  REFUSED = () => L("从根上修好", "A systemic fix");
 export function layersStage(s, t, c, g) {
   const move = soon(t, c.earlier + 0.05, 0.9),
     names = {
       axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
       late: { v: L("任务启动晚了", "Late start"), alpha: 1 - ramp(t, c.earlier + 0.05, 0.4) },
     };
-  const m = lastNight(B.x, B.y, B.scale, {
+  const m = lastNight(B.x + (measure(names.axis.v) + NAME_GAP) / 2, B.y, B.scale, {
     alpha: g,
     late: { upto: 1, alpha: 1 - move },
     lateBy: mix(2, -0.6, move),
@@ -158,18 +161,25 @@ export function layersStage(s, t, c, g) {
     valign: "top",
     alpha: guard,
   });
-  // The three layers.
-  const [x0, x1] = B.slab,
+  // The three layers, whose extent with the refusal's sets their glide.
+  const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35),
+    toBracket = B.slab[1] + NAME_GAP + L(170, 190),
+    left = B.spine - NAME_GAP - measure(THREE()),
+    right = B.slab[1] + NAME_GAP + Math.max(...LAYERS().map((v) => measure(v))),
+    reach = toBracket + NAME_GAP + measure(REFUSED()) + 42,
+    shift = glide(t, centring(left, right), [[refusedAt - 0.4, centring(left, reach)]]),
+    spine = B.spine + shift,
+    [x0, x1] = B.slab.map((x) => x + shift),
     ats = c.layers,
     top = B.ys[0] - B.h / 2,
     bottom = B.ys[2] + B.h / 2,
     count = g * early(t, c.first2, c.three);
-  line(B.spine, top, B.spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
+  line(spine, top, spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
     color: P.ink,
     alpha: count,
     width: 3,
   });
-  nameText(L("三层", "Three layers"), B.spine - NAME_GAP, (top + bottom) / 2, {
+  nameText(THREE(), spine - NAME_GAP, (top + bottom) / 2, {
     align: "right",
     alpha: count,
   });
@@ -177,7 +187,7 @@ export function layersStage(s, t, c, g) {
   B.ys.forEach((y, i) => {
     const q = g * ramp(t, ats[i] - 0.15, 0.4),
       lit = g * speaking(t, ats, i);
-    line(B.spine, y, x0, y, { color: P.line, alpha: q, width: 2 });
+    line(spine, y, x0, y, { color: P.line, alpha: q, width: 2 });
     box(x0, y - B.h / 2, x1 - x0, B.h, {
       fill: P.row,
       stroke: P.line,
@@ -197,20 +207,14 @@ export function layersStage(s, t, c, g) {
       line(x0 + 60, y, x0 + 52, y - 4, { color: P.ink, alpha: q, width: 2.5 });
     }
     if (i === 2) shieldMark(x0 + 60, y, 34, { alpha: q, color: P.ink });
-    nameText(
-      L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"])[i],
-      x1 + NAME_GAP,
-      y,
-      {
-        align: "left",
-        alpha: g * listIn(t, ats, i),
-        set: "layers",
-      },
-    );
+    nameText(LAYERS()[i], x1 + NAME_GAP, y, {
+      align: "left",
+      alpha: g * listIn(t, ats, i),
+      set: "layers",
+    });
   });
   // Only the first two: a bracket beyond the names gathers them, refused as the fix at the root.
-  const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35),
-    bx = x1 + NAME_GAP + L(170, 190),
+  const bx = toBracket + shift,
     a = g * named(t, refusedAt - 0.4),
     ty = B.ys[0] - B.h / 2 + 6,
     by = B.ys[1] + B.h / 2 - 6;
@@ -223,59 +227,9 @@ export function layersStage(s, t, c, g) {
     },
     { color: P.ink, alpha: a, width: 2.5 },
   );
-  rejectedName(L("从根上修好", "A systemic fix"), bx + NAME_GAP, (ty + by) / 2, {
+  rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
     align: "left",
     alpha: g * named(t, refusedAt),
     mark: ramp(t, c.notFix + 0.05, 0.4),
-  });
-}
-
-/* D: night after night. Four nights in a row: last night at the left with its two hours lit and its record kept over
- * it, then the later nights, which start on time with their checks. Their way back over last night's record stops at
- * a bar: they do not erase it. */
-const D = { xs: [570, 830, 1090, 1350], y: 560 };
-export function recordStage(s, t, c, g) {
-  const later = g * named(t, c.laterRuns);
-  nights(D.xs, D.y, 0.3, { alpha: g, arrival: 1, lit: 1, lateBy: [2, 0, 0, 0] });
-  const last = D.xs[0],
-    page = { w: 92, h: 116 },
-    top = D.y - 40 - page.h;
-  documentIcon(last - page.w / 2, top, page.w, page.h, { alpha: g, rows: 2 });
-  line(last, top + page.h, last, D.y, { color: P.line, alpha: g, width: 2 });
-  nameText(L("延迟的那次记录", "Last night's late run"), last, top - NAME_GAP, {
-    valign: "bottom",
-    alpha: g * early(t, c.first4, c.record),
-  });
-  // The later nights' checks, one stroke, and their name over the middle of them.
-  stroke(
-    () =>
-      D.xs.slice(1).forEach((x) => {
-        ctx.moveTo(x - 64, D.y - 34);
-        ctx.lineTo(x - 54, D.y - 25);
-        ctx.lineTo(x - 38, D.y - 44);
-      }),
-    { color: P.evidence, alpha: later, width: 3.5 },
-  );
-  nameText(L("后面几次", "Later runs"), (D.xs[1] + D.xs[3]) / 2, D.y - 60 - NAME_GAP, {
-    valign: "bottom",
-    alpha: later,
-  });
-  // Their way back to last night's record stops at a bar before it.
-  const erase = g * named(t, c.erase),
-    wy = D.y + 70,
-    reach = soon(t, c.erase - 0.1, 0.8);
-  stroke(
-    () => {
-      ctx.moveTo(D.xs[2], D.y + 22);
-      ctx.lineTo(D.xs[2], wy);
-      ctx.lineTo(mix(D.xs[2], last + 90, reach), wy);
-    },
-    { color: P.line, alpha: erase, width: 2.5 },
-  );
-  bar(last + 80, wy, { alpha: g * ramp(t, c.erase + 0.5, 0.3), vertical: true, length: 40 });
-  rejectedName(L("抹掉", "Erasure"), (last + 80 + D.xs[2]) / 2, wy + 24 + NAME_GAP, {
-    valign: "top",
-    alpha: erase,
-    mark: ramp(t, c.erase + 0.5, 0.3),
   });
 }

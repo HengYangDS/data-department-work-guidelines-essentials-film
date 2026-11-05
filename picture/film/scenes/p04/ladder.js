@@ -1,17 +1,15 @@
-/* D and E (04.5-04.8). D, from 「要留多少记录」/ "Risk sets the process": one spine of rising risk down the frame,
- * named over its top (in Chinese with the question it answers, 要留多少记录, before 看风险); three tiers join it on
- * their words, the work of each at the spine's left and, at its right, the record it needs, a document as large as its
- * risk calls for: one clear exchange; the existing work record; a written decision with what else it takes, said one by
- * one. On 「说成小事」/ "downplay" a work item below the first tier rises toward it and stops at a bar. E, from 「昨晚的
- * 事」/ "Last night's case", the made-up case: the highest tier's document at the left with its work, last night's
- * timeline compact at the right, its two possible fixes branching into the tier; the tier lights as it is said to belong
- * there; under them the independent review, a lens with what it examines, and at the right the author and the Agent,
- * whose own accounts stop at a bar before the lens. */
+/* D and E (04.5-04.8). D, from 「要留多少记录」/ "Risk sets the process": one spine of rising risk down the frame, named over
+ * its top (in Chinese with the question it answers, 要留多少记录, before 看风险); three tiers join it on their words, the work
+ * of each at the spine's left and, at its right, the record it needs, a document as large as its risk calls for: one
+ * clear exchange; the existing work record; a written decision with what else it takes, said one by one. E, from
+ * 「昨晚的事」/ "Last night's case", the made-up case: the highest tier's document at the left with its work, last night's
+ * timeline compact at the right, its two possible fixes branching into the tier; the tier lights as it is said to
+ * belong there; under them the independent review, a lens with what it examines, and at the right the author and the
+ * Agent, whose own accounts stop at a bar before the lens. */
 
 import { link } from "../../drawing/links.js";
 import { blend } from "../../drawing/colour.js";
 import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
-import { token } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, growName, nameText, rejectedName, termRow } from "../../naming/names.js";
@@ -173,19 +171,6 @@ export function stageLadder(t, a, c) {
     width: WRITTEN_WIDTH(),
     build: true,
     alpha: a,
-  });
-  // Downplaying: a work item below the first tier rises toward it and stops at a bar.
-  const down = a * ramp(t, c.downplay - 0.15, 0.4),
-    rise = soon(t, c.downplay + 0.05, 0.7),
-    stop = TIER_Y[0] + 46;
-  if (down > 0.01) {
-    token(x, mix(TIER_Y[0] + 120, stop + 22, rise), { alpha: down, r: 9 });
-    bar(x, stop, { alpha: down * ramp(t, c.downplay + 0.55, 0.2), length: 40 });
-  }
-  rejectedName(L("说成小事", "Downplaying work"), x - TO_WORK, TIER_Y[0] + 100, {
-    align: "right",
-    alpha: down,
-    mark: ramp(t, c.downplay + 0.05, 0.3),
   });
 }
 

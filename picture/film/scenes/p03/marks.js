@@ -1,6 +1,6 @@
 /* The marks of part 03, each one connected mark about the point it is given, fading with `alpha`: a record with its
- * check (a fact), a dashed page (what is only supposed or false), an observing eye, the five leads, a refusal's bar, a
- * balance (a trade-off) and a log. Marks keep the meaning colours of the film's palette: evidence for records and
+ * check (a fact), a dashed page (what is only supposed or false), an observing eye, the five leads and a refusal's
+ * bar. Marks keep the meaning colours of the film's palette: evidence for records and
  * checks, authority for the seal and the decision, unknown for refusals and open questions. */
 
 import { ctx } from "../../canvas.js";
@@ -111,34 +111,6 @@ export function bar(x, y, { alpha = 1, length = 44, vertical = false } = {}) {
   const d = length / 2;
   if (vertical) line(x, y - d, x, y + d, { color: P.unknown, alpha, width: 5, cap: "butt" });
   else line(x - d, y, x + d, y, { color: P.unknown, alpha, width: 5, cap: "butt" });
-}
-
-/* A balance: a beam on a post with a pan at each end, tilting by `tilt` (radians), the trade-off weighed. */
-export function balance(x, y, { alpha = 1, tilt = 0, color = P.authority } = {}) {
-  if (alpha < 0.01) return;
-  const o = { color, alpha, width: 2.5 },
-    dx = 30 * Math.cos(tilt),
-    dy = 30 * Math.sin(tilt);
-  stroke(() => {
-    ctx.moveTo(x, y + 26);
-    ctx.lineTo(x, y - 8);
-    ctx.moveTo(x - 14, y + 26);
-    ctx.lineTo(x + 14, y + 26);
-    ctx.moveTo(x - dx, y - 8 - dy);
-    ctx.lineTo(x + dx, y - 8 + dy);
-  }, o);
-  stroke(
-    () =>
-      [-1, 1].forEach((side) => {
-        const px = x + side * dx,
-          py = y - 8 + side * dy;
-        ctx.moveTo(px - 9, py + 10);
-        ctx.quadraticCurveTo(px, py + 20, px + 9, py + 10);
-        ctx.moveTo(px, py);
-        ctx.lineTo(px, py + 10);
-      }),
-    o,
-  );
 }
 
 /* A conflict: two short strokes meeting in a zigzag between two ways, in the colour of the unknown. */

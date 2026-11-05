@@ -1,6 +1,6 @@
 /* Part 05, stages C and D, the made-up case: what last night's delay means for the record. C: the full timeline, the
- * prices on their hour, the usual hour and the arrival at the two ends of the measured two hours; a backtest of those
- * hours below it, which must count from the later time; and the data patched in overnight, whose history is kept. D:
+ * prices on their hour, the usual hour and the arrival at the two ends of the measured two hours; and a backtest of
+ * those hours below it, which must count from the later time. D:
  * the rail runs on from last night to today: what could be known then at the left, what is seen in hindsight at the
  * right, and a correction drawn dashed, as the narration only supposes it, whose corrected series cannot be taken
  * back to show what was known then. */
@@ -8,13 +8,13 @@
 import { lastNight, lastNightExtent, HOUR } from "../../drawing/timeline.js";
 import { link } from "../../drawing/links.js";
 import { dot, flowDot, labelSize, line, measure, path } from "../../drawing/strokes.js";
-import { documentIcon, tableIcon } from "../../drawing/symbols.js";
+import { tableIcon } from "../../drawing/symbols.js";
 import { named } from "../../naming/lists.js";
-import { NAME_GAP, nameText, rejectedName, termRow } from "../../naming/names.js";
+import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, flowOf, patchMark } from "./kit.js";
+import { bar, flowOf } from "./kit.js";
 
 /* The backtest's height and how far it stands below the measure's name, and the room its marker's name takes under it:
  * the stage is centred with them from its first word, so nothing moves when they arrive. */
@@ -63,29 +63,6 @@ function backtest(t, c, g, m, top) {
   });
 }
 
-/* The data patched in overnight: a patch on the card and, at the card's left, the small history it keeps, with its name
- * and its two fields ending on one edge before it. */
-function patchHistory(t, c, g, m) {
-  const a = g * named(t, c.patched),
-    { left, top, bottom } = m.card,
-    w = 84,
-    h = 104,
-    x = left - 10 - w,
-    y = (top + bottom) / 2 - h / 2;
-  patchMark(left + 26, bottom - 20, 26, { alpha: a });
-  documentIcon(x, y, w, h, { alpha: a, rows: 2 });
-  termRow(
-    t,
-    [L("连夜补上的数据", "Data patched in overnight")],
-    [c.patched],
-    L(["谁补的", "、从哪里补的"], ["Who,", " and from where"]),
-    [c.who, c.where],
-    x - NAME_GAP,
-    y + h / 2 - 32,
-    { alpha: g, align: "right", build: true },
-  );
-}
-
 /* The timeline stands centred with its measure from the first word, and glides up to make room for the backtest
  * as the backtest is said, so each state stays centred on the content centre. */
 export function nightStage(s, t, c, g) {
@@ -106,7 +83,6 @@ export function nightStage(s, t, c, g) {
     names,
   });
   backtest(t, c, g, m, y + e.bottom + TEST.gap);
-  patchHistory(t, c, g, m);
 }
 
 /* D: the rail runs on past last night to today, in the 0.6 form: last night's card at the left, today's corrected
@@ -133,6 +109,9 @@ export function hindsightStage(s, t, c, g) {
     flow: t < c.cannot ? flowOf(t, 0.25) : null,
     names,
   });
+  // The rail's two ends are quiet points, so the rail stands whole while its first name is said.
+  dot(m.left, y, m.mark, { color: P.line, alpha: g });
+  dot(m.right, y, m.mark, { color: P.line, alpha: g });
   const today = m.at(D.today),
     box = m.above(D.today),
     under = y + m.tick + NAME_GAP,

@@ -1,12 +1,12 @@
 /* The marks of part 02, each one connected mark about the point it is given, fading with `alpha`: the guidelines' page
  * with the seal of its contract, the department's members and the Agents they delegate to (each group one stroke, as
  * one name names it), the things a piece of work hands over, the signal that runs in at the way's left, the outcomes a
- * task must reach, the reports it must not stop at, and the four places the guidelines keep apart. */
+ * task must reach and the reports it must not stop at. */
 
 import { ctx } from "../../canvas.js";
 import { box, dot, fill, line, ring, stroke } from "../../drawing/strokes.js";
 import { check, documentIcon, seal, tableIcon, token } from "../../drawing/symbols.js";
-import { kernelIcon, tagIcon } from "../../drawing/workspace.js";
+import { kernelIcon } from "../../drawing/workspace.js";
 import { P } from "../../palette.js";
 import { clamp } from "../../timing/easing.js";
 
@@ -203,42 +203,5 @@ export function reports(x, ys, { alpha = 1 } = {}) {
         }),
       ),
     { color: P.muted, alpha: alpha * 0.8, width: 2 },
-  );
-}
-
-/* The four places the guidelines keep apart, each about 64 px about (x, y): 0 facts, a record with its check; 1
- * responsibility, a work item with its owner's tag; 2 action, a work item on a short lane, carried along it by `run`;
- * 3 evidence, a page with its check. */
-export function placeMark(k, x, y, { alpha = 1, run = 0 } = {}) {
-  if (alpha < 0.01) return;
-  if (k === 0) {
-    tableIcon(x - 30, y - 22, 52, 40, { alpha, rows: 3, cols: 2 });
-    check(x + 22, y + 14, 22, { alpha });
-  }
-  if (k === 1) {
-    token(x - 18, y, { alpha, r: 11 });
-    tagIcon(x + 2, y, 42, 24, { alpha });
-  }
-  if (k === 2) {
-    line(x - 34, y + 16, x + 34, y + 16, { color: P.line, alpha, width: 3 });
-    token(x - 26 + 52 * clamp(run), y - 4, { alpha, r: 10 });
-  }
-  if (k === 3) {
-    documentIcon(x - 24, y - 30, 46, 58, { alpha, rows: 2 });
-    check(x + 4, y + 12, 22, { alpha });
-  }
-}
-
-/* One form for every task: a card ruled into blank fields, dashed, since it is refused. */
-export function formMark(x, y, { alpha = 1 } = {}) {
-  if (alpha < 0.01) return;
-  box(x - 80, y - 32, 160, 64, { stroke: P.muted, alpha, radius: 8, width: 2, dash: [7, 6] });
-  stroke(
-    () =>
-      [-12, 4, 20].forEach((dy) => {
-        ctx.moveTo(x - 62, y + dy - 4);
-        ctx.lineTo(x + 62, y + dy - 4);
-      }),
-    { color: P.muted, alpha: alpha * 0.7, width: 2, dash: [7, 6] },
   );
 }

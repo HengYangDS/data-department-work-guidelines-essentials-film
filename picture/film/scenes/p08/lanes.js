@@ -2,7 +2,7 @@
  * the schedule on another, sharing the agreed time; the delay can recur, so a check is left before calling it fixed,
  * a monitor on the schedule that warns the moment the agreed time passes without the data. A2: what learning aims at,
  * three gains, and a growing file count refused. B: the early signs night after night, their pattern and impact, and
- * a needed safeguard that must not wait. */
+ * a needed safeguard that must not wait for an incident. */
 
 import { ctx } from "../../canvas.js";
 import { dot, measure, ring, stroke } from "../../drawing/strokes.js";
@@ -10,7 +10,7 @@ import { diamond, documentIcon, seal } from "../../drawing/symbols.js";
 import { lastNight, nights } from "../../drawing/timeline.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { beats, listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
+import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
@@ -165,16 +165,24 @@ export function aimStage(s, t, c, g) {
   });
 }
 
-/* B: early signs. Four nights before last night in a row, named over it; a few of them a few minutes late, their
- * delays lit as one stroke and named under them; a rescue mark over each late night, one stroke, named; under the row
- * two checks, the pattern and the impact, each named. Then a needed safeguard, dashed, stands at the row's right, the
- * stage gliding left to make room for it, and the two waits it must not take are refused under it, one list. */
-const B = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1450 };
+/* B: early signs. Four nights before last night in a row, named over it from the first words that speak of them; a few
+ * of them a few minutes late, their delays lit as one stroke and named under them; a rescue mark over each late night,
+ * one stroke, named; under the row two checks, the pattern and the impact, each named. Then a needed safeguard,
+ * dashed, stands at the row's right, the stage gliding left to make room for it, and the incident it must not wait for
+ * is refused under it. */
+const B = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1450, card: 64 };
+/* The safeguard's name stands beside the last card, so English sets it on two lines to keep clear of the card. */
+const SAFEGUARD = () => L(["该有的防护"], ["A needed", "safeguard"]);
 export function signsStage(s, t, c, g) {
-  const right = B.guard + measure(L("该有的防护", "A needed safeguard")) / 2,
+  const right = B.guard + Math.max(...SAFEGUARD().map((v) => measure(v))) / 2,
     left = B.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")),
-    shift = glide(t, centring(left, B.xs[3] + 108), [[c.guard, centring(left, right)]]),
+    rowEnd = B.xs[3] + 108,
+    shift = glide(t, centring(B.xs[0] - 108, rowEnd), [
+      [c.minutes, centring(left, rowEnd)],
+      [c.guard, centring(left, right)],
+    ]),
     xs = B.xs.map((x) => x + shift),
+    cardTop = B.y - 34 - B.card,
     lateIn = g * named(t, c.minutes);
   nights(xs, B.y, 0.3, { alpha: g, arrival: 1, lit: lateIn, lateBy: B.late });
   // Each night's run, a small card over its rail, the cards one stroke: the row is one mark under one name.
@@ -183,18 +191,23 @@ export function signsStage(s, t, c, g) {
       xs.forEach((x) => {
         ctx.moveTo(x - 30, B.y - 34);
         ctx.lineTo(x + 30, B.y - 34);
-        ctx.lineTo(x + 30, B.y - 66);
-        ctx.lineTo(x - 30, B.y - 66);
+        ctx.lineTo(x + 30, cardTop);
+        ctx.lineTo(x - 30, cardTop);
         ctx.closePath();
         ctx.moveTo(x, B.y - 34);
         ctx.lineTo(x, B.y - 10);
       }),
     { color: P.ink, alpha: g, width: 2.5 },
   );
-  nameText(L("苗头", "Early signs"), (xs[0] + xs[3]) / 2, B.y - 66 - NAME_GAP, {
-    valign: "bottom",
-    alpha: g * early(t, c.signsClause, c.signs),
-  });
+  const signs = Math.max(c.signsClause - 0.2, c.signs - 1.35);
+  growName(
+    t,
+    L(["出事之前", "的苗头"], ["Early signs"]),
+    L([c.first2, signs], [signs]),
+    (xs[0] + xs[3]) / 2,
+    cardTop - NAME_GAP,
+    { valign: "bottom", align: "center", build: true, alpha: g },
+  );
   nameText(L("晚几分钟", "A few minutes late"), xs[0] - 108 - NAME_GAP, B.y, {
     align: "right",
     alpha: lateIn,
@@ -253,15 +266,12 @@ export function signsStage(s, t, c, g) {
     },
     { color: P.evidence, alpha: guard, width: 3, dash: [7, 6] },
   );
-  nameText(L("该有的防护", "A needed safeguard"), gx, B.y - 34 - NAME_GAP, {
+  nameText(SAFEGUARD(), gx, B.y - 34 - NAME_GAP, {
     valign: "bottom",
     alpha: guard,
   });
-  L(["出了事", "部门的规矩"], ["An incident", "Department rule"]).forEach((v, i) =>
-    rejectedName(v, gx, B.y + 70 + i * 50, {
-      alpha: g * listIn(t, c.waits, i),
-      mark: ramp(t, c.waits[i] + 0.3, 0.3),
-      set: "waits",
-    }),
-  );
+  rejectedName(L("出了事", "An incident"), gx, B.y + 70, {
+    alpha: g * named(t, c.wait),
+    mark: ramp(t, c.wait + 0.3, 0.3),
+  });
 }

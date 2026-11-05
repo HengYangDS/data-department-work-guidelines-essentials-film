@@ -1,9 +1,9 @@
-/* Part 06, stages C, E1, E2, F and G: evidence sets the limit of the claim. C: under the job's earlier start, the chain
- * of trust builds on one rail, a station to each clause, the station being said lit; lower risk slims its links, but a
- * way that skips one stops at a bar. E1: report the state, not the effort, and two stock phrases are refused. E2: what
- * verification, publication and use each establish, and no more. F: a completion claim pinned to its subject and
- * version, signed by its verification, covering what it covers and narrowed to its evidence. G: two pairs, each reached
- * state against the state it does not make. */
+/* Part 06, stages C, E1, E2, F and G: evidence sets the limit of the claim. C: under the job's earlier start, the
+ * chain of trust builds on one rail, a station to each clause, the station being said lit; lower risk slims its links,
+ * but a way that skips one stops at a bar. E1: report the state, not the effort. E2: what verification, publication
+ * and use each establish, and no more. F: a completion claim pinned to its subject and version, signed by its
+ * verification, covering what it covers and narrowed to its evidence. G: two pairs, each reached state against the
+ * state it does not make. */
 
 import { ctx } from "../../canvas.js";
 import { box, dot, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
@@ -129,13 +129,14 @@ export function chainStage(s, t, c, g) {
   });
 }
 
-/* E1: the state and the effort. The work's states on one rail, its card at the station it has reached, named under
- * the rail; the effort spent, a long bar over the rail, refused; and two stock phrases refused under the state, one
- * list. */
-const E1 = { y: 540, x0: 600, x1: 1320, at: 3 };
+/* E1: the state and the effort. The work's states on one rail, the report on a page over the station it has reached,
+ * named over the page, and the state named under the rail; and under them the effort spent, a long bar, refused. */
+const E1 = { y: 505, x0: 540, x1: 1380, at: 3, page: [88, 110], effort: 116 };
 export function stateStage(s, t, c, g) {
   const xs = [0, 1, 2, 3, 4].map((k) => mix(E1.x0, E1.x1, k / 4)),
     reached = xs[E1.at],
+    [pw, ph] = E1.page,
+    pageTop = E1.y - 18 - ph,
     state = g * early(t, c.stateClause, c.state);
   stroke(
     () => {
@@ -149,39 +150,27 @@ export function stateStage(s, t, c, g) {
     { color: P.line, alpha: g, width: 3 },
   );
   line(E1.x0, E1.y, reached, E1.y, { color: P.ink, alpha: g, width: 4 });
-  box(reached - 22, E1.y - 58, 44, 34, {
-    fill: P.row,
-    stroke: P.ink,
-    alpha: g,
-    radius: 5,
-    width: 2.5,
+  documentIcon(reached - pw / 2, pageTop, pw, ph, { alpha: g, rows: 2 });
+  line(reached, pageTop + ph, reached, E1.y - 6, { color: P.line, alpha: g, width: 2 });
+  nameText(L("汇报", "Report"), reached, pageTop - NAME_GAP, {
+    valign: "bottom",
+    alpha: g * named(t, c.first5),
   });
-  line(reached, E1.y - 24, reached, E1.y - 6, { color: P.line, alpha: g, width: 2 });
   nameText(L("哪一步", "The state"), reached, E1.y + 7 + NAME_GAP, { valign: "top", alpha: state });
-  // The effort: a long bar over the rail, nine tenths full, refused at its end.
+  // The effort: a long bar under the rail, nine tenths full, refused at its end.
   const effort = g * named(t, c.effort),
-    ey = E1.y - 130;
+    ey = E1.y + E1.effort;
   box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: effort, radius: 6, width: 2 });
   box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * soon(t, c.effort, 0.8), 20, {
     fill: P.muted,
     alpha: effort * 0.55,
     radius: 4,
   });
-  rejectedName(L("力气", "The effort"), (E1.x0 + E1.x1) / 2, ey - 14 - NAME_GAP, {
-    valign: "bottom",
+  rejectedName(L("力气", "The effort"), (E1.x0 + E1.x1) / 2, ey + 14 + NAME_GAP, {
+    valign: "top",
     alpha: effort,
     mark: ramp(t, c.effort + 0.4, 0.3),
   });
-  // The two stock phrases, refused under the state, one list.
-  const ats = c.phrases,
-    py = E1.y + 120;
-  L(["积极推进", "基本完成"], ["Actively progressing", "Almost done"]).forEach((v, i) =>
-    rejectedName(v, mix(800, 1120, i), py, {
-      alpha: g * listIn(t, ats, i),
-      mark: ramp(t, c.sayNothing + 0.05, 0.4),
-      set: "phrases",
-    }),
-  );
 }
 
 /* E2: what each step establishes. Verified holds only within its stated bounds: its check stands inside a field of

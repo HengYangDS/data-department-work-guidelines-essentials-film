@@ -2,17 +2,16 @@
  * and centred, the night, the collection on its hour and the two hours late, as in 01.1; from 「日志」/ "the log" it
  * re-forms compact in the top band and the two kinds of statement stand under it, one beside the other: the log, a
  * fact, with its check; the vendor's publication, dashed, a hypothesis, with its open question and, once someone checks,
- * the publication time on its clock; then the observation that would refute it, an eye, which on 「不成立」/ "fails"
- * is joined to the hypothesis, and a dashed cross stands beside the hypothesis: a condition, not a finding. D2, from
+ * the publication time on its clock; then the observation that would refute it, an eye, which on 「推翻」/ "refute" is
+ * joined to the hypothesis, and a dashed cross stands beside the hypothesis: a condition, not a finding. D2, from
  * 「要不要换供应商」/ "Whether to change vendors": the observation leaves and the choice takes its place, failure 1's
- * fork, now after the fact and the hypothesis; under the three kinds, the decision owner who makes it, the trade-off it
- * states and the condition for revisiting it. */
+ * fork, now after the fact and the hypothesis; under the choice, in its column, the decision owner who makes it. */
 
 import { link } from "../../drawing/links.js";
 import { line } from "../../drawing/strokes.js";
 import { check, clock, person } from "../../drawing/symbols.js";
 import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
-import { ledger, recoverIcon } from "../../drawing/workspace.js";
+import { ledger } from "../../drawing/workspace.js";
 import { named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
@@ -21,7 +20,7 @@ import { ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { forkMark, openMark } from "../p01/failures.js";
-import { balance, dashedPage, eye } from "./marks.js";
+import { dashedPage, eye } from "./marks.js";
 
 const flowOf = (t) => (voiceTime(t) * 0.25) % 1;
 const NIGHT = () => L("昨晚", "Last night"),
@@ -125,7 +124,7 @@ export function stageCase(t, a, c) {
   compactNight(t, compact);
   theFact(t, compact, c);
   theHypothesis(t, compact, c);
-  // The observation that would refute it: an eye not yet opened, named on its words; on 「不成立」/ "fails" it is
+  // The observation that would refute it: an eye not yet opened, named on its words; on 「推翻」/ "refute" it is
   // joined to the hypothesis and a dashed cross stands beside the hypothesis.
   const x = COLUMNS[2],
     seen = compact * ramp(t, c.observation - 0.15, 0.4);
@@ -134,36 +133,34 @@ export function stageCase(t, a, c) {
     t,
     [L("观察", "An observation")],
     [c.observation],
-    [L("按时发布", "vendor on time")],
-    [c.onTime],
+    [L("能推翻它", "would refute it")],
+    [c.refute],
     x,
     NAMES_TOP,
     { align: "center", inline: false, alpha: compact },
   );
-  const fails = compact * ramp(t, c.fails - 0.15, 0.4);
+  const refuted = compact * ramp(t, c.refute - 0.15, 0.4);
   link(x - 46, ROW_Y + 18, COLUMNS[1] + MARK[0] / 2 + 10, ROW_Y + 18, {
-    alpha: fails,
-    upto: soon(t, c.fails + 0.05, 0.6),
+    alpha: refuted,
+    upto: soon(t, c.refute + 0.05, 0.6),
     width: 2.5,
   });
-  if (fails > 0.01)
+  if (refuted > 0.01)
     [
       [-1, -1, 1, 1],
       [1, -1, -1, 1],
     ].forEach(([x0, y0, x1, y1]) =>
       line(COLUMNS[1] + 13 * x0, ROW_Y + 13 * y0, COLUMNS[1] + 13 * x1, ROW_Y + 13 * y1, {
         color: P.unknown,
-        alpha: fails,
+        alpha: refuted,
         width: 3.5,
         dash: [5, 4],
       }),
     );
 }
 
-/* D2: the choice in the third column, and under the row the decision owner, the trade-off and the condition for
- * revisiting, each on its words, one row of marks named under themselves. */
-const DETAILS_X = [760, 960, 1160],
-  DETAILS_Y = 800;
+/* D2: the choice in the third column, and under it, in the same column, the decision owner who makes it. */
+const OWNER_Y = 800;
 export function stageChoice(t, a, c) {
   compactNight(t, a, false);
   theFact(t, a, c);
@@ -185,23 +182,13 @@ export function stageChoice(t, a, c) {
       alpha: a,
     },
   );
-  const owner = a * ramp(t, c.owner - 0.15, 0.4),
-    weighed = a * ramp(t, c.tradeoff - 0.15, 0.4),
-    back = a * ramp(t, c.revisit - 0.15, 0.4),
-    names = DETAILS_Y + 36 + NAME_GAP;
-  person(DETAILS_X[0], DETAILS_Y + 4, { color: P.authority, alpha: owner, size: 0.9 });
-  nameText(L("决策负责人", "Decision owner"), DETAILS_X[0], names, {
+  person(x, OWNER_Y + 4, {
+    color: P.authority,
+    alpha: a * ramp(t, c.owner - 0.15, 0.4),
+    size: 0.9,
+  });
+  nameText(L("决策负责人", "Decision owner"), x, OWNER_Y + 36 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.owner),
-  });
-  balance(DETAILS_X[1], DETAILS_Y, { alpha: weighed, tilt: 0.12 * Math.sin(vt * 1.4) });
-  nameText(L("取舍", "Trade-off"), DETAILS_X[1], names, {
-    valign: "top",
-    alpha: a * named(t, c.tradeoff),
-  });
-  recoverIcon(DETAILS_X[2], DETAILS_Y, 22, { alpha: back, upto: soon(t, c.revisit + 0.05, 0.6) });
-  nameText(L("回头再看", "Revisiting"), DETAILS_X[2], names, {
-    valign: "top",
-    alpha: a * named(t, c.revisit),
   });
 }

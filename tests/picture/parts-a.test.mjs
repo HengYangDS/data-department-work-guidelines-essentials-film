@@ -46,7 +46,6 @@ const STAGES = {
     ["变成", "into judgments"],
     ["一项任务", "a task"],
     ["连夜", "The colleague"],
-    ["指南帮我们", "The guidelines help"],
   ],
   "03": [
     ["两种依据", "Two kinds of authority"],
@@ -182,7 +181,6 @@ const KEY_WORDS = [
   ],
   ["03", "假的事实", "A false fact", "假的变成真的", "false fact"],
   ["04", "停下来，讲出来，往上报", "Halt, disclosure, escalation", "停下来", "stop"],
-  ["04", "按风险上报", "Escalation by risk", "按风险", "according to the risk"],
   ["04", "局部、可逆", "Local, reversible work", "局部", "Local"],
 ];
 test(`${CODE} key-word labels arrive on their words`, () => {

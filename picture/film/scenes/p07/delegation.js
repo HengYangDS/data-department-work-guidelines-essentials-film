@@ -1,11 +1,10 @@
-/* Part 07, stages D, E1 and E2: a delegation and who answers for it. D, the made-up case: last night's delegation fills
+/* Part 07, stages D and E: a delegation and who answers for it. D, the made-up case: last night's delegation fills
  * the boundary's places one by one, the purpose with failure 1's fork, the limits with a lock, the deliverable with
  * the compact timeline and its two open times, where each came from and what could not be verified; and the way to the
- * schedule stops at the boundary: stop and ask first. E1: the person who calls an Agent owns its context, permissions,
- * verification and result, and submitting the work vouches for it. E2: delegation transfers the work, not the duty. */
+ * schedule stops at the boundary: stop and ask first. E: the person who calls an Agent owns its context, permissions,
+ * verification and result, and submitting the work vouches for it. */
 
 import { ctx } from "../../canvas.js";
-import { link } from "../../drawing/links.js";
 import { box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { agent, check, clock, lock, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
@@ -153,7 +152,7 @@ export function delegationStage(s, t, c, g) {
   });
 }
 
-/* E1: the caller and the Agent on one line; what the caller owns builds as stations on the way between them, one list;
+/* E: the caller and the Agent on one line; what the caller owns builds as stations on the way between them, one list;
  * then the work submitted, a card under the caller, with the three things submitting it vouches for beside it, one
  * list. */
 const E = { y: 410, caller: 540, agent: 1380, work: 660 };
@@ -209,43 +208,4 @@ export function callerStage(s, t, c, g) {
       set: "vouch",
     },
   );
-}
-
-/* E2: the caller and the Agent face each other across the delegation's way; the work crosses it to the Agent, and the
- * duty's way stops at a short bar, the duty staying with the caller. */
-export function transferStage(s, t, c, g) {
-  const y = 450,
-    cx = 640,
-    ax = 1280;
-  person(cx, y + 12, { alpha: g, size: 1.2 });
-  agent(ax, y, { alpha: g, size: 1.6 });
-  link(cx + 50, y, ax - 50, y, { alpha: g, flow: flowOf(t, 0.3), width: 2.5 });
-  nameText(L("委托", "Delegation"), (cx + ax) / 2, y - NAME_GAP, { valign: "bottom", alpha: g });
-  // The work crosses to the Agent and settles under it.
-  const work = g * named(t, c.work),
-    wx = mix(cx, ax, soon(t, c.work, 0.9)),
-    wy = y + 110;
-  box(wx - 36, wy - 26, 72, 52, { fill: P.row, stroke: P.ink, alpha: work, radius: 6, width: 2.5 });
-  nameText(L("工作", "The work"), ax, wy + 26 + NAME_GAP, {
-    valign: "top",
-    alpha: work * ramp(t, c.work + 0.5, 0.4),
-  });
-  // The duty's way stops at a short bar; the duty stays with the caller.
-  const duty = g * named(t, c.duty),
-    dy = y + 110;
-  stroke(
-    () => {
-      ctx.moveTo(cx + 44, dy);
-      ctx.lineTo(mix(cx + 44, (cx + ax) / 2 - 20, soon(t, c.duty, 0.6)), dy);
-    },
-    { color: P.authority, alpha: duty, width: 3 },
-  );
-  bar((cx + ax) / 2 - 12, dy, {
-    alpha: duty * ramp(t, c.duty + 0.4, 0.3),
-    vertical: true,
-    length: 44,
-  });
-  nameText(L("这份责任", "That duty"), cx, dy + 34 + NAME_GAP, { valign: "top", alpha: duty });
-  dot(cx, dy, 16, { color: P.authority, alpha: duty, hollow: true, width: 3 });
-  dot(cx, dy, 6, { color: P.authority, alpha: duty });
 }

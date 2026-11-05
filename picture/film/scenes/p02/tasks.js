@@ -1,38 +1,25 @@
-/* 02.3-02.5. C (02.3), cut on 「一项任务」/ "a task": a task, and the three things it must achieve as three outcomes
+/* 02.3-02.4. C (02.3), cut on 「一项任务」/ "a task": a task, and the three things it must achieve as three outcomes
  * branching from one spine, each on its words; then the reports it must not stop at, refused on its other side. C2
  * (02.4), the made-up case: the reports leave and the colleague who patched the data stands in their place, joined to
- * the task; only the way to the first outcome lights and only the first outcome takes its check. D (02.5), cut on
- * 「指南帮我们」/ "The guidelines help": the guidelines beside the four places they keep apart, and one form for every task
- * refused under them. */
+ * the task; only the way to the first outcome lights and only the first outcome takes its check. */
 
 import { link } from "../../drawing/links.js";
-import { ctx } from "../../canvas.js";
-import { labelSize, line, measure, stroke } from "../../drawing/strokes.js";
+import { labelSize, line, measure } from "../../drawing/strokes.js";
 import { token } from "../../drawing/symbols.js";
 import { illustrative } from "../../framing/chapters.js";
-import { beats, listIn, listLevel, named } from "../../naming/lists.js";
+import { beats, listLevel, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, rejectedName, termRow } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { cue, cueFrom } from "../../timing/cues.js";
+import { cue } from "../../timing/cues.js";
 import { ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { glide } from "../p01/failures.js";
-import {
-  formMark,
-  guidePage,
-  mechanism,
-  outcome,
-  people,
-  placeMark,
-  reports,
-  toAndFro,
-} from "./marks.js";
+import { mechanism, outcome, people, reports } from "./marks.js";
 
-/* The spoken cues of 02.3-02.5. 行动 / "action" is first said in 02.2, so 02.5's is found after its first words. */
+/* The spoken cues of 02.3-02.4. */
 export function taskCues(s) {
-  const helps = cue(s, "指南帮我们", "The guidelines help");
   return {
     task: cue(s, "一项任务", "a task"),
     three: cue(s, "三件事", "three things"),
@@ -48,15 +35,6 @@ export function taskCues(s) {
     reports: cue(s, "三份报告", "three reports"),
     colleague: cue(s, "连夜", "The colleague"),
     first: cue(s, "只做到了第一件", "only the first"),
-    helps,
-    places: [
-      cue(s, "事实", "facts"),
-      cue(s, "责任", "responsibility"),
-      cueFrom(s, "行动", "action", helps),
-      cue(s, "证据", "evidence"),
-    ],
-    apart: cue(s, "分开", "apart"),
-    form: cue(s, "同一张表", "the same form"),
   };
 }
 
@@ -110,7 +88,7 @@ function taskX(t, c) {
  * reached. */
 export function stageOutcomes(t, c) {
   const C = stageIn(t, c.task) * stageOut(t, c.colleague),
-    C2 = stageIn(t, c.colleague) * stageOut(t, c.helps);
+    C2 = stageIn(t, c.colleague);
   const a = Math.max(C, C2);
   if (a <= 0) return;
   const x = taskX(t, c),
@@ -205,66 +183,5 @@ export function stageOutcomes(t, c) {
   link(spine, ROWS[0], rings - RING - 7, ROWS[0], {
     ...lit,
     flow: t > c.first + 0.6 ? (vt * 0.5) % 1 : null,
-  });
-}
-
-/* D: the guidelines' booklet at the left and the four places it keeps apart in a column at its right, each on its
- * words; on 「分开」/ "apart" the booklet draws dividers across between the places, from its own edge, and one form
- * for every task stands refused under the booklet. The booklet stands alone at the centre on the first words, and the group glides as one to its place as
- * the first place arrives. */
-const BOOK = { x: 560, y: 355, w: 300, h: 250 },
-  COLUMN_X = 1060,
-  TO_PLACE_NAMES = 66,
-  PLACE_YS = [300, 420, 540, 660],
-  FORM_Y = 720;
-const PLACES = () =>
-  L(["事实", "责任", "行动", "证据"], ["Facts", "Responsibility", "Action", "Evidence"]);
-export function stageForm(t, c) {
-  const a = stageIn(t, c.helps);
-  if (a <= 0) return;
-  // The column's right edge, one gap past its widest name, sets the group's final place: the booklet's left edge and
-  // that edge stand centred on the frame.
-  const names = PLACES(),
-    reach = COLUMN_X + TO_PLACE_NAMES + Math.max(...names.map((v) => measure(v))) + 16,
-    settled = 960 - (BOOK.x + reach) / 2;
-  const shift = glide(t, 960 - (BOOK.x + BOOK.w / 2), [[c.places[0], settled]]),
-    bookX = BOOK.x + shift,
-    middle = bookX + BOOK.w / 2,
-    column = COLUMN_X + shift,
-    right = reach + shift,
-    run = toAndFro(voiceTime(t));
-  guidePage(bookX, BOOK.y, BOOK.w, BOOK.h, { alpha: a * ramp(t, c.helps - 0.15, 0.4) });
-  const book = nameText(L("指南", "The guidelines"), middle, BOOK.y + BOOK.h + NAME_GAP, {
-    valign: "top",
-    alpha: a * named(t, c.helps),
-  });
-  names.forEach((v, k) => {
-    placeMark(k, column, PLACE_YS[k], { alpha: a * ramp(t, c.places[k] - 0.15, 0.4), run });
-    nameText(v, column + TO_PLACE_NAMES, PLACE_YS[k], {
-      align: "left",
-      alpha: a * listIn(t, c.places, k),
-      set: "places",
-    });
-  });
-  // The dividers are one stroke from the booklet's edge, so they read as the booklet's own lines, not as members.
-  const across = soon(t, c.apart + 0.05, 0.5),
-    left = bookX + BOOK.w;
-  if (across > 0)
-    stroke(
-      () =>
-        [0, 1, 2].forEach((k) => {
-          const y = (PLACE_YS[k] + PLACE_YS[k + 1]) / 2;
-          ctx.moveTo(left, y);
-          ctx.lineTo(left + (right - left) * across, y);
-        }),
-      { color: P.line, alpha: a * across, width: 3 },
-    );
-  const form = a * ramp(t, c.form - 0.15, 0.4),
-    formY = Math.max(FORM_Y, book.bottom + 32 + 32);
-  formMark(middle, formY, { alpha: form });
-  rejectedName(L("同一张表", "The same form"), middle + 80 + NAME_GAP, formY, {
-    align: "left",
-    alpha: form,
-    mark: ramp(t, c.form + 0.05, 0.3),
   });
 }

@@ -3,10 +3,10 @@
  * them establishes stands between as open marks. A2: shown fit for a specific use, the data earns its seal. B: six
  * questions ring the data, each station filling as it is asked. B2: data that cannot answer them is explored inside
  * its authorized scope, and its way out to shared, production and decision work stops at the scope's edge. E: the
- * views derived from the data hang from it, and none may climb back to become the source of truth. */
+ * views hang from the data, and none may climb back to become the source of truth. */
 
 import { link } from "../../drawing/links.js";
-import { dot, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
+import { dot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, person, seal, tableIcon } from "../../drawing/symbols.js";
 import { ctx } from "../../canvas.js";
 import { building, listIn, named, speaking } from "../../naming/lists.js";
@@ -17,6 +17,7 @@ import { L } from "../../timeline.js";
 import { clamp, mix, ramp, soon } from "../../timing/easing.js";
 import {
   bar,
+  centring,
   chartMark,
   early,
   fileMark,
@@ -210,11 +211,14 @@ export function questionsStage(s, t, c, g) {
  * toward that work stops at a bar on the scope's edge, which stays shut until the data is shown fit. */
 /* The scope stands round the data from the cut, a thin solid frame that holds the data and its name, so it is never an
  * empty frame; it is named on its words. It stands centred alone and glides left as the work the data stays out of
- * arrives at its right. */
+ * arrives at its right, the two together centred by the width of the work's names. */
 const S = { top: 388, w: 500, h: 250, card: [280, 150], alone: 710, beside: 470 },
-  WORK = { x: 1170, ys: [433, 513, 593] };
+  WORK = { toIcon: 700, toNames: 762, ys: [433, 513, 593] };
+const USES = () => L(["共享", "投产", "决策"], ["Shared", "Production", "Decision work"]);
 export function scopeStage(s, t, c, g) {
-  const left = mix(S.alone, S.beside, soon(t, c.uses[0] - 0.15, 0.7)),
+  const widest = Math.max(...USES().map((v) => measure(v))),
+    beside = S.beside + centring(S.beside, S.beside + WORK.toNames + NAME_GAP + widest),
+    left = mix(S.alone, beside, soon(t, c.uses[0] - 0.15, 0.7)),
     cy = S.top + 100,
     roam = g * soon(t, c.explore - 0.15, 0.6),
     dx = 26 * Math.sin(Math.PI * 2 * flowOf(t, 0.22)) * roam,
@@ -256,14 +260,15 @@ export function scopeStage(s, t, c, g) {
   // The work it stays out of: shared use (two people), production (a running table) and decisions (a decision's
   // ring and point), one list.
   const uq = (i) => g * ramp(t, c.uses[i] - 0.15, 0.4),
+    wx = beside + WORK.toIcon,
     [y0, y1, y2] = WORK.ys;
-  person(WORK.x - 12, y0 + 10, { alpha: uq(0), size: 0.62 });
-  person(WORK.x + 14, y0 + 10, { alpha: uq(0), size: 0.62, color: P.muted });
-  tableIcon(WORK.x - 28, y1 - 20, 56, 40, { alpha: uq(1), rows: 3, cols: 2 });
-  ring(WORK.x, y2, 16, { color: P.authority, alpha: uq(2), width: 3 });
-  dot(WORK.x, y2, 5, { color: P.authority, alpha: uq(2) });
-  L(["共享", "投产", "决策"], ["Shared", "Production", "Decision work"]).forEach((v, i) =>
-    nameText(v, WORK.x + 40 + NAME_GAP, WORK.ys[i], {
+  person(wx - 12, y0 + 10, { alpha: uq(0), size: 0.62 });
+  person(wx + 14, y0 + 10, { alpha: uq(0), size: 0.62, color: P.muted });
+  tableIcon(wx - 28, y1 - 20, 56, 40, { alpha: uq(1), rows: 3, cols: 2 });
+  ring(wx, y2, 16, { color: P.authority, alpha: uq(2), width: 3 });
+  dot(wx, y2, 5, { color: P.authority, alpha: uq(2) });
+  USES().forEach((v, i) =>
+    nameText(v, beside + WORK.toNames, WORK.ys[i], {
       align: "left",
       alpha: g * listIn(t, c.uses, i),
       set: "work",
@@ -271,10 +276,9 @@ export function scopeStage(s, t, c, g) {
   );
 }
 
-/* E: the views derived from the data. The data stands at the top; the views hang from it on one trunk and one
- * crossing row, each drop drawn on its word, one list; on the words that call them derived, a copy flows down each
- * drop. When none may quietly become the source of truth, a bar closes the trunk below the data and a point runs up
- * from the last view and stops at it, and the data takes its seal as the source of truth. */
+/* E: the views under the data. The data stands at the top; the views hang from it on one trunk and one crossing row,
+ * each drop drawn on its word, one list. When none may quietly become the source of truth, a bar closes the trunk below
+ * the data and a point runs up from the last view and stops at it, and the data takes its seal as the source of truth. */
 const E = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
 function viewIcon(i, x, y, a) {
   if (i === 0) documentIcon(x - 34, y, 68, 88, { alpha: a, rows: 2 });
@@ -335,43 +339,30 @@ export function viewsStage(s, t, c, g) {
     },
     { color: P.line, alpha: g, width: 2 },
   );
-  const derived = ramp(t, c.derived - 0.15, 0.4),
-    climbing = t >= c.become + 0.05;
   xs.forEach((x, i) => {
-    const q = shown[i];
-    if (q <= 0) return;
-    if (derived > 0.5 && !(climbing && i === 3)) {
-      const f = flowOf(t, 0.4, i * 0.25);
-      flowDot(x, mix(E.bus, E.icon - 2, f), 4, f, { color: P.line, alpha: q });
-    }
-    viewIcon(i, x, E.icon, q);
+    if (shown[i] > 0) viewIcon(i, x, E.icon, shown[i]);
   });
   railNames(
     L(
       ["报告", "数据目录", "缓存", "智能体的摘要"],
-      ["Reports", "Catalogs", "Caches", "Agent summaries"],
+      ["Report", "Catalog", "Cache", "Agent summary"],
     ),
     xs,
     E.icon + 88,
     { gap: NAME_GAP, alpha: (i) => g * listIn(t, views, i), set: "views" },
   );
-  nameText(L("派生", "Derived"), 960 + 18, (barY + E.bus) / 2 + 6, {
-    align: "left",
-    alpha: g * derived,
-  });
   // None may climb back: a bar shuts the trunk, and a point runs up from the last view and stops below it.
   bar(960, barY, { alpha: g * ramp(t, c.become + 0.05, 0.3), length: 48 });
-  if (climbing)
-    runPoint(
-      [
-        [xs[3], E.icon - 10],
-        [xs[3], E.bus],
-        [960, E.bus],
-        [960, barY + 10],
-      ],
-      soon(t, c.become + 0.05, 1.4),
-      { alpha: shown[3] },
-    );
+  runPoint(
+    [
+      [xs[3], E.icon - 10],
+      [xs[3], E.bus],
+      [960, E.bus],
+      [960, barY + 10],
+    ],
+    soon(t, c.become + 0.05, 1.4),
+    { alpha: shown[3] },
+  );
   // The source of truth: the data takes its seal on the words that name it.
   const truth = g * named(t, c.truth),
     sx = 960 + cw / 2 + 48,
