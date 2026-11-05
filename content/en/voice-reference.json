@@ -30,7 +30,13 @@
       }
     },
     "06": {
-      "groups": {}
+      "groups": {
+        "1": {
+          "seed": 107630,
+          "text_sha256": "88f2e7dbd88d0999e04f915751714b7cd3afab48d60b7e94d0c2cfb6797515e2",
+          "spoken_sha256": "88f2e7dbd88d0999e04f915751714b7cd3afab48d60b7e94d0c2cfb6797515e2"
+        }
+      }
     }
   }
 }

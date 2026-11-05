@@ -55,5 +55,71 @@
       "pace": "At a 0.6 s inner cap the nine segments take 781.1 s against the current 751.0 s (x1.040)."
     },
     "reason": "The approved root is breathy, and its two codebook-0 zero frames cut every take's end under mlx-audio 0.6.4; this reference keeps the narrator's identity and pauses, is clearer and has no zero frame."
+  },
+  "retakes": {
+    "02": {
+      "groups": {
+        "3": {
+          "seed": 131383,
+          "text_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419",
+          "spoken_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419"
+        }
+      }
+    },
+    "04": {
+      "groups": {
+        "7": {
+          "seed": 99709,
+          "text_sha256": "5cf6c17f20dfd4d580ed4b4de9faae9ed905728bde01835fdb0bc89b2f41a6c2",
+          "spoken_sha256": "5cf6c17f20dfd4d580ed4b4de9faae9ed905728bde01835fdb0bc89b2f41a6c2"
+        },
+        "8": {
+          "seed": 123466,
+          "text_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d",
+          "spoken_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d"
+        }
+      }
+    },
+    "05": {
+      "groups": {
+        "1": {
+          "seed": 115548,
+          "text_sha256": "28fbcf01783253e62dd50549a82594894d7df619db72c065cdc433130b43fb50",
+          "spoken_sha256": "28fbcf01783253e62dd50549a82594894d7df619db72c065cdc433130b43fb50"
+        }
+      }
+    },
+    "07": {
+      "groups": {
+        "4": {
+          "seed": 107631,
+          "text_sha256": "36776656fc813f64eb2f411ec8ce424636f6f7812c7f0dad050db064310c8daa",
+          "spoken_sha256": "36776656fc813f64eb2f411ec8ce424636f6f7812c7f0dad050db064310c8daa"
+        },
+        "1": {
+          "seed": 115550,
+          "text_sha256": "971da2963e8473a6272dfecb407ead4c50438164f0a40f4c50506dc848a48abd",
+          "spoken_sha256": "971da2963e8473a6272dfecb407ead4c50438164f0a40f4c50506dc848a48abd"
+        }
+      }
+    },
+    "08": {
+      "groups": {
+        "4": {
+          "seed": 139308,
+          "text_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862",
+          "spoken_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862"
+        }
+      }
+    },
+    "01": {
+      "groups": {
+        "1": {
+          "seed": 107625,
+          "text_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1",
+          "spoken_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1"
+        }
+      }
+    }
   }
 }
