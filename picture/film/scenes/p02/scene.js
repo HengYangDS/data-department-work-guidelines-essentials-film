@@ -1,19 +1,20 @@
 /* 02 工作的价值 / What the work is worth, chapter 02 指南是什么 / What the guidelines are. A (02.1): under the rising
  * chapter title, the guidelines' page stands with its name, centred across the frame and high enough to leave room
  * below it; the seal of its contract stamps it; the department's members and the Agents they delegate to arrive below
- * it, each joined to it, and the delegation runs from the members to the Agents. B (02.2): the way of the work's value
- * across the frame, with what a piece of work merely hands over refused below it, one thing on each one's words; on
- * its words a signal from the world runs in at the way's left. B2, from 「变成」/ "into judgments": the refused things
- * leave whole and what the signal becomes hangs from the way where they stood, judgments, data assets and actions,
- * carried along the way to the others at its end, with the qualities the others rely on under them. C and C2
- * (02.3-02.4) are drawn by tasks.js. */
+ * it, each joined to it, and the delegation runs from the members to the Agents. B (02.2), one stage laid out once for
+ * its one thought: the way of the work's value across the frame, with what a piece of work merely hands over refused
+ * below it, one thing on each one's words; on its words a signal from the world runs in at the way's left. From
+ * 「变成」/ "into judgments" the refused things stand on at the list's second level, their crosses at full ink, and what
+ * the signal becomes hangs from the way under them, judgments, data assets and actions, carried along the way to the
+ * others at its end, with the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
-import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
+import { dot, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
+import { cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, nameText, rejectedName } from "../../naming/names.js";
-import { P } from "../../palette.js";
+import { NAME_GAP, NOTE, growName, nameText, rejectedName } from "../../naming/names.js";
+import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
@@ -134,20 +135,27 @@ function stageGuide(s, t, a, c) {
   });
 }
 
-/* B and B2: the way across the frame, from a point at its start to a point at its end, its name over its middle. The
- * marks on the way (the signal at its left, the others beyond its end) are named over or under themselves; the things
- * hanging below it are named under themselves on one baseline, the refused things in B and what the signal becomes in
- * B2, in the same places. The others stand beyond the way's end, so the way keeps its extent through both stages. */
+/* B: the way across the frame, from a point at its start to a point at its end, its name over its middle. The marks
+ * on the way (the signal at its left, the others beyond its end) are named over or under themselves; the things below
+ * it stand in two rows, each named under itself on its row's one baseline: the refused things under the way, and what
+ * the signal becomes under them, each hanging from the way by a stem that passes between the refused things. The
+ * others stand beyond the way's end, named under themselves, with the qualities they rely on under their name. */
 const WAY_Y = 450,
   WAY = [360, 1560],
   WAVE_END = 470,
   HANG_Y = 530,
   HANG_NAMES = HANG_Y + 32 + NAME_GAP,
+  OUT_Y = 680,
+  OUT_NAMES = OUT_Y + 32 + NAME_GAP,
   HANDED_X = [600, 840, 1080, 1320],
   OUTPUT_X = [720, 960, 1200],
   OTHERS = [1594, 1640],
   OTHERS_X = 1617,
   OVER = WAY_Y - 7 - NAME_GAP;
+/* The list's second level (naming/lists.js), at which the refused things stand from 「变成」/ "into judgments" on,
+ * and the size of a refusal's cross (rejectedName). */
+const SECOND = 0.58,
+  REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
 const HANDED = () =>
   L(["一个文件", "一张表", "一份报告", "一个流程"], ["A file", "A table", "A report", "A process"]);
 const OUTPUTS = () => L(["判断", "数据资产", "行动"], ["Judgments", "Data assets", "Actions"]);
@@ -170,31 +178,38 @@ function theWay(t, a, c, end) {
     alpha: a * named(t, c.signal),
   });
 }
-function stageHanded(t, a, c) {
-  theWay(t, a, c, WAY[1]);
-  HANDED().forEach((v, k) => {
-    const on = a * listIn(t, c.handed, k);
-    handedMark(k, HANDED_X[k], HANG_Y, { alpha: on });
-    rejectedName(v, HANDED_X[k], HANG_NAMES, {
-      valign: "top",
-      alpha: on,
-      mark: ramp(t, c.handed[k] + 0.05, 0.3),
-      set: "handed",
-    });
-  });
-}
-function stageOutputs(t, a, c) {
+function stageWay(t, a, c) {
   const vt = voiceTime(t),
     end = WAY[1];
   theWay(t, a, c, end);
+  // The refused things, each on its words, a cross beside each name. On 「变成」/ "into judgments" they recede to the
+  // list's second level while their crosses keep full ink, and they stand so where they are until the stage leaves.
+  const recede = ramp(t, c.becomes + 0.05, 0.4);
+  HANDED().forEach((v, k) => {
+    const seen = a * ramp(t, c.handed[k] - 0.15, 0.4),
+      on = a * listIn(t, c.handed, k),
+      level = on * mix(1, SECOND, recede),
+      mark = ramp(t, c.handed[k] + 0.05, 0.3);
+    handedMark(k, HANDED_X[k], HANG_Y, { alpha: level });
+    const name = rejectedName(v, HANDED_X[k], HANG_NAMES, {
+      valign: "top",
+      alpha: Math.min(level, mix(1, 0.7, mark)),
+      mark: 0,
+      set: "handed",
+    });
+    cross(name.right - REFUSAL_CROSS / 2, (name.top + name.bottom) / 2, REFUSAL_CROSS, {
+      alpha: mix(on, seen, recede) * mark,
+      width: 3,
+    });
+  });
   // Points travel the way from the signal to the others once they stand at its end.
   const q = (vt * 0.3) % 1;
   if (t > c.others) flowDot(mix(WAVE_END, end, q), WAY_Y, 6, q, { color: P.evidence, alpha: a });
   OUTPUTS().forEach((v, k) => {
     const on = a * ramp(t, c.outputs[k] - 0.15, 0.4);
-    line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], HANG_Y - 32, { color: P.line, alpha: on, width: 2 });
-    outputMark(k, OUTPUT_X[k], HANG_Y, { alpha: on, run: toAndFro(vt) });
-    nameText(v, OUTPUT_X[k], HANG_NAMES, {
+    line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], OUT_Y - 32, { color: P.line, alpha: on, width: 2 });
+    outputMark(k, OUTPUT_X[k], OUT_Y, { alpha: on, run: toAndFro(vt) });
+    nameText(v, OUTPUT_X[k], OUT_NAMES, {
       valign: "top",
       alpha: a * listIn(t, c.outputs, k),
       set: "outputs",
@@ -206,24 +221,23 @@ function stageOutputs(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.others),
   });
-  QUALITIES().forEach((v, k) =>
-    nameText(v, OTHERS_X, own.bottom + 18 + k * 40, {
-      valign: "top",
-      size: NOTE,
-      color: P.muted,
-      alpha: a * listIn(t, c.qualities, k),
-      set: "qualities",
-    }),
-  );
+  // The qualities the others rely on, under their name: one name of parts, each joining it on its words, one to a
+  // line, so the way's twelve-name limit holds with the refused things standing.
+  growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
+    width: Math.max(...QUALITIES().map((v) => measure(v, NOTE))),
+    size: NOTE,
+    color: P.muted,
+    align: "center",
+    build: true,
+    alpha: a,
+  });
 }
 
 scenes["02"] = function (s, t) {
   const c = cuesOf(s);
   const A = stageOut(t, c.value),
-    B = stageIn(t, c.value) * stageOut(t, c.becomes),
-    B2 = stageIn(t, c.becomes) * stageOut(t, c.task);
+    B = stageIn(t, c.value) * stageOut(t, c.task);
   if (A > 0) stageGuide(s, t, A, c);
-  if (B > 0) stageHanded(t, B, c);
-  if (B2 > 0) stageOutputs(t, B2, c);
+  if (B > 0) stageWay(t, B, c);
   stageOutcomes(s, t, c);
 };

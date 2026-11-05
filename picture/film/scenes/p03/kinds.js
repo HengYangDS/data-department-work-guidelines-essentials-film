@@ -1,5 +1,5 @@
-/* The two kinds of authority apart (03.1-03.2, 03.4's opening and 03.8's): authority to act, a seal, at the left
- * and authority about facts, a record with its check, at the right, joined by one fork under their one name, with a
+/* The two kinds of authority apart (03.1-03.2 and 03.4's opening): authority to act, a seal, at the left and
+ * authority about facts, a record with its check, at the right, joined by one fork under their one name, with a
  * divider between them. */
 
 import { ctx } from "../../canvas.js";
@@ -19,7 +19,7 @@ import { recordMark } from "./marks.js";
  * name names; a point runs out along the fork to each in voice time. In A the shared name gives way as the narration
  * turns to authority to act; it stands again where the two are shown together. Each kind's name and what it answers
  * hang one gap under it, on one baseline. */
-export const KINDS = { left: 560, right: 1360, y: 490, name: 350 },
+const KINDS = { left: 560, right: 1360, y: 490, name: 350 },
   SEAL_R = 58,
   RECORD = [110, 140];
 export function twoKinds(s, t, a, c, { facts = false } = {}) {

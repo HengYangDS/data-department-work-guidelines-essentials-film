@@ -185,18 +185,18 @@ export function mechanism(x, y, { alpha = 1, turn = 0, watch = 0 } = {}) {
   if (watch > 0.01) ring(x, y, 31, { color: P.evidence, alpha: alpha * watch, width: 2.5 });
 }
 
-/* Three reports in a column, one mark that one name names: their pages one fill and one stroke, their lines one
- * stroke, about (x, ys). */
-export function reports(x, ys, { alpha = 1 } = {}) {
+/* Three reports in a row, one mark that one name names: their pages, each 38 by 48, one fill and one stroke, their
+ * lines one stroke, about (xs, y). */
+export function reports(xs, y, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
   const w = 38,
     h = 48;
-  const pages = () => ys.forEach((y) => ctx.roundRect(x - w / 2, y - h / 2, w, h, 4));
+  const pages = () => xs.forEach((x) => ctx.roundRect(x - w / 2, y - h / 2, w, h, 4));
   fill(pages, { color: P.row, alpha });
   stroke(pages, { color: P.muted, alpha, width: 2 });
   stroke(
     () =>
-      ys.forEach((y) =>
+      xs.forEach((x) =>
         [-10, 0, 10].forEach((dy, k) => {
           ctx.moveTo(x - 11, y + dy);
           ctx.lineTo(x + (k === 1 ? 4 : 11), y + dy);

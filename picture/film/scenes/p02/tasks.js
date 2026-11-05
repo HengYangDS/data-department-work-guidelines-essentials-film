@@ -1,15 +1,25 @@
-/* 02.3-02.4. C (02.3), cut on 「一项任务」/ "a task": a task, and the three things it must achieve as three outcomes
- * branching from one spine, each on its words; then the reports it must not stop at, refused on its other side. C2
- * (02.4), the made-up case: the reports leave and the colleague who patched the data stands in their place, joined to
- * the task; only the way to the first outcome lights and only the first outcome takes its check. */
+/* 02.3-02.4. C (02.3), cut on 「一项任务」/ "a task": a task on the frame's axis, named over itself, and under it, joined
+ * to it, the rail of the three things it must achieve, whole from the task's first words and named on their count; the
+ * three outcomes hang from the rail in one row, each on its words, named under itself; then the reports it must not
+ * stop at, refused beside the task. C2 (02.4), the made-up case: the reports leave and the colleague who patched the
+ * data stands in their place, joined to the task; only the way to the first outcome lights and only the first outcome
+ * takes its check. */
 
+import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { labelSize, line, measure } from "../../drawing/strokes.js";
+import { labelSize, measure, stroke } from "../../drawing/strokes.js";
 import { token } from "../../drawing/symbols.js";
-import { cameraOf } from "../../framing/camera.js";
 import { illustrative } from "../../framing/chapters.js";
 import { beats, listLevel, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, growTexts, nameText, rejectedName, termRow } from "../../naming/names.js";
+import {
+  NAME_GAP,
+  NOTE,
+  growTexts,
+  nameText,
+  rejectedName,
+  termRow,
+  termRowLayout,
+} from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
@@ -38,26 +48,31 @@ export function taskCues(s) {
   };
 }
 
-/* C: the outcomes' rows, the task on the middle one; the reports' column, the task, the spine and the outcomes' rings
- * stand at these offsets from the task, and the outcomes' names start one gap after their rings. The spine stands far
- * enough from the task, and its rows far enough apart, that the task with the spine of its three things covers a tenth
- * of the frame before the first outcome is said; the reports' column, where the colleague later stands, is near
- * enough to the task that one place keeps the picture within the balance limits both while the outcomes build and
- * once it is whole (taskX). */
-const ROWS = [360, 540, 720],
-  SPINE_TOP = 275,
-  TO_REPORTS = -190,
-  TO_SPINE = 320,
-  TO_RINGS = 410,
-  TO_NAMES = 410 + 19 + NAME_GAP,
-  RING = 19;
-const TASK = () => L("一项任务", "A task"),
+/* C: the task on the frame's axis, its outer ring (r) RING_GAP above the stem that joins it to the rail; the outcomes
+ * hang from the rail at one pitch about the axis, their names on one baseline one gap under their rings; the reports,
+ * and later the colleague, stand on the task's row beside it, named at their outer side, more than a column's reach
+ * (90 px) above the outcomes' branches, so their names name no branch. Every part is laid out about the axis, so each
+ * state the stage holds stands centred, and the rail reaches as far past the outer outcomes as the wider of their
+ * names, so the picture has its whole extent from the task's first words. */
+const TASK = { x: 960, y: 440, r: 21 },
+  RING_GAP = 4,
+  RAIL_Y = 570,
+  RING_Y = 640,
+  PITCH = 300,
+  XS = [TASK.x - PITCH, TASK.x, TASK.x + PITCH],
+  RING = 19,
+  /* The reports' pages stand at this pitch about their place, which the colleague later takes; `half` is the row's
+   * half width, its outer pages' edges. */
+  BESIDE = { x: 840, pitch: 42, half: 61 },
+  /* A refusal's cross and the gap before it (rejectedName), which a name set at the pages' outer side keeps clear. */
+  REFUSAL = 16 + Math.min(26, labelSize(LABEL) * 0.9);
+const TASK_NAME = () => L("一项任务", "A task"),
   THREE = () => L("三件事", "Three things"),
   REPORTS = () => L("三份报告", "Three reports"),
   COLLEAGUE = () => L("那位同事", "The colleague"),
   ONLY_FIRST = () => L("只做到了第一件", "only the first");
 /* Each outcome's term and the qualifier set under it, its parts said in turn. A qualifier wraps between its parts at
- * the width of the widest term, so the outcomes' names keep to one narrow column. */
+ * the width of the widest term, so each outcome's name keeps to its column. */
 const OUTCOMES = () => [
   [[L("问题解决掉", "Problem resolved")], []],
   [[L("判断检验过", "Judgment tested")], [L("成立的条件", "its conditions stated")]],
@@ -67,98 +82,80 @@ const OUTCOMES = () => [
   ],
 ];
 const noteWidth = () => Math.max(...OUTCOMES().map(([term]) => measure(term.join(""))));
-/* How far right of the task the outcomes' names reach: their widest term or qualifier line. */
-function outcomesRight() {
-  const width = noteWidth(),
-    lineWidth = (line) => measure(line.map(([, v]) => v).join(""), NOTE);
+/* Half the width of an outcome's name: its term or its widest qualifier line. */
+function nameHalf([term, qual]) {
+  const lineWidth = (line) => measure(line.map(([, v]) => v).join(""), NOTE);
   return (
-    TO_NAMES +
     Math.max(
-      ...OUTCOMES().flatMap(([term, qual]) => [
-        measure(term.join("")),
-        ...(qual.length ? growTexts(qual, width, NOTE).map(lineWidth) : []),
-      ]),
-    )
+      measure(term.join("")),
+      ...(qual.length ? growTexts(qual, noteWidth(), NOTE).map(lineWidth) : []),
+    ) / 2
   );
 }
-/* The task's place, where it stands from its words while the picture builds around it. The outcomes build to the
- * task's right, a build-up that may stand at most 90 px off the frame's centre, and the picture settles once the
- * reports, and then the colleague, stand on its left, when it may stand at most 50 px off (the frame audit's limits).
- * The task stands midway between the place where the widest build-up reaches its limit and the place where the
- * settled picture that reaches furthest left reaches its own, both on the frame as the scene's drifting camera shows
- * it when the reports are said. Only the task alone stands further off, for the second before its three things are
- * named. */
-function taskX(s, c) {
-  const cam = cameraOf(s, c.reports),
-    centre = cam.ax + (960 - cam.ox) / cam.k,
-    right = outcomesRight(),
-    shift = (left) => centre - (left + right) / 2;
-  const built = shift(-Math.max(21, measure(TASK()) / 2)),
-    settled = Math.max(
-      shift(TO_REPORTS - measure(REPORTS()) / 2),
-      shift(TO_REPORTS - Math.max(measure(COLLEAGUE()), measure(ONLY_FIRST(), NOTE)) / 2),
-    );
-  return (built + 90 / cam.k + settled - 50 / cam.k) / 2;
-}
+const railHalf = () => PITCH + Math.max(nameHalf(OUTCOMES()[0]), nameHalf(OUTCOMES()[2]));
 
-/* C and C2 share the task, its spine and the outcomes; C adds the reports, C2 the colleague and the first outcome
+/* C and C2 share the task, its rail and the outcomes; C adds the reports, C2 the colleague and the first outcome
  * reached. */
 export function stageOutcomes(s, t, c) {
   const C = stageIn(t, c.task) * stageOut(t, c.colleague),
     C2 = stageIn(t, c.colleague);
   const a = Math.max(C, C2);
   if (a <= 0) return;
-  const x = taskX(s, c),
-    vt = voiceTime(t),
-    spine = x + TO_SPINE,
-    rings = x + TO_RINGS,
-    noteW = noteWidth(),
+  const vt = voiceTime(t),
+    { x, y, r } = TASK,
+    half = railHalf(),
     first = C2 * ramp(t, c.first - 0.15, 0.4);
-  token(x, ROWS[1], { alpha: a * ramp(t, c.task - 0.15, 0.4) });
-  nameText(TASK(), x, ROWS[1] + 21 + NAME_GAP, { valign: "top", alpha: a * named(t, c.task) });
-  // The spine of the three things stands on their count, joined to the task; it grows from the task's row both ways.
-  const grow = soon(t, c.three + 0.05, 0.6);
-  line(x + 30, ROWS[1], spine, ROWS[1], { color: P.line, alpha: a * grow, width: 2.5 });
-  line(spine, ROWS[1], spine, ROWS[1] - (ROWS[1] - SPINE_TOP) * grow, {
-    color: P.line,
-    alpha: a * grow,
-    width: 2.5,
+  token(x, y, { alpha: a * ramp(t, c.task - 0.15, 0.4) });
+  nameText(TASK_NAME(), x, y - r - NAME_GAP, { valign: "bottom", alpha: a * named(t, c.task) });
+  // The rail of the three things and the stem that joins it to the task, one stroke as wide as the way's, in the line
+  // tone from the task's words; the three things are named beside the stem on their count.
+  stroke(
+    () => {
+      ctx.moveTo(x, y + r + RING_GAP);
+      ctx.lineTo(x, RAIL_Y);
+      ctx.moveTo(x - half, RAIL_Y);
+      ctx.lineTo(x + half, RAIL_Y);
+    },
+    { color: P.line, alpha: a * ramp(t, c.task - 0.15, 0.4), width: 3.5 },
+  );
+  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + RAIL_Y) / 2, {
+    align: "left",
+    alpha: a * named(t, c.three),
   });
-  line(spine, ROWS[1], spine, ROWS[1] + (ROWS[2] - ROWS[1]) * grow, {
-    color: P.line,
-    alpha: a * grow,
-    width: 2.5,
-  });
-  nameText(THREE(), spine + NAME_GAP, SPINE_TOP, { align: "left", alpha: a * named(t, c.three) });
-  // Each outcome on its words: its branch from the spine, its ring and its name, one list.
+  // Each outcome on its words: its branch from the rail, its ring and its name, one list.
+  const noteW = noteWidth();
   OUTCOMES().forEach(([term, qual], k) => {
     const at = c.outcomes[k],
-      y = ROWS[k],
+      ox = XS[k],
       on = a * ramp(t, at - 0.15, 0.4);
-    link(spine, y, rings - RING - 7, y, { alpha: on, upto: soon(t, at + 0.05, 0.4), width: 2.5 });
+    link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
+      alpha: on,
+      upto: soon(t, at + 0.05, 0.4),
+      width: 2.5,
+    });
     if (k < 2)
-      outcome(rings, y, {
+      outcome(ox, RING_Y, {
         alpha: on,
         bounds: k === 1 ? ramp(t, c.holds - 0.1, 0.4) : 0,
         done: k === 0 ? soon(t, c.first + 0.05, 0.5) * C2 : 0,
       });
     else
-      mechanism(rings, y, {
+      mechanism(ox, RING_Y, {
         alpha: on,
         turn: vt * 0.5,
         watch: ramp(t, c.sooner - 0.1, 0.4),
       });
-    beats(t, rings, y, RING + 12, [c.kinds], { alpha: C });
+    beats(t, ox, RING_Y, RING + 12, [c.kinds], { alpha: C });
     termRow(
       t,
       term,
       [at],
       qual,
       k === 1 ? [c.holds] : [c.sooner, c.better],
-      x + TO_NAMES,
-      y - labelSize(LABEL) / 2,
+      ox,
+      RING_Y + RING + NAME_GAP,
       {
-        align: "left",
+        align: "center",
         inline: false,
         build: true,
         noteWidth: noteW,
@@ -167,36 +164,49 @@ export function stageOutcomes(s, t, c) {
       },
     );
   });
-  // C: the reports the task must not stop at, refused together on its other side, one on each outcome's row; their
-  // name centres on the column like every name on its mark, the refusal's cross after it.
+  // C: the reports the task must not stop at, refused together beside it on its row, their name at their outer side,
+  // the refusal's cross between the name and the pages.
   const reportsOn = C * ramp(t, c.reports - 0.15, 0.4),
-    rx = x + TO_REPORTS;
-  reports(rx, ROWS, { alpha: reportsOn });
-  rejectedName(REPORTS(), rx, ROWS[2] + 24 + NAME_GAP, {
-    valign: "top",
+    { x: bx, pitch, half: pages } = BESIDE;
+  reports([bx - pitch, bx, bx + pitch], y, { alpha: reportsOn });
+  rejectedName(REPORTS(), bx - pages - NAME_GAP - REFUSAL, y, {
+    align: "right",
     alpha: reportsOn,
     mark: ramp(t, c.reports + 0.05, 0.3),
-    markLeft: rx + measure(REPORTS()) / 2 + 16,
   });
   if (C2 <= 0) return;
-  // C2: the colleague stands where the reports stood, joined to the task; the way from the task to the first outcome
-  // lights on 「只做到了第一件」/ "only the first", a point running it, and the first outcome takes its check.
+  // C2: the colleague stands where the reports stood, joined to the task and named at the outer side; the way from the
+  // task to the first outcome lights on 「只做到了第一件」/ "only the first", a point running it, and the first outcome
+  // takes its check.
   illustrative(C2);
-  people([rx], ROWS[1], { size: 1, alpha: C2 });
-  link(rx + 30, ROWS[1], x - 30, ROWS[1], {
+  people([bx], y, { size: 1, alpha: C2 });
+  link(bx + 30, y, x - r - RING_GAP, y, {
     alpha: C2,
     upto: soon(t, c.colleague + 0.05, 0.5),
     width: 2.5,
   });
-  termRow(t, [COLLEAGUE()], [c.colleague], [ONLY_FIRST()], [c.first], rx, ROWS[1] + 24 + NAME_GAP, {
-    align: "center",
-    inline: false,
-    alpha: C2,
-  });
+  const { height } = termRowLayout([COLLEAGUE()], [ONLY_FIRST()], Infinity, false);
+  termRow(
+    t,
+    [COLLEAGUE()],
+    [c.colleague],
+    [ONLY_FIRST()],
+    [c.first],
+    bx - 24 - NAME_GAP,
+    y - height / 2,
+    {
+      align: "right",
+      inline: false,
+      alpha: C2,
+    },
+  );
   const lit = { color: P.evidence, alpha: first, width: 3 };
-  line(x + 30, ROWS[1], spine, ROWS[1], lit);
-  line(spine, ROWS[1], spine, ROWS[0], lit);
-  link(spine, ROWS[0], rings - RING - 7, ROWS[0], {
+  stroke(() => {
+    ctx.moveTo(x, y + r + RING_GAP);
+    ctx.lineTo(x, RAIL_Y);
+    ctx.lineTo(XS[0], RAIL_Y);
+  }, lit);
+  link(XS[0], RAIL_Y, XS[0], RING_Y - RING - 7, {
     ...lit,
     flow: t > c.first + 0.6 ? (vt * 0.5) % 1 : null,
   });

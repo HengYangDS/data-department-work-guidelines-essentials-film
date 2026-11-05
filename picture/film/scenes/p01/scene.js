@@ -1,13 +1,13 @@
 /* 01 晚了两个小时 / Two hours late, chapter 01 一次延迟 / One delay. The opening quiet shows the title signature and hands
- * the picture to last night's timeline in one swap just before the first word (A, 01.1). The timeline then re-forms
- * compact in the top band, its two hours leading down to a rail across the whole row, and the four failures build
- * that row below it, each hanging from the rail by its own link (B, 01.2-01.3); the timeline leaves, the failures
- * keep busy and three open questions stand over them (C, 01.4); the guidelines' document takes the top band and its
- * links reach the four failures (D, 01.5). The whole part is the made-up case, so the Illustrative chip stands from
- * the swap. */
+ * the picture to last night's timeline in one swap just before the first word (A, 01.1). On 01.2's first words the
+ * timeline re-forms compact in the top band, its two hours leading down to a rail across the whole row, and the four
+ * failures build that row below it, each hanging from the rail by its own link (B, 01.2-01.3); the timeline leaves,
+ * the failures stand told and three open questions stand over them (C, 01.4); the guidelines' document takes the top
+ * band and its links reach the four failures (D, 01.5). The whole part is the made-up case, so the Illustrative chip
+ * stands from the swap. */
 
 import { link } from "../../drawing/links.js";
-import { line } from "../../drawing/strokes.js";
+import { line, path } from "../../drawing/strokes.js";
 import { documentIcon } from "../../drawing/symbols.js";
 import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { illustrative } from "../../framing/chapters.js";
@@ -28,6 +28,8 @@ import { forkMark, meetingMark, openMark, pagesMark, patchMark } from "./failure
 function cuesOf(s) {
   return {
     night: cue(s, "昨晚", "Last night"),
+    // 01.2's first words, on which the failures' stage cuts in, a thought boundary.
+    says: cue(s, "有人马上说", "Someone says at once"),
     data: cue(s, "价格数据", "price data"),
     late: cue(s, "晚了两个小时", "two hours late"),
     vendor: cue(s, "换供应商", "change the vendor"),
@@ -55,13 +57,14 @@ function cuesOf(s) {
 
 /* The row of failures: four places at a pitch of 340 px about the frame's centre, each figure centred on ROW_Y with
  * its name hanging from NAME_TOP; the links reach each figure at its own top. The row's lines span SPAN px each side
- * of the centre, the rail over it in B and the bracket under its names in C and D, and the rail of B and the links of
- * D run across the frame at CROSS_Y. */
+ * of the centre, clear of its outer names: the rail over it in B and the bracket under its names in C and D, at
+ * BRACKET_Y; the rail of B and the links of D run across the frame at CROSS_Y. */
 const XS = [450, 790, 1130, 1470],
   ROW_Y = 570,
   NAME_TOP = 675,
-  SPAN = 640,
+  SPAN = 680,
   CROSS_Y = 425,
+  BRACKET_Y = NAME_TOP + 54,
   TOPS = [
     [0, -27],
     [0, -30],
@@ -118,13 +121,19 @@ function compactNight(a, t) {
   });
 }
 
-/* One failure's figure at (x, ROW_Y), its parts on their words; `busy` keeps it moving in voice time instead. */
+/* One failure's figure at (x, ROW_Y), its parts on their words; `busy` shows it as it stands once told: the fork's
+ * taken way and the dripping pipe keep running in voice time, while the meeting and the stack of pages, whose marks
+ * count the speakers and the material, hold still. */
 function figure(k, x, t, a, c, busy = false) {
   const vt = voiceTime(t),
     on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4),
     part = (at) => ramp(t, at - 0.15, 0.4);
   if (k === 0)
-    forkMark(x, ROW_Y, { alpha: on, facts: busy ? 0 : part(c.facts), run: busy ? (vt * 0.45) % 1 : null });
+    forkMark(x, ROW_Y, {
+      alpha: on,
+      facts: busy ? 0 : part(c.facts),
+      run: busy ? (vt * 0.45) % 1 : null,
+    });
   if (k === 1)
     patchMark(x, ROW_Y, {
       alpha: on,
@@ -133,36 +142,45 @@ function figure(k, x, t, a, c, busy = false) {
       light: busy ? 0 : part(c.mechanism),
     });
   if (k === 2) {
-    // Everyone speaks: a beat at each seated head in turn, on the words, and in voice time while they keep busy.
+    // Everyone speaks: a beat at each seated head in turn, once, on the words.
     const flash = (i) => {
-      const p = busy ? ((vt * 0.5 + i / 3) % 1) / 0.4 : (t - c.speaks - 0.05 - 0.35 * i) / 0.5;
+      const p = (t - c.speaks - 0.05 - 0.35 * i) / 0.5;
       return p > 0 && p < 1 ? Math.sin(Math.PI * p) : 0;
     };
     meetingMark(x, ROW_Y, {
       alpha: on,
       seats: busy ? [0, 0] : [part(c.decide), part(c.act)],
-      beat: [0, 1, 2].map(flash),
+      beat: busy ? [0, 0, 0] : [0, 1, 2].map(flash),
     });
   }
   if (k === 3)
     pagesMark(x, ROW_Y, {
       alpha: on,
-      pages: busy ? 8.5 + 0.5 * Math.sin(vt * 2.4) : 3 + 6 * soon(t, c.more + 0.05, 1.6),
+      pages: busy ? 9 : 3 + 6 * soon(t, c.more + 0.05, 1.6),
       bars: busy ? 0 : part(c.judgment),
     });
 }
 
-/* B: the compact timeline over the row of failures. Its two hours lead down to a rail across the row's whole width,
- * which stands with the timeline from the cut, so the picture has its final extent before the failures fill it and
- * stays balanced while they build. The row builds left to right, each failure at its own place from its words and
- * joined to the rail by its own link, and what went wrong joins its name on its own words. */
+/* B, from 01.2's first words: the compact timeline over the row of failures. Its two hours lead down to a rail across
+ * the row's whole width, whose two ends reach down to the line of the bracket that holds the row's names in C and D;
+ * the rail stands with the timeline from the cut, so the picture has its final extent, top to bottom, before the
+ * failures fill it and stays balanced while they build. The row builds left to right, each failure at its own place
+ * from its words and joined to the rail by its own link, and what went wrong joins its name on its own words. */
 function stageFailures(t, a, c) {
   compactNight(a, t);
   // The rail is a bracket over the row, the one that holds the row's names in C and D turned to face it.
-  const rail = { color: P.line, alpha: a, width: 2 };
+  const rail = { color: P.line, alpha: a, width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
-  line(960 - SPAN, CROSS_Y, 960 + SPAN, CROSS_Y, rail);
-  [-SPAN, SPAN].forEach((dx) => line(960 + dx, CROSS_Y, 960 + dx, CROSS_Y + 10, rail));
+  // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names.
+  path(
+    [
+      [960 - SPAN, BRACKET_Y],
+      [960 - SPAN, CROSS_Y],
+      [960 + SPAN, CROSS_Y],
+      [960 + SPAN, BRACKET_Y],
+    ],
+    rail,
+  );
   const ats = [c.vendor, c.patch, c.meeting, c.agent],
     terms = TERMS(),
     quals = QUALS(),
@@ -195,8 +213,8 @@ function stageFailures(t, a, c) {
   });
 }
 
-/* The row as it stands once told: each failure's figure keeps busy in voice time under its term, the name it was
- * given in the telling without what went wrong, so it reads as the same name. */
+/* The row as it stands once told: each failure's figure under its term, the name it was given in the telling without
+ * what went wrong, so it reads as the same name; the fork and the pipe keep busy in voice time. */
 function busyRow(t, a, c) {
   const terms = TERMS(),
     quals = QUALS();
@@ -213,7 +231,7 @@ function busyRow(t, a, c) {
 }
 /* A name for the whole row: a bracket under its names, drawn on with the name that hangs under it. */
 function rowName(v, t, at, a) {
-  const y = NAME_TOP + 54,
+  const y = BRACKET_Y,
     on = a * soon(t, at - 0.1, 0.5),
     reach = SPAN * on;
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
@@ -232,7 +250,10 @@ function stageBusy(t, a, c) {
   rowName(L("大家", "Everyone"), t, c.busy, a);
   // The English says that no one can say before it asks; its first question stands on those words.
   const qs = [L(c.who, c.noOne), c.which, c.boundary],
-    names = L(["谁可以决定", "哪些事实", "哪条边界"], ["Who may decide", "Which facts", "Which boundary"]),
+    names = L(
+      ["谁可以决定", "哪些事实", "哪条边界"],
+      ["Who may decide", "Which facts", "Which boundary"],
+    ),
     vt = voiceTime(t);
   qs.forEach((at, i) => {
     openMark(QX[i], QY, 24, { alpha: a * ramp(t, at - 0.15, 0.4), turn: vt * 0.5 + i });
@@ -275,8 +296,8 @@ scenes["01"] = function (s, t) {
     return;
   }
   const c = cuesOf(s);
-  const A = stageOut(t, c.vendor),
-    B = stageIn(t, c.vendor) * stageOut(t, c.busy),
+  const A = stageOut(t, c.says),
+    B = stageIn(t, c.says) * stageOut(t, c.busy),
     C = stageIn(t, c.busy) * stageOut(t, c.guide),
     D = stageIn(t, c.guide);
   if (A > 0) stageNight(t, A, c);

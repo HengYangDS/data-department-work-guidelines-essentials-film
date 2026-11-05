@@ -2,25 +2,31 @@
  * returns at the centre, larger, on the line of its own course; before it, a station from which what is to be decided,
  * who decides and which facts are needed hang as one list; when it ends, a station from which, either, the two empty
  * seats of failure 3 fill with a decision and with the person who does what by when, or a branch ends in an open
- * question, what is still missing. F1, from 「两种依据，不能」/ "Neither kind": the two kinds apart again, each one's way
- * toward the other stopping at the divider between them. F2, from 「行动依据再充分」/ "Authority to act cannot": the
- * two kinds at the top, and under them a rail on which the outcomes will stand; the seal's way to a false fact and the
- * record's way to an action each stop at a bar; when the two conflict, the conflict stands between them and its way
- * runs down to a report of the conflict and its impact, under which the two ways it must not take are refused. */
+ * question, what is still missing. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for its one
+ * thought: the two kinds apart at the top, each named with what it answers, and under them a rail on which the
+ * outcomes will stand; a divider rises between the two kinds, each one's way toward the other stopping at a bar beside
+ * it; the seal's way to a false fact and the record's way to an action each stop at a bar; when the two conflict, the
+ * divider runs on down to the conflict, between them, and its way runs down to a report of the conflict and its
+ * impact, under which the two ways it must not take are refused. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
 import { dot, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.js";
+import {
+  NAME_GAP,
+  growName,
+  nameText,
+  rejectedName,
+  termRow,
+  termRowLayout,
+} from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
-import { stageIn, stageOut } from "../../timing/stages.js";
 import { meetingMark, openMark, people } from "../p01/failures.js";
-import { KINDS, twoKinds } from "./kinds.js";
 import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } from "./marks.js";
 
 /* E: the meeting drawn at K times failure 3's size about its centre, so that with its course it covers a tenth of the
@@ -123,55 +129,66 @@ function station(x, y, alpha) {
   ring(x, y, STATION_R, { color: P.ink, alpha, width: 3 });
 }
 
-/* F: F1 the two kinds apart, their ways toward each other stopping at the divider; F2 the refusals and the conflict. */
-export function stageApart(s, t, a, c) {
-  const F1 = a * stageOut(t, c.actAgain),
-    F2 = a * stageIn(t, c.actAgain);
-  if (F1 > 0) {
-    twoKinds(s, t, F1, c, { facts: true });
-    const ways = F1 * ramp(t, c.substitute - 0.15, 0.4),
-      reach = soon(t, c.substitute + 0.05, 0.5);
-    line(KINDS.left + 64, KINDS.y, mix(KINDS.left + 64, 944, reach), KINDS.y, {
-      alpha: ways,
-      width: 2.5,
-    });
-    line(KINDS.right - 61, KINDS.y, mix(KINDS.right - 61, 976, reach), KINDS.y, {
-      alpha: ways,
-      width: 2.5,
-    });
-    [944, 976].forEach((bx) =>
-      bar(bx, KINDS.y, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 }),
-    );
-    rejectedName(L("替代", "Substitution"), 960, KINDS.y + 110 + NAME_GAP, {
-      valign: "top",
-      alpha: F1 * named(t, c.substitute),
-      mark: ramp(t, c.substitute + 0.05, 0.3),
-    });
-  }
-  if (F2 > 0) refusals(t, F2, c);
-}
-
-/* F2's places: the kinds on the top row; the false fact, the report and the action stand over one rail, their names on
- * one baseline under it, and the refusals the report keeps under its name. The rail stands whole in the line tone from
- * the stage's first frame, as the trust chain's does, so the picture already reaches below the frame's middle while
- * the two kinds stand alone on the top row, and nothing has to move to make room for what comes under them. */
-const TOP = 285,
-  MID = 560,
+/* F's places: the kinds on the top row, each named beside itself at its outer side; the divider between them, named
+ * over itself, and the conflict under it; the false fact, the report and the action over one rail, their names on one
+ * baseline under it, and the refusals the report keeps under its name. The rail stands whole in the line tone from the
+ * stage's first frame, as the trust chain's does, so the picture already reaches below the frame's middle while the two
+ * kinds stand alone on the top row, and nothing has to move to make room for what comes under them. */
+const TOP = 300,
+  DIVIDER = [TOP - 56, TOP + 56],
+  /* The conflict stands far enough under the kinds' ways that its name, beside it, names it and not them. */
+  CONFLICT_Y = DIVIDER[1] + 56,
+  MID = 590,
   RAIL = MID + 60,
   MID_NAMES = RAIL + NAME_GAP,
-  SIDES = [600, 1320];
-function refusals(t, a, c) {
+  SIDES = [600, 1320],
+  BARS = [944, 976];
+export function stageApart(t, a, c) {
   // The two kinds on the top row and the outcomes' rail under them stand from the stage's first frame.
   line(SIDES[0] - 60, RAIL, SIDES[1] + 60, RAIL, { color: P.line, alpha: a, width: 2.5 });
   seal(SIDES[0], TOP, 46, { alpha: a });
   recordMark(SIDES[1], TOP, 88, 112, { alpha: a });
-  nameText(L("行动依据", "Authority to act"), SIDES[0] - 46 - NAME_GAP, TOP, {
-    align: "right",
-    alpha: a,
+  // Each kind keeps the whole name it has had since 03.2 and 03.4, its term and what it answers, centred on its row.
+  [
+    [L("行动依据", "Authority to act"), L("谁可以决定做什么", "who may decide"), -1],
+    [
+      L("事实依据", "Authority about facts"),
+      L("靠什么认定一件事是真的", "what can establish truth"),
+      1,
+    ],
+  ].forEach(([term, qual, side]) => {
+    const { height } = termRowLayout([term], [qual], Infinity, false);
+    termRow(
+      t,
+      [term],
+      [-Infinity],
+      [qual],
+      [-Infinity],
+      side < 0 ? SIDES[0] - 46 - NAME_GAP : SIDES[1] + 44 + NAME_GAP,
+      TOP - height / 2,
+      { align: side < 0 ? "right" : "left", inline: false, alpha: a },
+    );
   });
-  nameText(L("事实依据", "Authority about facts"), SIDES[1] + 44 + NAME_GAP, TOP, {
-    align: "left",
-    alpha: a,
+  // Neither stands in for the other: on 「互相替代」/ "stands in for" a divider rises between them, named over itself as
+  // the substitution refused, and each kind's way toward the other stops at a bar beside it.
+  const ways = a * ramp(t, c.substitute - 0.15, 0.4),
+    reach = soon(t, c.substitute + 0.05, 0.5),
+    rise = soon(t, c.substitute + 0.05, 0.6);
+  if (rise > 0)
+    line(960, DIVIDER[1], 960, mix(DIVIDER[1], DIVIDER[0], rise), {
+      color: P.line,
+      alpha: a * Math.min(1, rise * 3),
+      width: 3,
+    });
+  line(SIDES[0] + 52, TOP, mix(SIDES[0] + 52, BARS[0], reach), TOP, { alpha: ways, width: 2.5 });
+  line(SIDES[1] - 50, TOP, mix(SIDES[1] - 50, BARS[1], reach), TOP, { alpha: ways, width: 2.5 });
+  BARS.forEach((bx) =>
+    bar(bx, TOP, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 }),
+  );
+  rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
+    valign: "bottom",
+    alpha: a * named(t, c.substitute),
+    mark: ramp(t, c.substitute + 0.05, 0.3),
   });
   // Authority to act cannot make a false fact true: the seal's way down to it stops at a bar.
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4),
@@ -208,25 +225,20 @@ function refusals(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.permission),
   });
-  // When the two conflict: the conflict between them, joined to each; its way runs down to the report.
-  const conflict = a * ramp(t, c.conflict - 0.15, 0.4),
-    meet = soon(t, c.conflict + 0.05, 0.5);
-  stroke(
-    () => {
-      ctx.moveTo(SIDES[0] + 52, TOP);
-      ctx.lineTo(mix(SIDES[0] + 52, 930, meet), TOP);
-      ctx.moveTo(SIDES[1] - 50, TOP);
-      ctx.lineTo(mix(SIDES[1] - 50, 990, meet), TOP);
-    },
-    { color: P.line, alpha: conflict, width: 2.5 },
-  );
-  conflictMark(960, TOP, { alpha: conflict });
-  nameText(L("冲突", "Conflict"), 960, TOP - 12 - NAME_GAP, {
-    valign: "bottom",
+  // When the two conflict: the divider runs on down to the conflict between them, named beside it, and its way runs
+  // down to the report.
+  const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
+  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, soon(t, c.conflict + 0.05, 0.4)), {
+    alpha: conflict,
+    width: 3,
+  });
+  conflictMark(960, CONFLICT_Y, { alpha: conflict });
+  nameText(L("冲突", "Conflict"), 960 + 22 + NAME_GAP, CONFLICT_Y, {
+    align: "left",
     alpha: a * named(t, c.conflict),
   });
   const report = a * ramp(t, c.report - 0.15, 0.4);
-  link(960, TOP + 16, 960, MID - 36, {
+  link(960, CONFLICT_Y + 12, 960, MID - 36, {
     alpha: report,
     upto: soon(t, c.report + 0.05, 0.5),
     width: 2.5,
@@ -237,12 +249,13 @@ function refusals(t, a, c) {
     alpha: a * named(t, c.report),
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach((v, i) =>
-    rejectedName(v, 960, MID_NAMES + 58 + i * 44, {
-      valign: "top",
-      alpha: a * listIn(t, refused, i),
-      mark: ramp(t, refused[i] + 0.05, 0.3),
-      set: "refused",
-    }),
+  L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach(
+    (v, i) =>
+      rejectedName(v, 960, MID_NAMES + 58 + i * 44, {
+        valign: "top",
+        alpha: a * listIn(t, refused, i),
+        mark: ramp(t, refused[i] + 0.05, 0.3),
+        set: "refused",
+      }),
   );
 }

@@ -1572,6 +1572,8 @@ function pagesMark(cx, cy, { alpha = 1, pages = 3, bars = 0 } = {}) {
 function cuesOf(s) {
   return {
     night: cue(s, "昨晚", "Last night"),
+    // 01.2's first words, on which the failures' stage cuts in, a thought boundary.
+    says: cue(s, "有人马上说", "Someone says at once"),
     data: cue(s, "价格数据", "price data"),
     late: cue(s, "晚了两个小时", "two hours late"),
     vendor: cue(s, "换供应商", "change the vendor"),
@@ -1599,8 +1601,9 @@ function cuesOf(s) {
 var XS = [450, 790, 1130, 1470];
 var ROW_Y = 570;
 var NAME_TOP = 675;
-var SPAN2 = 640;
+var SPAN2 = 680;
 var CROSS_Y = 425;
+var BRACKET_Y = NAME_TOP + 54;
 var TOPS = [
   [0, -27],
   [0, -30],
@@ -1652,7 +1655,11 @@ function compactNight(a, t) {
 function figure(k, x, t, a, c, busy = false) {
   const vt = voiceTime(t), on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4), part = (at2) => ramp(t, at2 - 0.15, 0.4);
   if (k === 0)
-    forkMark(x, ROW_Y, { alpha: on, facts: busy ? 0 : part(c.facts), run: busy ? vt * 0.45 % 1 : null });
+    forkMark(x, ROW_Y, {
+      alpha: on,
+      facts: busy ? 0 : part(c.facts),
+      run: busy ? vt * 0.45 % 1 : null
+    });
   if (k === 1)
     patchMark(x, ROW_Y, {
       alpha: on,
@@ -1662,28 +1669,35 @@ function figure(k, x, t, a, c, busy = false) {
     });
   if (k === 2) {
     const flash = (i) => {
-      const p = busy ? (vt * 0.5 + i / 3) % 1 / 0.4 : (t - c.speaks - 0.05 - 0.35 * i) / 0.5;
+      const p = (t - c.speaks - 0.05 - 0.35 * i) / 0.5;
       return p > 0 && p < 1 ? Math.sin(Math.PI * p) : 0;
     };
     meetingMark(x, ROW_Y, {
       alpha: on,
       seats: busy ? [0, 0] : [part(c.decide), part(c.act)],
-      beat: [0, 1, 2].map(flash)
+      beat: busy ? [0, 0, 0] : [0, 1, 2].map(flash)
     });
   }
   if (k === 3)
     pagesMark(x, ROW_Y, {
       alpha: on,
-      pages: busy ? 8.5 + 0.5 * Math.sin(vt * 2.4) : 3 + 6 * soon(t, c.more + 0.05, 1.6),
+      pages: busy ? 9 : 3 + 6 * soon(t, c.more + 0.05, 1.6),
       bars: busy ? 0 : part(c.judgment)
     });
 }
 function stageFailures(t, a, c) {
   compactNight(a, t);
-  const rail = { color: P.line, alpha: a, width: 2 };
+  const rail = { color: P.line, alpha: a, width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
-  line(960 - SPAN2, CROSS_Y, 960 + SPAN2, CROSS_Y, rail);
-  [-SPAN2, SPAN2].forEach((dx) => line(960 + dx, CROSS_Y, 960 + dx, CROSS_Y + 10, rail));
+  path(
+    [
+      [960 - SPAN2, BRACKET_Y],
+      [960 - SPAN2, CROSS_Y],
+      [960 + SPAN2, CROSS_Y],
+      [960 + SPAN2, BRACKET_Y]
+    ],
+    rail
+  );
   const ats = [c.vendor, c.patch, c.meeting, c.agent], terms = TERMS(), quals = QUALS(), qualAts = [[c.facts], [c.mechanism], [], [c.judgment]], seats = [c.decide, c.act];
   ats.forEach((at2, k) => {
     const x = XS[k], [dx, dy] = TOPS[k];
@@ -1724,7 +1738,7 @@ function busyRow(t, a, c) {
   });
 }
 function rowName(v, t, at2, a) {
-  const y = NAME_TOP + 54, on = a * soon(t, at2 - 0.1, 0.5), reach = SPAN2 * on;
+  const y = BRACKET_Y, on = a * soon(t, at2 - 0.1, 0.5), reach = SPAN2 * on;
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
   if (on > 0.98)
     [-SPAN2, SPAN2].forEach(
@@ -1737,7 +1751,10 @@ var QY = 232;
 function stageBusy(t, a, c) {
   busyRow(t, a, c);
   rowName(L("大家", "Everyone"), t, c.busy, a);
-  const qs = [L(c.who, c.noOne), c.which, c.boundary], names = L(["谁可以决定", "哪些事实", "哪条边界"], ["Who may decide", "Which facts", "Which boundary"]), vt = voiceTime(t);
+  const qs = [L(c.who, c.noOne), c.which, c.boundary], names = L(
+    ["谁可以决定", "哪些事实", "哪条边界"],
+    ["Who may decide", "Which facts", "Which boundary"]
+  ), vt = voiceTime(t);
   qs.forEach((at2, i) => {
     openMark(QX[i], QY, 24, { alpha: a * ramp(t, at2 - 0.15, 0.4), turn: vt * 0.5 + i });
     nameText(names[i], QX[i], QY + 24 + NAME_GAP, {
@@ -1749,12 +1766,12 @@ function stageBusy(t, a, c) {
 }
 function stageGuide(t, a, c) {
   busyRow(t, a, c);
-  const name = L("数据部门工作指南", ["Data Department", "Work Guidelines"]), wide = en ? Math.max(...name.map((v) => measure(v))) : measure(name), W = 150, H = 186, TOP2 = 168, left = 960 - (W + NAME_GAP + wide) / 2;
-  documentIcon(left, TOP2, W, H, { alpha: a, rows: 5 });
-  nameText(name, left + W + NAME_GAP, TOP2 + H / 2, { align: "left", alpha: a * named(t, c.guide) });
+  const name = L("数据部门工作指南", ["Data Department", "Work Guidelines"]), wide = en ? Math.max(...name.map((v) => measure(v))) : measure(name), W = 150, H = 186, TOP3 = 168, left = 960 - (W + NAME_GAP + wide) / 2;
+  documentIcon(left, TOP3, W, H, { alpha: a, rows: 5 });
+  nameText(name, left + W + NAME_GAP, TOP3 + H / 2, { align: "left", alpha: a * named(t, c.guide) });
   XS.forEach((x, k) => {
     const [dx, dy] = TOPS[k];
-    link(left + W / 2, TOP2 + H + 8, x + dx, ROW_Y + dy, {
+    link(left + W / 2, TOP3 + H + 8, x + dx, ROW_Y + dy, {
       route: "vhv",
       mid: CROSS_Y,
       alpha: a,
@@ -1769,7 +1786,7 @@ scenes["01"] = function(s, t) {
     return;
   }
   const c = cuesOf(s);
-  const A5 = stageOut(t, c.vendor), B6 = stageIn(t, c.vendor) * stageOut(t, c.busy), C4 = stageIn(t, c.busy) * stageOut(t, c.guide), D3 = stageIn(t, c.guide);
+  const A5 = stageOut(t, c.says), B6 = stageIn(t, c.says) * stageOut(t, c.busy), C4 = stageIn(t, c.busy) * stageOut(t, c.guide), D3 = stageIn(t, c.guide);
   if (A5 > 0) stageNight(t, A5, c);
   if (B6 > 0) stageFailures(t, B6, c);
   if (C4 > 0) stageBusy(t, C4, c);
@@ -2003,15 +2020,15 @@ function mechanism(x, y, { alpha = 1, turn = 0, watch = 0 } = {}) {
   kernelIcon(x, y, 22, { alpha, color: P.ink, turn, beat: watch });
   if (watch > 0.01) ring(x, y, 31, { color: P.evidence, alpha: alpha * watch, width: 2.5 });
 }
-function reports(x, ys, { alpha = 1 } = {}) {
+function reports(xs, y, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
   const w = 38, h = 48;
-  const pages = () => ys.forEach((y) => ctx.roundRect(x - w / 2, y - h / 2, w, h, 4));
+  const pages = () => xs.forEach((x) => ctx.roundRect(x - w / 2, y - h / 2, w, h, 4));
   fill(pages, { color: P.row, alpha });
   stroke(pages, { color: P.muted, alpha, width: 2 });
   stroke(
-    () => ys.forEach(
-      (y) => [-10, 0, 10].forEach((dy, k) => {
+    () => xs.forEach(
+      (x) => [-10, 0, 10].forEach((dy, k) => {
         ctx.moveTo(x - 11, y + dy);
         ctx.lineTo(x + (k === 1 ? 4 : 11), y + dy);
       })
@@ -2039,14 +2056,16 @@ function taskCues(s) {
     first: cue(s, "只做到了第一件", "only the first")
   };
 }
-var ROWS = [360, 540, 720];
-var SPINE_TOP = 275;
-var TO_REPORTS = -190;
-var TO_SPINE = 320;
-var TO_RINGS = 410;
-var TO_NAMES = 410 + 19 + NAME_GAP;
+var TASK = { x: 960, y: 440, r: 21 };
+var RING_GAP = 4;
+var RAIL_Y = 570;
+var RING_Y = 640;
+var PITCH = 300;
+var XS2 = [TASK.x - PITCH, TASK.x, TASK.x + PITCH];
 var RING = 19;
-var TASK = () => L("一项任务", "A task");
+var BESIDE = { x: 840, pitch: 42, half: 61 };
+var REFUSAL = 16 + Math.min(26, labelSize(LABEL) * 0.9);
+var TASK_NAME = () => L("一项任务", "A task");
 var THREE = () => L("三件事", "Three things");
 var REPORTS = () => L("三份报告", "Three reports");
 var COLLEAGUE = () => L("那位同事", "The colleague");
@@ -2060,69 +2079,65 @@ var OUTCOMES = () => [
   ]
 ];
 var noteWidth = () => Math.max(...OUTCOMES().map(([term]) => measure(term.join(""))));
-function outcomesRight() {
-  const width = noteWidth(), lineWidth = (line2) => measure(line2.map(([, v]) => v).join(""), NOTE);
-  return TO_NAMES + Math.max(
-    ...OUTCOMES().flatMap(([term, qual]) => [
-      measure(term.join("")),
-      ...qual.length ? growTexts(qual, width, NOTE).map(lineWidth) : []
-    ])
-  );
+function nameHalf([term, qual]) {
+  const lineWidth = (line2) => measure(line2.map(([, v]) => v).join(""), NOTE);
+  return Math.max(
+    measure(term.join("")),
+    ...qual.length ? growTexts(qual, noteWidth(), NOTE).map(lineWidth) : []
+  ) / 2;
 }
-function taskX(s, c) {
-  const cam = cameraOf(s, c.reports), centre = cam.ax + (960 - cam.ox) / cam.k, right = outcomesRight(), shift = (left) => centre - (left + right) / 2;
-  const built = shift(-Math.max(21, measure(TASK()) / 2)), settled = Math.max(
-    shift(TO_REPORTS - measure(REPORTS()) / 2),
-    shift(TO_REPORTS - Math.max(measure(COLLEAGUE()), measure(ONLY_FIRST(), NOTE)) / 2)
-  );
-  return (built + 90 / cam.k + settled - 50 / cam.k) / 2;
-}
+var railHalf = () => PITCH + Math.max(nameHalf(OUTCOMES()[0]), nameHalf(OUTCOMES()[2]));
 function stageOutcomes(s, t, c) {
   const C4 = stageIn(t, c.task) * stageOut(t, c.colleague), C22 = stageIn(t, c.colleague);
   const a = Math.max(C4, C22);
   if (a <= 0) return;
-  const x = taskX(s, c), vt = voiceTime(t), spine = x + TO_SPINE, rings = x + TO_RINGS, noteW = noteWidth(), first = C22 * ramp(t, c.first - 0.15, 0.4);
-  token(x, ROWS[1], { alpha: a * ramp(t, c.task - 0.15, 0.4) });
-  nameText(TASK(), x, ROWS[1] + 21 + NAME_GAP, { valign: "top", alpha: a * named(t, c.task) });
-  const grow = soon(t, c.three + 0.05, 0.6);
-  line(x + 30, ROWS[1], spine, ROWS[1], { color: P.line, alpha: a * grow, width: 2.5 });
-  line(spine, ROWS[1], spine, ROWS[1] - (ROWS[1] - SPINE_TOP) * grow, {
-    color: P.line,
-    alpha: a * grow,
-    width: 2.5
+  const vt = voiceTime(t), { x, y, r } = TASK, half = railHalf(), first = C22 * ramp(t, c.first - 0.15, 0.4);
+  token(x, y, { alpha: a * ramp(t, c.task - 0.15, 0.4) });
+  nameText(TASK_NAME(), x, y - r - NAME_GAP, { valign: "bottom", alpha: a * named(t, c.task) });
+  stroke(
+    () => {
+      ctx.moveTo(x, y + r + RING_GAP);
+      ctx.lineTo(x, RAIL_Y);
+      ctx.moveTo(x - half, RAIL_Y);
+      ctx.lineTo(x + half, RAIL_Y);
+    },
+    { color: P.line, alpha: a * ramp(t, c.task - 0.15, 0.4), width: 3.5 }
+  );
+  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + RAIL_Y) / 2, {
+    align: "left",
+    alpha: a * named(t, c.three)
   });
-  line(spine, ROWS[1], spine, ROWS[1] + (ROWS[2] - ROWS[1]) * grow, {
-    color: P.line,
-    alpha: a * grow,
-    width: 2.5
-  });
-  nameText(THREE(), spine + NAME_GAP, SPINE_TOP, { align: "left", alpha: a * named(t, c.three) });
+  const noteW = noteWidth();
   OUTCOMES().forEach(([term, qual], k) => {
-    const at2 = c.outcomes[k], y = ROWS[k], on = a * ramp(t, at2 - 0.15, 0.4);
-    link(spine, y, rings - RING - 7, y, { alpha: on, upto: soon(t, at2 + 0.05, 0.4), width: 2.5 });
+    const at2 = c.outcomes[k], ox = XS2[k], on = a * ramp(t, at2 - 0.15, 0.4);
+    link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
+      alpha: on,
+      upto: soon(t, at2 + 0.05, 0.4),
+      width: 2.5
+    });
     if (k < 2)
-      outcome(rings, y, {
+      outcome(ox, RING_Y, {
         alpha: on,
         bounds: k === 1 ? ramp(t, c.holds - 0.1, 0.4) : 0,
         done: k === 0 ? soon(t, c.first + 0.05, 0.5) * C22 : 0
       });
     else
-      mechanism(rings, y, {
+      mechanism(ox, RING_Y, {
         alpha: on,
         turn: vt * 0.5,
         watch: ramp(t, c.sooner - 0.1, 0.4)
       });
-    beats(t, rings, y, RING + 12, [c.kinds], { alpha: C4 });
+    beats(t, ox, RING_Y, RING + 12, [c.kinds], { alpha: C4 });
     termRow(
       t,
       term,
       [at2],
       qual,
       k === 1 ? [c.holds] : [c.sooner, c.better],
-      x + TO_NAMES,
-      y - labelSize(LABEL) / 2,
+      ox,
+      RING_Y + RING + NAME_GAP,
       {
-        align: "left",
+        align: "center",
         inline: false,
         build: true,
         noteWidth: noteW,
@@ -2131,31 +2146,43 @@ function stageOutcomes(s, t, c) {
       }
     );
   });
-  const reportsOn = C4 * ramp(t, c.reports - 0.15, 0.4), rx = x + TO_REPORTS;
-  reports(rx, ROWS, { alpha: reportsOn });
-  rejectedName(REPORTS(), rx, ROWS[2] + 24 + NAME_GAP, {
-    valign: "top",
+  const reportsOn = C4 * ramp(t, c.reports - 0.15, 0.4), { x: bx, pitch, half: pages } = BESIDE;
+  reports([bx - pitch, bx, bx + pitch], y, { alpha: reportsOn });
+  rejectedName(REPORTS(), bx - pages - NAME_GAP - REFUSAL, y, {
+    align: "right",
     alpha: reportsOn,
-    mark: ramp(t, c.reports + 0.05, 0.3),
-    markLeft: rx + measure(REPORTS()) / 2 + 16
+    mark: ramp(t, c.reports + 0.05, 0.3)
   });
   if (C22 <= 0) return;
   illustrative(C22);
-  people2([rx], ROWS[1], { size: 1, alpha: C22 });
-  link(rx + 30, ROWS[1], x - 30, ROWS[1], {
+  people2([bx], y, { size: 1, alpha: C22 });
+  link(bx + 30, y, x - r - RING_GAP, y, {
     alpha: C22,
     upto: soon(t, c.colleague + 0.05, 0.5),
     width: 2.5
   });
-  termRow(t, [COLLEAGUE()], [c.colleague], [ONLY_FIRST()], [c.first], rx, ROWS[1] + 24 + NAME_GAP, {
-    align: "center",
-    inline: false,
-    alpha: C22
-  });
+  const { height } = termRowLayout([COLLEAGUE()], [ONLY_FIRST()], Infinity, false);
+  termRow(
+    t,
+    [COLLEAGUE()],
+    [c.colleague],
+    [ONLY_FIRST()],
+    [c.first],
+    bx - 24 - NAME_GAP,
+    y - height / 2,
+    {
+      align: "right",
+      inline: false,
+      alpha: C22
+    }
+  );
   const lit = { color: P.evidence, alpha: first, width: 3 };
-  line(x + 30, ROWS[1], spine, ROWS[1], lit);
-  line(spine, ROWS[1], spine, ROWS[0], lit);
-  link(spine, ROWS[0], rings - RING - 7, ROWS[0], {
+  stroke(() => {
+    ctx.moveTo(x, y + r + RING_GAP);
+    ctx.lineTo(x, RAIL_Y);
+    ctx.lineTo(XS2[0], RAIL_Y);
+  }, lit);
+  link(XS2[0], RAIL_Y, XS2[0], RING_Y - RING - 7, {
     ...lit,
     flow: t > c.first + 0.6 ? vt * 0.5 % 1 : null
   });
@@ -2257,11 +2284,15 @@ var WAY = [360, 1560];
 var WAVE_END = 470;
 var HANG_Y = 530;
 var HANG_NAMES = HANG_Y + 32 + NAME_GAP;
+var OUT_Y = 680;
+var OUT_NAMES = OUT_Y + 32 + NAME_GAP;
 var HANDED_X = [600, 840, 1080, 1320];
 var OUTPUT_X = [720, 960, 1200];
 var OTHERS = [1594, 1640];
 var OTHERS_X = 1617;
 var OVER = WAY_Y - 7 - NAME_GAP;
+var SECOND2 = 0.58;
+var REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
 var HANDED = () => L(["一个文件", "一张表", "一份报告", "一个流程"], ["A file", "A table", "A report", "A process"]);
 var OUTPUTS = () => L(["判断", "数据资产", "行动"], ["Judgments", "Data assets", "Actions"]);
 var QUALITIES = () => L(["讲得清", "经得起查", "能用到哪里"], ["Explained", "Checked", "Clear limits"]);
@@ -2280,29 +2311,31 @@ function theWay(t, a, c, end) {
     alpha: a * named(t, c.signal)
   });
 }
-function stageHanded(t, a, c) {
-  theWay(t, a, c, WAY[1]);
-  HANDED().forEach((v, k) => {
-    const on = a * listIn(t, c.handed, k);
-    handedMark(k, HANDED_X[k], HANG_Y, { alpha: on });
-    rejectedName(v, HANDED_X[k], HANG_NAMES, {
-      valign: "top",
-      alpha: on,
-      mark: ramp(t, c.handed[k] + 0.05, 0.3),
-      set: "handed"
-    });
-  });
-}
-function stageOutputs(t, a, c) {
+function stageWay(t, a, c) {
   const vt = voiceTime(t), end = WAY[1];
   theWay(t, a, c, end);
+  const recede = ramp(t, c.becomes + 0.05, 0.4);
+  HANDED().forEach((v, k) => {
+    const seen = a * ramp(t, c.handed[k] - 0.15, 0.4), on = a * listIn(t, c.handed, k), level = on * mix(1, SECOND2, recede), mark = ramp(t, c.handed[k] + 0.05, 0.3);
+    handedMark(k, HANDED_X[k], HANG_Y, { alpha: level });
+    const name = rejectedName(v, HANDED_X[k], HANG_NAMES, {
+      valign: "top",
+      alpha: Math.min(level, mix(1, 0.7, mark)),
+      mark: 0,
+      set: "handed"
+    });
+    cross(name.right - REFUSAL_CROSS / 2, (name.top + name.bottom) / 2, REFUSAL_CROSS, {
+      alpha: mix(on, seen, recede) * mark,
+      width: 3
+    });
+  });
   const q = vt * 0.3 % 1;
   if (t > c.others) flowDot(mix(WAVE_END, end, q), WAY_Y, 6, q, { color: P.evidence, alpha: a });
   OUTPUTS().forEach((v, k) => {
     const on = a * ramp(t, c.outputs[k] - 0.15, 0.4);
-    line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], HANG_Y - 32, { color: P.line, alpha: on, width: 2 });
-    outputMark(k, OUTPUT_X[k], HANG_Y, { alpha: on, run: toAndFro(vt) });
-    nameText(v, OUTPUT_X[k], HANG_NAMES, {
+    line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], OUT_Y - 32, { color: P.line, alpha: on, width: 2 });
+    outputMark(k, OUTPUT_X[k], OUT_Y, { alpha: on, run: toAndFro(vt) });
+    nameText(v, OUTPUT_X[k], OUT_NAMES, {
       valign: "top",
       alpha: a * listIn(t, c.outputs, k),
       set: "outputs"
@@ -2314,22 +2347,20 @@ function stageOutputs(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.others)
   });
-  QUALITIES().forEach(
-    (v, k) => nameText(v, OTHERS_X, own.bottom + 18 + k * 40, {
-      valign: "top",
-      size: NOTE,
-      color: P.muted,
-      alpha: a * listIn(t, c.qualities, k),
-      set: "qualities"
-    })
-  );
+  growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
+    width: Math.max(...QUALITIES().map((v) => measure(v, NOTE))),
+    size: NOTE,
+    color: P.muted,
+    align: "center",
+    build: true,
+    alpha: a
+  });
 }
 scenes["02"] = function(s, t) {
   const c = cuesOf2(s);
-  const A5 = stageOut(t, c.value), B6 = stageIn(t, c.value) * stageOut(t, c.becomes), B22 = stageIn(t, c.becomes) * stageOut(t, c.task);
+  const A5 = stageOut(t, c.value), B6 = stageIn(t, c.value) * stageOut(t, c.task);
   if (A5 > 0) stageGuide2(s, t, A5, c);
-  if (B6 > 0) stageHanded(t, B6, c);
-  if (B22 > 0) stageOutputs(t, B22, c);
+  if (B6 > 0) stageWay(t, B6, c);
   stageOutcomes(s, t, c);
 };
 
@@ -2460,34 +2491,24 @@ var flowOf = (t) => voiceTime(t) * 0.25 % 1;
 var NIGHT = () => L("昨晚", "Last night");
 var COLLECTION = () => L("采集", "Collection");
 var LATE = () => L("晚了两个小时", "Two hours late");
-function fullNight(t, a, c) {
-  const names = {
-    axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
-    card: { v: COLLECTION(), alpha: named(t, c.collection) },
-    late: { v: LATE(), alpha: named(t, c.late) }
-  };
-  const e = lastNightExtent(1, { card: 1, late: 1, names });
-  lastNight(960 - (e.left + e.right) / 2, 505 - (e.top + e.bottom) / 2, 1, {
+function theNight(t, a, c) {
+  lastNight(960, 250, 0.75, {
     alpha: a,
     card: soon(t, c.collection - 0.15, 0.8),
     late: soon(t, c.late - 0.15, 0.7),
     flow: flowOf(t),
-    names
-  });
-}
-function compactNight2(t, a) {
-  lastNight(960, 250, 0.75, {
-    alpha: a,
-    card: 1,
-    late: 1,
-    flow: flowOf(t),
-    names: { axis: NIGHT(), card: { v: COLLECTION(), side: "right" }, late: LATE() }
+    names: {
+      axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
+      card: { v: COLLECTION(), side: "right", alpha: named(t, c.collection + 0.1) },
+      late: { v: LATE(), alpha: named(t, c.late) }
+    }
   });
 }
 var COLUMNS = [560, 960, 1360];
 var ROW_Y2 = 590;
 var MARK2 = [84, 104];
-var NAMES_TOP = ROW_Y2 + MARK2[1] / 2 + NAME_GAP;
+var RAIL2 = { y: ROW_Y2 + MARK2[1] / 2 + 10, reach: 90 };
+var NAMES_TOP = RAIL2.y + NAME_GAP;
 var OBSERVATION = { x: COLUMNS[1] + 170, r: 34 };
 var OWNER_Y = 800;
 function theFact(t, a, c) {
@@ -2539,21 +2560,23 @@ function theHypothesis(t, a, c, { checked: checked2 = true } = {}) {
   );
 }
 function stageCase(t, a, c) {
-  const full = a * stageOut(t, c.log), compact = a * stageIn(t, c.log);
-  if (full > 0) fullNight(t, full, c);
-  if (compact <= 0) return;
-  compactNight2(t, compact);
-  theFact(t, compact, c);
-  theHypothesis(t, compact, c);
-  const { x, r } = OBSERVATION, seen = compact * ramp(t, c.observation - 0.15, 0.4);
+  theNight(t, a, c);
+  line(COLUMNS[0] - RAIL2.reach, RAIL2.y, COLUMNS[2] + RAIL2.reach, RAIL2.y, {
+    color: P.line,
+    alpha: a,
+    width: 2.5
+  });
+  theFact(t, a, c);
+  theHypothesis(t, a, c);
+  const { x, r } = OBSERVATION, seen = a * ramp(t, c.observation - 0.15, 0.4);
   eye(x, ROW_Y2, { alpha: seen, hollow: true, r });
   const term = [L("观察", "An observation")], qual = [L("能推翻它", "would refute it")], { height } = termRowLayout(term, qual, Infinity, false);
   termRow(t, term, [c.observation], qual, [c.refute], x, ROW_Y2 - r * 0.9 - NAME_GAP - height, {
     align: "center",
     inline: false,
-    alpha: compact
+    alpha: a
   });
-  const refuted = compact * ramp(t, c.refute - 0.15, 0.4);
+  const refuted = a * ramp(t, c.refute - 0.15, 0.4);
   link(x - r - 8, ROW_Y2 + 18, COLUMNS[1] + MARK2[0] / 2 + 10, ROW_Y2 + 18, {
     alpha: refuted,
     upto: soon(t, c.refute + 0.05, 0.6),
@@ -2573,80 +2596,32 @@ function stageCase(t, a, c) {
     );
   const cx = COLUMNS[2];
   forkMark(cx, ROW_Y2 - 20, {
-    alpha: compact * ramp(t, c.choice - 0.15, 0.4),
+    alpha: a * ramp(t, c.choice - 0.15, 0.4),
     run: voiceTime(t) * 0.45 % 1
   });
-  termRow(t, [L("换供应商", "A new vendor")], [c.choice], [L("选择", "a choice")], [c.isChoice], cx, NAMES_TOP, {
-    align: "center",
-    inline: false,
-    alpha: compact
-  });
+  termRow(
+    t,
+    [L("换供应商", "A new vendor")],
+    [c.choice],
+    [L("选择", "a choice")],
+    [c.isChoice],
+    cx,
+    NAMES_TOP,
+    {
+      align: "center",
+      inline: false,
+      alpha: a
+    }
+  );
   person(cx, OWNER_Y + 4, {
     color: P.authority,
-    alpha: compact * ramp(t, c.owner - 0.15, 0.4),
+    alpha: a * ramp(t, c.owner - 0.15, 0.4),
     size: 0.9
   });
   nameText(L("决策负责人", "Decision owner"), cx, OWNER_Y + 36 + NAME_GAP, {
     valign: "top",
-    alpha: compact * named(t, c.owner)
+    alpha: a * named(t, c.owner)
   });
-}
-
-// picture/film/scenes/p03/kinds.js
-var KINDS = { left: 560, right: 1360, y: 490, name: 350 };
-var SEAL_R = 58;
-var RECORD = [110, 140];
-function twoKinds(s, t, a, c, { facts = false } = {}) {
-  const g = a * clearOfTitle(s, t, KINDS.name - 30), on = g * ramp(t, s.voice_start - 0.4, 0.35), fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD[1] / 2) + NAME_GAP;
-  nameText(L("两种依据", "Two kinds of authority"), 960, KINDS.name, {
-    valign: "bottom",
-    alpha: g * (facts ? 1 : named(t, c.two) * (1 - ramp(t, c.act - 0.15, 0.4)))
-  });
-  const q = voiceTime(t) * 0.3 % 1;
-  [KINDS.left, KINDS.right].forEach(
-    (x) => flowDot(mix(960, x, q), joint, 4.5, q, { color: P.line, alpha: on })
-  );
-  stroke(
-    () => {
-      ctx.moveTo(960, fork2);
-      ctx.lineTo(960, joint);
-      ctx.moveTo(KINDS.left, KINDS.y - SEAL_R - 4);
-      ctx.lineTo(KINDS.left, joint);
-      ctx.lineTo(KINDS.right, joint);
-      ctx.lineTo(KINDS.right, KINDS.y - RECORD[1] / 2 - 4);
-    },
-    { color: P.line, alpha: on, width: 2.5 }
-  );
-  seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
-  recordMark(KINDS.right, KINDS.y, ...RECORD, { alpha: on });
-  const rise = facts ? 1 : soon(t, c.apart + 0.05, 0.6);
-  if (rise > 0)
-    line(960, KINDS.y + 110, 960, KINDS.y + 110 - 190 * rise, {
-      color: P.line,
-      alpha: g * Math.min(1, rise * 3),
-      width: 3
-    });
-  termRow(
-    t,
-    [L("行动依据", "Authority to act")],
-    [facts ? -Infinity : c.act],
-    [L("谁可以决定做什么", "who may decide")],
-    [facts ? -Infinity : c.who],
-    KINDS.left,
-    names,
-    { align: "center", inline: false, alpha: g }
-  );
-  if (facts)
-    termRow(
-      t,
-      [L("事实依据", "Authority about facts")],
-      [c.facts],
-      [L("靠什么认定一件事是真的", "what can establish truth")],
-      [c.what],
-      KINDS.right,
-      names,
-      { align: "center", inline: false, alpha: g }
-    );
 }
 
 // picture/film/scenes/p03/close.js
@@ -2732,46 +2707,54 @@ function station(x, y, alpha) {
   dot(x, y, STATION_R, { color: P.ground, alpha });
   ring(x, y, STATION_R, { color: P.ink, alpha, width: 3 });
 }
-function stageApart(s, t, a, c) {
-  const F1 = a * stageOut(t, c.actAgain), F22 = a * stageIn(t, c.actAgain);
-  if (F1 > 0) {
-    twoKinds(s, t, F1, c, { facts: true });
-    const ways = F1 * ramp(t, c.substitute - 0.15, 0.4), reach = soon(t, c.substitute + 0.05, 0.5);
-    line(KINDS.left + 64, KINDS.y, mix(KINDS.left + 64, 944, reach), KINDS.y, {
-      alpha: ways,
-      width: 2.5
-    });
-    line(KINDS.right - 61, KINDS.y, mix(KINDS.right - 61, 976, reach), KINDS.y, {
-      alpha: ways,
-      width: 2.5
-    });
-    [944, 976].forEach(
-      (bx) => bar(bx, KINDS.y, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 })
-    );
-    rejectedName(L("替代", "Substitution"), 960, KINDS.y + 110 + NAME_GAP, {
-      valign: "top",
-      alpha: F1 * named(t, c.substitute),
-      mark: ramp(t, c.substitute + 0.05, 0.3)
-    });
-  }
-  if (F22 > 0) refusals(t, F22, c);
-}
-var TOP = 285;
-var MID = 560;
-var RAIL2 = MID + 60;
-var MID_NAMES = RAIL2 + NAME_GAP;
+var TOP = 300;
+var DIVIDER = [TOP - 56, TOP + 56];
+var CONFLICT_Y = DIVIDER[1] + 56;
+var MID = 590;
+var RAIL3 = MID + 60;
+var MID_NAMES = RAIL3 + NAME_GAP;
 var SIDES2 = [600, 1320];
-function refusals(t, a, c) {
-  line(SIDES2[0] - 60, RAIL2, SIDES2[1] + 60, RAIL2, { color: P.line, alpha: a, width: 2.5 });
+var BARS = [944, 976];
+function stageApart(t, a, c) {
+  line(SIDES2[0] - 60, RAIL3, SIDES2[1] + 60, RAIL3, { color: P.line, alpha: a, width: 2.5 });
   seal(SIDES2[0], TOP, 46, { alpha: a });
   recordMark(SIDES2[1], TOP, 88, 112, { alpha: a });
-  nameText(L("行动依据", "Authority to act"), SIDES2[0] - 46 - NAME_GAP, TOP, {
-    align: "right",
-    alpha: a
+  [
+    [L("行动依据", "Authority to act"), L("谁可以决定做什么", "who may decide"), -1],
+    [
+      L("事实依据", "Authority about facts"),
+      L("靠什么认定一件事是真的", "what can establish truth"),
+      1
+    ]
+  ].forEach(([term, qual, side]) => {
+    const { height } = termRowLayout([term], [qual], Infinity, false);
+    termRow(
+      t,
+      [term],
+      [-Infinity],
+      [qual],
+      [-Infinity],
+      side < 0 ? SIDES2[0] - 46 - NAME_GAP : SIDES2[1] + 44 + NAME_GAP,
+      TOP - height / 2,
+      { align: side < 0 ? "right" : "left", inline: false, alpha: a }
+    );
   });
-  nameText(L("事实依据", "Authority about facts"), SIDES2[1] + 44 + NAME_GAP, TOP, {
-    align: "left",
-    alpha: a
+  const ways = a * ramp(t, c.substitute - 0.15, 0.4), reach = soon(t, c.substitute + 0.05, 0.5), rise = soon(t, c.substitute + 0.05, 0.6);
+  if (rise > 0)
+    line(960, DIVIDER[1], 960, mix(DIVIDER[1], DIVIDER[0], rise), {
+      color: P.line,
+      alpha: a * Math.min(1, rise * 3),
+      width: 3
+    });
+  line(SIDES2[0] + 52, TOP, mix(SIDES2[0] + 52, BARS[0], reach), TOP, { alpha: ways, width: 2.5 });
+  line(SIDES2[1] - 50, TOP, mix(SIDES2[1] - 50, BARS[1], reach), TOP, { alpha: ways, width: 2.5 });
+  BARS.forEach(
+    (bx) => bar(bx, TOP, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 })
+  );
+  rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
+    valign: "bottom",
+    alpha: a * named(t, c.substitute),
+    mark: ramp(t, c.substitute + 0.05, 0.3)
   });
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4), stop = TOP + 150;
   line(SIDES2[0], TOP + 50, SIDES2[0], mix(TOP + 50, stop - 6, soon(t, c.falseTrue + 0.05, 0.5)), {
@@ -2803,23 +2786,18 @@ function refusals(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.permission)
   });
-  const conflict = a * ramp(t, c.conflict - 0.15, 0.4), meet = soon(t, c.conflict + 0.05, 0.5);
-  stroke(
-    () => {
-      ctx.moveTo(SIDES2[0] + 52, TOP);
-      ctx.lineTo(mix(SIDES2[0] + 52, 930, meet), TOP);
-      ctx.moveTo(SIDES2[1] - 50, TOP);
-      ctx.lineTo(mix(SIDES2[1] - 50, 990, meet), TOP);
-    },
-    { color: P.line, alpha: conflict, width: 2.5 }
-  );
-  conflictMark(960, TOP, { alpha: conflict });
-  nameText(L("冲突", "Conflict"), 960, TOP - 12 - NAME_GAP, {
-    valign: "bottom",
+  const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
+  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, soon(t, c.conflict + 0.05, 0.4)), {
+    alpha: conflict,
+    width: 3
+  });
+  conflictMark(960, CONFLICT_Y, { alpha: conflict });
+  nameText(L("冲突", "Conflict"), 960 + 22 + NAME_GAP, CONFLICT_Y, {
+    align: "left",
     alpha: a * named(t, c.conflict)
   });
   const report = a * ramp(t, c.report - 0.15, 0.4);
-  link(960, TOP + 16, 960, MID - 36, {
+  link(960, CONFLICT_Y + 12, 960, MID - 36, {
     alpha: report,
     upto: soon(t, c.report + 0.05, 0.5),
     width: 2.5
@@ -2841,40 +2819,20 @@ function refusals(t, a, c) {
 }
 
 // picture/film/scenes/p03/facts.js
-var HEAD_Y = 285;
-var HEAD_MARK = [62, 78];
-var ROW_Y3 = 455;
-var RECORDS_X = [760, 1160];
-var STATE_Y = 578;
-var BAR_Y = 644;
-var JOIN_Y = 680;
-var LEADS_Y = 730;
+var ROW_Y3 = 395;
+var RECORDS_X = [840, 1080];
+var STATE_Y = 518;
+var BAR_Y = 604;
+var JOIN_Y = 640;
+var LEADS_Y = 700;
 var LEAD_HALF = 22;
 var LEAD_GAP = 44;
-var HEAD = () => L("事实依据", "Authority about facts");
-var WHAT = () => L("靠什么认定一件事是真的", "what can establish truth");
 var STATE = () => L(["来源、", "时间、", "对象、", "范围"], ["Source, ", "time, ", "subject, ", "scope"]);
 function leadPlaces() {
-  const widths = LEAD_ORDER().map((k) => Math.max(2 * LEAD_HALF, measure(L(...LEADS[k]), NOTE))), steps = widths.slice(1).map((w, i) => Math.max(130, (widths[i] + w) / 2 + LEAD_GAP)), xs = steps.reduce((v, d) => [...v, v.at(-1) + d], [0]), mid = (xs[0] - widths[0] / 2 + xs.at(-1) + widths.at(-1) / 2) / 2;
-  return { xs: xs.map((x) => x - mid + 960), widths };
+  const widths = LEAD_ORDER().map((k) => Math.max(2 * LEAD_HALF, measure(L(...LEADS[k]), NOTE))), pitch = Math.max(130, ...widths.slice(1).map((w, i) => (widths[i] + w) / 2 + LEAD_GAP)), middle = (widths.length - 1) / 2;
+  return { xs: widths.map((_, i) => 960 + (i - middle) * pitch), widths };
 }
 function stageFacts(t, a, c) {
-  const width = HEAD_MARK[0] + NAME_GAP + Math.max(measure(HEAD()), measure(WHAT(), NOTE)), hx = 960 - width / 2 + HEAD_MARK[0] / 2;
-  recordMark(hx, HEAD_Y, ...HEAD_MARK, { alpha: a });
-  termRow(
-    t,
-    [HEAD()],
-    [-Infinity],
-    [WHAT()],
-    [-Infinity],
-    hx + HEAD_MARK[0] / 2 + NAME_GAP,
-    HEAD_Y - 32,
-    {
-      align: "left",
-      inline: false,
-      alpha: a
-    }
-  );
   const records = a * ramp(t, c.primary - 0.15, 0.4), observed = a * ramp(t, c.observe - 0.15, 0.4), names = ROW_Y3 + 52 + NAME_GAP;
   recordMark(RECORDS_X[0], ROW_Y3, 84, 104, { alpha: records });
   nameText(L("原始记录", "Primary records"), RECORDS_X[0], names, {
@@ -2893,21 +2851,12 @@ function stageFacts(t, a, c) {
     build: true,
     alpha: a
   });
-  const { xs, widths } = leadPlaces(), reach = xs.map((_, i) => soon(t, c.leads[i] - 0.15, 0.4));
-  stroke(
-    () => {
-      ctx.moveTo(xs[0], JOIN_Y);
-      ctx.lineTo(xs.at(-1), JOIN_Y);
-      xs.forEach((x, i) => {
-        if (reach[i] <= 0) return;
-        ctx.moveTo(x, JOIN_Y);
-        ctx.lineTo(x, mix(JOIN_Y, LEADS_Y - LEAD_HALF - 4, reach[i]));
-      });
-    },
-    { color: P.line, alpha: a * ramp(t, c.leads[0] - 0.15, 0.4), width: 2.5 }
-  );
+  const { xs, widths } = leadPlaces();
+  line(xs[0], JOIN_Y, xs.at(-1), JOIN_Y, { color: P.line, alpha: a, width: 2.5 });
   LEAD_ORDER().forEach((k, i) => {
-    leadMark(k, xs[i], LEADS_Y, { alpha: a * ramp(t, c.leads[i] - 0.15, 0.4) });
+    const on2 = a * ramp(t, c.leads[i] - 0.15, 0.4);
+    line(xs[i], JOIN_Y, xs[i], LEADS_Y - LEAD_HALF - 4, { color: P.line, alpha: on2, width: 2.5 });
+    leadMark(k, xs[i], LEADS_Y, { alpha: on2 });
     nameText(L(...LEADS[k]), xs[i], LEADS_Y + LEAD_HALF + 16, {
       valign: "top",
       size: NOTE,
@@ -2930,13 +2879,13 @@ function stageFacts(t, a, c) {
   }
   const under = LEADS_Y + LEAD_HALF + 16 + 25 + 14, on = a * soon(t, c.onlyLeads - 0.1, 0.5);
   if (on > 0.01) {
-    const left = xs[0] - widths[0] / 2, right = xs.at(-1) + widths.at(-1) / 2;
+    const half = Math.max(...xs.map((x, i) => Math.abs(x - 960) + widths[i] / 2));
     stroke(
       () => {
-        ctx.moveTo(left, under - 8);
-        ctx.lineTo(left, under);
-        ctx.lineTo(right, under);
-        ctx.lineTo(right, under - 8);
+        ctx.moveTo(960 - half, under - 8);
+        ctx.lineTo(960 - half, under);
+        ctx.lineTo(960 + half, under);
+        ctx.lineTo(960 + half, under - 8);
       },
       { color: P.line, alpha: on, width: 2 }
     );
@@ -2947,11 +2896,68 @@ function stageFacts(t, a, c) {
   });
 }
 
+// picture/film/scenes/p03/kinds.js
+var KINDS = { left: 560, right: 1360, y: 490, name: 350 };
+var SEAL_R = 58;
+var RECORD = [110, 140];
+function twoKinds(s, t, a, c, { facts = false } = {}) {
+  const g = a * clearOfTitle(s, t, KINDS.name - 30), on = g * ramp(t, s.voice_start - 0.4, 0.35), fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD[1] / 2) + NAME_GAP;
+  nameText(L("两种依据", "Two kinds of authority"), 960, KINDS.name, {
+    valign: "bottom",
+    alpha: g * (facts ? 1 : named(t, c.two) * (1 - ramp(t, c.act - 0.15, 0.4)))
+  });
+  const q = voiceTime(t) * 0.3 % 1;
+  [KINDS.left, KINDS.right].forEach(
+    (x) => flowDot(mix(960, x, q), joint, 4.5, q, { color: P.line, alpha: on })
+  );
+  stroke(
+    () => {
+      ctx.moveTo(960, fork2);
+      ctx.lineTo(960, joint);
+      ctx.moveTo(KINDS.left, KINDS.y - SEAL_R - 4);
+      ctx.lineTo(KINDS.left, joint);
+      ctx.lineTo(KINDS.right, joint);
+      ctx.lineTo(KINDS.right, KINDS.y - RECORD[1] / 2 - 4);
+    },
+    { color: P.line, alpha: on, width: 2.5 }
+  );
+  seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
+  recordMark(KINDS.right, KINDS.y, ...RECORD, { alpha: on });
+  const rise = facts ? 1 : soon(t, c.apart + 0.05, 0.6);
+  if (rise > 0)
+    line(960, KINDS.y + 110, 960, KINDS.y + 110 - 190 * rise, {
+      color: P.line,
+      alpha: g * Math.min(1, rise * 3),
+      width: 3
+    });
+  termRow(
+    t,
+    [L("行动依据", "Authority to act")],
+    [facts ? -Infinity : c.act],
+    [L("谁可以决定做什么", "who may decide")],
+    [facts ? -Infinity : c.who],
+    KINDS.left,
+    names,
+    { align: "center", inline: false, alpha: g }
+  );
+  if (facts)
+    termRow(
+      t,
+      [L("事实依据", "Authority about facts")],
+      [c.facts],
+      [L("靠什么认定一件事是真的", "what can establish truth")],
+      [c.what],
+      KINDS.right,
+      names,
+      { align: "center", inline: false, alpha: g }
+    );
+}
+
 // picture/film/scenes/p03/order.js
-var HEAD_Y2 = 300;
+var HEAD_Y = 300;
 var SEAL_R2 = 46;
-var ROWS2 = [420, 510, 600, 690];
-var TO_NAMES2 = 34;
+var ROWS = [420, 510, 600, 690];
+var TO_NAMES = 34;
 var OWNER = { dx: -38, size: 0.55 };
 var RANKS = () => L(
   [
@@ -2967,33 +2973,33 @@ var RANKS = () => L(
     "Plans, provisional agreements, personal preferences"
   ]
 );
-var HEAD2 = () => L("行动依据", "Authority to act");
+var HEAD = () => L("行动依据", "Authority to act");
 var QUESTION = () => L("谁可以决定做什么", "who may decide");
 function spineX() {
-  const left = OWNER.dx - 1.55 * 15 * OWNER.size, head = SEAL_R2 + NAME_GAP + Math.max(measure(HEAD2()), measure(QUESTION(), NOTE)), rights = RANKS().map((v) => TO_NAMES2 + measure(v)), shifts = rights.map((_, k) => 960 - (left + Math.max(head, ...rights.slice(0, k + 1))) / 2);
+  const left = OWNER.dx - 1.55 * 15 * OWNER.size, head = SEAL_R2 + NAME_GAP + Math.max(measure(HEAD()), measure(QUESTION(), NOTE)), rights = RANKS().map((v) => TO_NAMES + measure(v)), shifts = rights.map((_, k) => 960 - (left + Math.max(head, ...rights.slice(0, k + 1))) / 2);
   return (Math.max(...shifts) + Math.min(...shifts)) / 2;
 }
 function stageOrder(t, a, c) {
-  const x = spineX(), grow = soon(t, c.order + 0.05, 0.8), top = HEAD_Y2 + SEAL_R2 + 4;
-  seal(x, HEAD_Y2, SEAL_R2, { alpha: a });
-  termRow(t, [HEAD2()], [-Infinity], [QUESTION()], [-Infinity], x + SEAL_R2 + NAME_GAP, HEAD_Y2 - 32, {
+  const x = spineX(), grow = soon(t, c.order + 0.05, 0.5), top = HEAD_Y + SEAL_R2 + 4;
+  seal(x, HEAD_Y, SEAL_R2, { alpha: a });
+  termRow(t, [HEAD()], [-Infinity], [QUESTION()], [-Infinity], x + SEAL_R2 + NAME_GAP, HEAD_Y - 32, {
     align: "left",
     inline: false,
     alpha: a
   });
-  line(x, top, x, top + (ROWS2[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
+  line(x, top, x, top + (ROWS[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
   const q = voiceTime(t) * 0.22 % 1;
-  if (grow >= 1) flowDot(x, mix(top, ROWS2[3], q), 5, q, { color: P.authority, alpha: a });
+  if (grow >= 1) flowDot(x, mix(top, ROWS[3], q), 5, q, { color: P.authority, alpha: a });
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
-    dot(x, ROWS2[k], 7, { color: P.ink, alpha: on });
-    nameText(v, x + TO_NAMES2, ROWS2[k], {
+    dot(x, ROWS[k], 7, { color: P.ink, alpha: on });
+    nameText(v, x + TO_NAMES, ROWS[k], {
       align: "left",
       alpha: a * listIn(t, c.ranks, k),
       set: "ranks"
     });
     if (k === 1)
-      person(x + OWNER.dx, ROWS2[k] + 8, { size: OWNER.size, color: P.authority, alpha: on });
+      person(x + OWNER.dx, ROWS[k] + 8, { size: OWNER.size, color: P.authority, alpha: on });
   });
 }
 
@@ -3005,7 +3011,10 @@ function cuesOf3(s) {
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    order: cue(s, "最先是法律", "Law"),
+    // The order opens on 03.3's first words. Its span grows on 「有先后」, where the Chinese announces the order; the
+    // English announces it in 03.2, so there the span grows on the first rank.
+    opens: cue(s, "它有先后", "Law"),
+    order: cue(s, "有先后", "Law"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "才是这件事", "the explicit decision"),
@@ -3027,7 +3036,7 @@ function cuesOf3(s) {
     notPrimary: cue(s, "都不是原始记录", "are not primary records"),
     onlyLeads: cue(s, "线索", "leads")
   };
-  return { ...c, ...caseCues(s), ...closeCues(s, c) };
+  return { ...c, ...caseCues(s), ...closeCues(s) };
 }
 function caseCues(s) {
   const choice = cue(s, "要不要换供应商", "Whether to change vendors");
@@ -3048,7 +3057,7 @@ function caseCues(s) {
     owner: cueFrom(s, "决策负责人", "decision owner", choice)
   };
 }
-function closeCues(s, c) {
+function closeCues(s) {
   return {
     meeting: cue(s, "前面说的那场会", "The meeting at the start"),
     before: cue(s, "会前", "Before it"),
@@ -3064,7 +3073,6 @@ function closeCues(s, c) {
     missing: cue(s, "还缺什么", "still missing"),
     neither: cue(s, "两种依据不能", "Neither kind"),
     substitute: cue(s, "互相替代", "stands in for"),
-    actAgain: cueFrom(s, "行动依据", "Authority to act", c.onlyLeads),
     falseTrue: cue(s, "假的变成真的", "false fact"),
     permission: cue(s, "去做的权限", "permission to act"),
     conflict: cue(s, "两者冲突时", "When the two conflict"),
@@ -3075,15 +3083,15 @@ function closeCues(s, c) {
 }
 scenes["03"] = function(s, t) {
   const c = cuesOf3(s);
-  const A5 = stageOut(t, c.order), B6 = stageIn(t, c.order) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.primary), C22 = stageIn(t, c.primary) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E3 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
+  const A5 = stageOut(t, c.opens), B6 = stageIn(t, c.opens) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.primary), C22 = stageIn(t, c.primary) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E4 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
   if (A5 > 0) twoKinds(s, t, A5, c);
   if (B6 > 0) stageOrder(t, B6, c);
   if (C1 > 0) twoKinds(s, t, C1, c, { facts: true });
   if (C22 > 0) stageFacts(t, C22, c);
   if (D3 > 0) stageCase(t, D3, c);
-  if (E3 > 0) stageMeeting(t, E3, c);
-  if (F3 > 0) stageApart(s, t, F3, c);
-  illustrative(Math.max(D3, E3));
+  if (E4 > 0) stageMeeting(t, E4, c);
+  if (F3 > 0) stageApart(t, F3, c);
+  illustrative(Math.max(D3, E4));
 };
 
 // picture/film/scenes/p04/marks.js
@@ -3204,12 +3212,14 @@ function speaker(cx, cy, { alpha = 1, agent: agent2 = false } = {}) {
 }
 
 // picture/film/scenes/p04/lines.js
-var ROWS3 = () => L(
+var FIELD = { y: 480, h: 440 };
+var TOP2 = FIELD.y - FIELD.h / 2;
+var ROWS2 = () => L(
   [
     ["说真话", ["不编造、", "隐瞒、", "挑着说，", "不把没把握说成有把握"]],
-    ["守边界", ["对象和时间、", "能力和权限，", "数据、安全、合规和行动"]],
+    ["守边界", ["对象和时间、", "能力和权限，", "数据、", "安全、", "合规和行动"]],
     ["责任落到人", ["重要的判断、", "决定、", "变更和验收"]],
-    ["不虚报完成", ["做完、", "做对、", "能用、", "有人在用，", "要有当前的证据"]]
+    ["不虚报完成", ["做完、", "做对、", "能用、", "有人在用，", "要有当前的、", "对得上的证据"]]
   ],
   [
     [
@@ -3218,7 +3228,14 @@ var ROWS3 = () => L(
     ],
     [
       "Staying in bounds",
-      ["subject, time, ", "competence, permission, ", "data, security, compliance, action"]
+      [
+        "subject, time, ",
+        "competence, permission, ",
+        "data, ",
+        "security, ",
+        "compliance, ",
+        "action"
+      ]
     ],
     ["Naming the owner", ["every important judgment, ", "decision, change ", "and acceptance"]],
     [
@@ -3227,49 +3244,32 @@ var ROWS3 = () => L(
     ]
   ]
 );
-var B = { y: 480, s: 360, rows: [300, 420, 540, 660], toRows: 90, icon: 34 };
-function lineX(c) {
-  const textAt = B.s / 2 + B.toRows + B.icon / 2 + 26, parts = ROWS3().flatMap(([v, q], k) => [
-    [c.rows[k], measure(v)],
-    [c.quals[k][0], measure(q.join(""), NOTE)]
-  ]).sort((p, q) => p[0] - q[0]);
-  let widest = 0;
-  const shifts = parts.map(([, w]) => {
-    widest = Math.max(widest, w);
-    return 960 - (-B.s / 2 + textAt + widest) / 2;
-  });
-  return (50 * shifts[1] + 90 * shifts.at(-1)) / 140;
-}
+var B = { pitch: 100, icon: 34, toText: 26, margin: 64 };
 function stageLines(t, a, c) {
-  const x = lineX(c), iconX = x + B.s / 2 + B.toRows, textX = iconX + B.icon / 2 + 26;
-  field(x, B.y, B.s, B.s, { alpha: a, lit: c.rows.map((at2) => ramp(t, at2 - 0.15, 0.4)) });
-  nameText(L("四条底线", "Four boundaries"), x, B.y - B.s / 2 - NAME_GAP, {
+  const rows = ROWS2(), widest = Math.max(...rows.flatMap(([v, q]) => [measure(v), measure(q.join(""), NOTE)])), rowHeight = Math.max(...rows.map(([v, q]) => termRowLayout([v], q, Infinity, false).height)), span = B.icon + B.toText + widest, height = 3 * B.pitch + rowHeight + 2 * B.margin, first = TOP2 + B.margin, iconX = 960 - span / 2 + B.icon / 2, textX = iconX + B.icon / 2 + B.toText;
+  field(960, TOP2 + height / 2, span + 2 * B.margin, height, {
+    alpha: a,
+    lit: c.ordinals.map((at2) => ramp(t, at2 - 0.15, 0.4))
+  });
+  nameText(L("四条底线", "Four boundaries"), 960, TOP2 - NAME_GAP, {
     valign: "bottom",
     alpha: a
   });
-  const q = voiceTime(t) * 0.12 % 1, inset = B.s / 2 - 34, path2 = [
-    [x - inset, B.y - inset],
-    [x + inset, B.y - inset],
-    [x + inset, B.y + inset],
-    [x - inset, B.y + inset],
-    [x - inset, B.y - inset]
-  ], leg = Math.min(3, Math.floor(q * 4)), f = q * 4 - leg;
-  dot(mix(path2[leg][0], path2[leg + 1][0], f), mix(path2[leg][1], path2[leg + 1][1], f), 7, {
-    color: P.ink,
-    alpha: a
-  });
-  ROWS3().forEach(([term, qual], k) => {
-    const y = B.rows[k];
-    fieldIcon(iconX, y, B.icon, k, { alpha: a * ramp(t, c.rows[k] - 0.15, 0.4) });
-    termRow(t, [term], [c.rows[k]], qual, c.quals[k], textX, y - 32, {
+  rows.forEach(([term, qual], k) => {
+    const top = first + k * B.pitch;
+    fieldIcon(iconX, top + rowHeight / 2, B.icon, k, {
+      alpha: a * ramp(t, c.rows[k] - 0.15, 0.4)
+    });
+    termRow(t, [term], [c.rows[k]], qual, c.quals[k], textX, top, {
       align: "left",
       inline: false,
+      build: true,
       set: "boundaries",
-      alpha: a * listLevel(t, c.rows, k)
+      alpha: a * listLevel(t, [...c.rows, c.listEnd], k)
     });
   });
 }
-var C = { y: 478, s: 400, pitch: 64 };
+var C = { y: TOP2 + 200, s: 400, pitch: 64 };
 var CASES = () => L(
   ["自主、探索和创造", "停下来，讲出来，往上报"],
   ["Autonomy, exploration, creative work", "Halt, disclosure, escalation"]
@@ -3307,344 +3307,6 @@ function stageCases(t, a, c) {
     set: "cases"
   });
 }
-
-// picture/film/scenes/p04/ladder.js
-var WORK = () => L(
-  [
-    { term: ["局部、可逆"], qual: ["无对外承诺"] },
-    { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定"] },
-    { term: ["生产、资金、敏感数据、安全合规"], qual: ["删除覆盖、对外承诺、不可逆"] }
-  ],
-  [
-    { term: ["Local, reversible work"], qual: ["no external commitment"] },
-    {
-      term: ["Cross-role ", "or extended work"],
-      qual: ["competing options, material uncertainty"],
-      width: 260,
-      noteWidth: Infinity
-    },
-    {
-      term: ["Production, funds, sensitive data, ", "security or compliance"],
-      qual: ["deletion, overwrite, ", "external commitment, irreversibility"],
-      width: 490,
-      noteWidth: 420
-    }
-  ]
-);
-var RECORD2 = () => L(
-  [
-    { term: ["一次讲清"], qual: ["结论、依据、做法"] },
-    { term: ["现有的工作记录"], qual: ["问题、方案、做法、验收"] },
-    { term: ["书面决定、", "明确授权"], qual: ["回滚或降级预案、", "独立评审、", "由人验收"] }
-  ],
-  [
-    { term: ["One clear exchange"], qual: ["conclusion, basis, action"] },
-    {
-      term: ["Problem, options, ", "execution path, acceptance"],
-      qual: ["existing work record"],
-      width: 370,
-      noteWidth: Infinity
-    },
-    {
-      term: ["A written decision, ", "explicit authorization"],
-      qual: ["a rollback or degradation path, ", "independent review, ", "human acceptance"],
-      width: 310,
-      noteWidth: 470
-    }
-  ]
-);
-var recordTimes = (c) => [
-  { term: [c.oneClear], qual: [c.clearQual] },
-  { term: [L(c.record, c.recordQual)], qual: [L(c.recordQual, c.record)] },
-  { term: c.written.slice(0, 2), qual: c.written.slice(2), build: true }
-];
-var HEAD3 = () => L(
-  { top: "风险", left: "多少记录", right: "多少手续" },
-  { top: "Risk", left: null, right: "Process" }
-);
-var TIER_Y = [330, 520, 720];
-var DOCS = [
-  [52, 66],
-  [80, 102],
-  [112, 144]
-];
-var SPINE = [236, 820];
-var HEAD_GAP = 70;
-var TO_WORK = 40;
-var TO_DOC = 64;
-var DOC_RIGHT = TO_DOC + DOCS[2][0];
-var blockWidth = ({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }) => Math.max(
-  ...growTexts(term, width).map((line2) => line2.reduce((w, [, v]) => w + measure(v), 0)),
-  ...growTexts(qual, noteWidth2, NOTE).map(
-    (line2) => line2.reduce((w, [, v]) => w + measure(v, NOTE), 0)
-  )
-);
-function spineX2(c) {
-  const head = HEAD3(), top = measure(head.top) / 2, records = recordTimes(c), parts = [
-    [c.risk, Math.max(top, head.left ? HEAD_GAP + measure(head.left) : 0), Math.max(top, HEAD_GAP + measure(head.right))],
-    ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
-    ...RECORD2().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
-  ].sort((p, q) => p[0] - q[0]);
-  let left = 0, right = 0;
-  const offsets = parts.map(([, l, r]) => {
-    left = Math.max(left, l);
-    right = Math.max(right, r);
-    return (right - left) / 2;
-  });
-  return 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2;
-}
-function stageLadder(t, a, c) {
-  const x = spineX2(c), head = HEAD3(), top = SPINE[0];
-  line(x, top, x, SPINE[1], { color: P.line, alpha: a, width: 4 });
-  dot(x, top, 6, { color: P.line, alpha: a });
-  dot(x, SPINE[1], 6, { color: P.line, alpha: a });
-  const q = voiceTime(t) * 0.2 % 1;
-  flowDot(x, mix(top, SPINE[1], q), 6, q, { color: P.authority, alpha: a });
-  nameText(head.top, x, top - 14 - NAME_GAP, {
-    valign: "bottom",
-    alpha: a * named(t, L(c.riskWord, c.risk))
-  });
-  if (head.left)
-    nameText(head.left, x - HEAD_GAP, top + 12, { align: "right", alpha: a * named(t, c.risk) });
-  nameText(head.right, x + HEAD_GAP, top + 12, { align: "left", alpha: a * named(t, c.process) });
-  WORK().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
-    const y = TIER_Y[k], on = a * ramp(t, c.tiers[k] - 0.15, 0.4);
-    line(x - 10, y, x + 10, y, { color: P.ink, alpha: on, width: 4 });
-    termRow(t, term, [c.tiers[k]], qual, [c.tierQuals[k]], x - TO_WORK, y - 32, {
-      align: "right",
-      inline: false,
-      width,
-      noteWidth: noteWidth2,
-      alpha: a
-    });
-  });
-  const docRight = x + DOC_RIGHT, times = recordTimes(c);
-  RECORD2().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
-    const [w, h] = DOCS[k], at2 = times[k].term[0], on = a * ramp(t, at2 - 0.15, 0.4);
-    tierDoc(docRight - w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
-    termRow(t, term, times[k].term, qual, times[k].qual, docRight + NAME_GAP, TIER_Y[k] - 32, {
-      align: "left",
-      inline: false,
-      width,
-      noteWidth: noteWidth2,
-      build: times[k].build ?? false,
-      buildTerm: times[k].build ?? false,
-      alpha: a
-    });
-  });
-}
-var columnX = () => L(520, 545);
-var TIER = { y: 350 };
-var NIGHT2 = { x: 1360, y: 330, scale: 0.55 };
-var FIX_Y = [318, 420];
-var DROP = 64;
-var LENS = { y: 660, r: 30 };
-var SPEAKERS = [1250, 1430];
-var SPEAK_Y = 690;
-function stageReview(t, a, c) {
-  const [w3, h3] = DOCS[2], lit = ramp(t, c.belongs - 0.15, 0.4), vt = voiceTime(t), tierY = TIER.y + DROP, nightY = NIGHT2.y + DROP;
-  const tierX = columnX();
-  tierDoc(tierX, tierY, w3, h3, { alpha: a, color: blend(P.ink, P.authority, lit), rows: 4 });
-  const { term, qual } = WORK()[2];
-  termRow(t, term, [-Infinity], qual, [-Infinity], tierX, tierY + h3 / 2 + NAME_GAP, {
-    align: "center",
-    inline: false,
-    alpha: a
-  });
-  const night = lastNight(NIGHT2.x, nightY, NIGHT2.scale, {
-    alpha: a,
-    card: 1,
-    flow: vt * 0.25 % 1,
-    names: { axis: { v: L("昨晚的事", "Last night's case"), alpha: named(t, c.lastCase) } }
-  });
-  L(
-    ["换供应商", "改生产环境里的采集任务"],
-    ["A new vendor", "Collection job in production"]
-  ).forEach((v, i) => {
-    const y = FIX_Y[i] + DROP, on = a * ramp(t, c.fixes[i] - 0.15, 0.4);
-    link(night.left - 6, i ? nightY + 4 : nightY - 4, tierX + w3 / 2 + 10, y, {
-      route: "hvh",
-      mid: night.left - 40 - i * 24,
-      alpha: on,
-      upto: soon(t, c.fixes[i] + 0.05, 0.7),
-      width: 2.5
-    });
-    nameText(v, (tierX + w3 / 2 + night.left - 40) / 2, y - NAME_GAP + 6, {
-      valign: "bottom",
-      alpha: a * listIn(t, c.fixes, i),
-      set: "fixes"
-    });
-  });
-  const review = a * ramp(t, c.review - 0.15, 0.4);
-  lens(tierX, LENS.y, LENS.r, { alpha: review });
-  termRow(
-    t,
-    [L("独立评审", "Independent review")],
-    [c.review],
-    L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]),
-    c.examined,
-    tierX + LENS.r * 1.4 + NAME_GAP,
-    LENS.y - 32,
-    { align: "left", inline: false, build: true, alpha: a }
-  );
-  const author = a * ramp(t, c.author - 0.15, 0.4), agent2 = a * ramp(t, c.agent - 0.15, 0.4), names = SPEAK_Y + 34 + NAME_GAP;
-  speaker(SPEAKERS[0], SPEAK_Y, { alpha: author });
-  nameText(L("作者", "Author"), SPEAKERS[0], names, {
-    valign: "top",
-    alpha: a * named(t, c.author)
-  });
-  speaker(SPEAKERS[1], SPEAK_Y, { alpha: agent2, agent: true });
-  nameText(L("智能体", "Agent"), SPEAKERS[1], names, {
-    valign: "top",
-    alpha: a * named(t, c.agent)
-  });
-  const own = a * ramp(t, c.own - 0.15, 0.4), stopX = SPEAKERS[0] - 150;
-  link(SPEAKERS[0] - 34, SPEAK_Y, stopX + 8, SPEAK_Y, {
-    alpha: own,
-    upto: soon(t, c.own + 0.05, 0.5),
-    width: 2.5,
-    end: false
-  });
-  bar(stopX, SPEAK_Y, { alpha: own * ramp(t, c.own + 0.5, 0.2), vertical: true, length: 36 });
-  rejectedName(L("自己怎么说", "Own account"), stopX, SPEAK_Y + 18 + NAME_GAP, {
-    valign: "top",
-    alpha: own,
-    mark: ramp(t, c.own + 0.05, 0.3)
-  });
-}
-
-// picture/film/scenes/p04/scene.js
-var each = (zh, en2) => L(zh, en2)();
-function cuesOf4(s) {
-  const lastCase = cue(s, "昨晚的事", "Last night's case");
-  return {
-    four: cue(s, "四条底线", "Four boundaries"),
-    never: cue(s, "不能越过", "never be crossed"),
-    rows: [
-      cue(s, "说真话", "tell the truth"),
-      cue(s, "守边界", "stay in bounds"),
-      cue(s, "责任落到人", "name the owner"),
-      cue(s, "不虚报完成", "do not claim false completion")
-    ],
-    quals: [
-      [
-        cue(s, "不编造", "no fabrication"),
-        cue(s, "不隐瞒", "no hiding"),
-        cue(s, "不挑着说", "no cherry-picking"),
-        cue(s, "没把握", "no uncertainty")
-      ],
-      [cue(s, "对象和时间", "subject"), cue(s, "能力和权限", "competence"), cue(s, "数据", "data")],
-      [
-        cue(s, "重要的判断", "every important judgment"),
-        cue(s, "决定", "decision"),
-        cue(s, "变更", "and acceptance")
-      ],
-      each(
-        () => [
-          cue(s, "做完了", ""),
-          cue(s, "做对了", ""),
-          cue(s, "能用了", ""),
-          cue(s, "有人在用", ""),
-          cue(s, "都要有当前", "")
-        ],
-        () => [cue(s, "", "without current evidence"), cue(s, "", "call nothing complete")]
-      )
-    ],
-    inside: cue(s, "在这四条底线之内", "Inside them"),
-    free: cue(s, "自主", "autonomy"),
-    near: cue(s, "快要越线时", "When an action would cross one"),
-    halt: cue(s, "停下来", "stop"),
-    ladder: cue(s, "要留多少记录", "Risk sets the process"),
-    risk: cue(s, "多少记录", "Risk sets the process"),
-    riskWord: cue(s, "看风险", "Risk sets the process"),
-    process: cue(s, "多少手续", "the process"),
-    tiers: [
-      cue(s, "局部", "Local"),
-      cue(s, "跨角色", "Cross-role"),
-      cue(s, "涉及生产", "Work touching production")
-    ],
-    tierQuals: [
-      cue(s, "不对外承诺", "no external commitment"),
-      cue(s, "几种方案", "competing options"),
-      cue(s, "删除覆盖", "deletion")
-    ],
-    oneClear: cue(s, "一次讲清", "one clear exchange"),
-    clearQual: cue(s, "结论", "conclusion"),
-    record: cue(s, "现有的工作记录", "existing work record"),
-    recordQual: cue(s, "问题", "the problem"),
-    written: [
-      cue(s, "书面决定", "a written decision"),
-      cue(s, "明确授权", "explicit authorization"),
-      cue(s, "回滚", "a rollback"),
-      cue(s, "独立评审", "independent review"),
-      cue(s, "由人验收", "human acceptance")
-    ],
-    lastCase,
-    fixes: [
-      cue(s, "换供应商", "a new vendor"),
-      cue(s, "改生产环境", "a change to the collection job")
-    ],
-    belongs: cue(s, "都属于这一类", "belongs here"),
-    review: cueFrom(s, "独立评审", "Independent review", lastCase),
-    examined: [
-      cue(s, "实际的事实", "the actual facts"),
-      cue(s, "推理", "reasoning"),
-      cueFrom(s, "变更", "changes", lastCase),
-      cueFrom(s, "证据", "evidence", lastCase)
-    ],
-    author: cue(s, "作者", "the author's"),
-    agent: cue(s, "智能体", "the Agent's"),
-    own: cue(s, "自己怎么说", "own account"),
-    whatever: cue(s, "风险高低", "Whatever the risk"),
-    duty: cue(s, "该尽的义务", "every duty")
-  };
-}
-var A = { x: 960, y: 480, w: 520, h: 440 };
-function stageField(t, a, c) {
-  field(A.x, A.y, A.w, A.h, {
-    alpha: a,
-    drawn: [0, 1, 2, 3].map((k) => soon(t, c.four - 0.15 + 0.08 * k, 0.3)),
-    lit: [1, 1, 1, 1]
-  });
-  nameText(L("四条底线", "Four boundaries"), A.x, A.y + A.h / 2 + NAME_GAP, {
-    valign: "top",
-    alpha: a * named(t, c.four)
-  });
-  const run = soon(t, c.never + 0.05, 0.7);
-  dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
-    color: P.ink,
-    alpha: a * ramp(t, c.four - 0.15, 0.3)
-  });
-}
-var F = { xs: [600, 960, 1320], y: 480, s: 260 };
-var DOCS2 = [
-  [60, 76],
-  [88, 112],
-  [120, 152]
-];
-function stageDuty(t, a, c) {
-  fieldRow(F.xs, F.y, F.s, { alpha: a, lit: ramp(t, c.duty - 0.15, 0.4) });
-  F.xs.forEach((x, k) => tierDoc(x, F.y, ...DOCS2[k], { alpha: a, rows: 2 + k }));
-  nameText(L("风险高低", "Every level of risk"), 960, F.y + F.s / 2 + NAME_GAP, {
-    valign: "top",
-    alpha: a * named(t, c.whatever)
-  });
-  nameText(L("该尽的义务", "Every duty"), 960, F.y - F.s / 2 - NAME_GAP, {
-    valign: "bottom",
-    alpha: a * named(t, c.duty)
-  });
-}
-scenes["04"] = function(s, t) {
-  const c = cuesOf4(s);
-  const SA = stageOut(t, c.rows[0]), SB = stageIn(t, c.rows[0]) * stageOut(t, c.inside), SC = stageIn(t, c.inside) * stageOut(t, c.ladder), SD = stageIn(t, c.ladder) * stageOut(t, c.lastCase), SE = stageIn(t, c.lastCase) * stageOut(t, c.whatever), SF = stageIn(t, c.whatever);
-  if (SA > 0) stageField(t, SA, c);
-  if (SB > 0) stageLines(t, SB, c);
-  if (SC > 0) stageCases(t, SC, c);
-  if (SD > 0) stageLadder(t, SD, c);
-  if (SE > 0) stageReview(t, SE, c);
-  if (SF > 0) stageDuty(t, SF, c);
-  illustrative(SE);
-};
 
 // picture/film/naming/placement.js
 var rowNameTop = (bottoms, gap = NAME_GAP) => Math.max(...bottoms) + gap;
@@ -3685,6 +3347,402 @@ function radialName(v, cx, cy, r, a, { gap = NAME_GAP, ry = r, width = 260, ...o
   const align = c > 0.3 ? "left" : c < -0.3 ? "right" : "center", valign = align === "center" ? sn > 0 ? "top" : "bottom" : "middle";
   return nameText(v, x, y, { align, valign, width, ...o });
 }
+
+// picture/film/scenes/p04/ladder.js
+var WORK = () => L(
+  [
+    { term: ["局部、可逆"], qual: ["无对外承诺"] },
+    { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定"] },
+    {
+      term: ["生产、", "资金、", "敏感数据、", "安全合规"],
+      qual: ["删除覆盖、", "对外承诺、", "不可逆"]
+    }
+  ],
+  [
+    { term: ["Local, reversible work"], qual: ["no external commitment"] },
+    {
+      term: ["Cross-role ", "or extended work"],
+      qual: ["competing options, material uncertainty"],
+      width: 260,
+      noteWidth: Infinity
+    },
+    {
+      term: ["Production, funds, sensitive data, ", "security or compliance"],
+      qual: ["deletion, ", "overwrite, ", "external commitment, ", "irreversibility"],
+      width: 490,
+      noteWidth: 300
+    }
+  ]
+);
+var RECORD2 = () => L(
+  [
+    { term: ["一次讲清"], qual: ["结论、", "依据、", "做法"] },
+    { term: ["现有的工作记录"], qual: ["问题、", "方案、", "做法、", "验收"] },
+    { term: ["书面决定、", "明确授权"], qual: ["回滚或降级预案、", "独立评审、", "由人验收"] }
+  ],
+  [
+    { term: ["One clear exchange"], qual: ["conclusion, ", "basis, ", "action"] },
+    {
+      term: ["Problem, ", "options, ", "execution path, ", "acceptance"],
+      qual: ["existing work record"],
+      width: 370,
+      noteWidth: Infinity
+    },
+    {
+      term: ["A written decision, ", "explicit authorization"],
+      qual: ["a rollback or degradation path, ", "independent review, ", "human acceptance"],
+      width: 310,
+      noteWidth: 360
+    }
+  ]
+);
+var workTimes = (c) => [
+  { term: [c.tiers[0]], qual: [c.tierQuals[0]] },
+  { term: [c.tiers[1]], qual: [c.tierQuals[1]] },
+  { term: [c.tiers[2], ...c.tierParts.term], qual: [c.tierQuals[2], ...c.tierParts.qual] }
+];
+var recordTimes = (c) => [
+  { term: [c.oneClear], qual: [c.clearQual, ...c.clearParts] },
+  {
+    term: L([c.record], [c.recordQual, ...c.recordParts]),
+    qual: L([c.recordQual, ...c.recordParts], [c.record])
+  },
+  { term: c.written.slice(0, 2), qual: c.written.slice(2) }
+];
+var HEAD2 = () => L(
+  { top: "风险", left: "多少记录", right: "多少手续" },
+  { top: "Risk", left: null, right: "Process" }
+);
+var TIER_Y = [330, 520, 720];
+var DOCS = [
+  [52, 66],
+  [80, 102],
+  [112, 144]
+];
+var SPINE = [236, 820];
+var HEAD_GAP = 70;
+var TO_WORK = 40;
+var TO_DOC = 64;
+var DOC_RIGHT = TO_DOC + DOCS[2][0];
+var blockWidth = ({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }) => Math.max(
+  ...growTexts(term, width).map((line2) => line2.reduce((w, [, v]) => w + measure(v), 0)),
+  ...growTexts(qual, noteWidth2, NOTE).map(
+    (line2) => line2.reduce((w, [, v]) => w + measure(v, NOTE), 0)
+  )
+);
+function spineX2(c) {
+  const head = HEAD2(), top = measure(head.top) / 2, records = recordTimes(c), parts = [
+    [
+      c.risk,
+      Math.max(top, head.left ? HEAD_GAP + measure(head.left) : 0),
+      Math.max(top, HEAD_GAP + measure(head.right))
+    ],
+    ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
+    ...RECORD2().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
+  ].sort((p, q) => p[0] - q[0]);
+  let left = 0, right = 0;
+  const offsets = parts.map(([, l, r]) => {
+    left = Math.max(left, l);
+    right = Math.max(right, r);
+    return (right - left) / 2;
+  });
+  return 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2;
+}
+function stageLadder(t, a, c) {
+  const x = spineX2(c), head = HEAD2(), top = SPINE[0];
+  line(x, top, x, SPINE[1], { color: P.line, alpha: a, width: 4 });
+  dot(x, top, 6, { color: P.line, alpha: a });
+  dot(x, SPINE[1], 6, { color: P.line, alpha: a });
+  nameText(head.top, x, top - 14 - NAME_GAP, {
+    valign: "bottom",
+    alpha: a * named(t, L(c.riskWord, c.risk))
+  });
+  if (head.left)
+    nameText(head.left, x - HEAD_GAP, top + 12, { align: "right", alpha: a * named(t, c.risk) });
+  nameText(head.right, x + HEAD_GAP, top + 12, { align: "left", alpha: a * named(t, c.process) });
+  const works = workTimes(c);
+  WORK().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
+    const y = TIER_Y[k], reaching = growTexts(term, width)[0].at(-1)[0], on = a * ramp(t, (works[k].term[reaching] ?? works[k].term[0]) - 0.15, 0.4);
+    line(x - 10, y, x + 10, y, { color: P.ink, alpha: on, width: 4 });
+    termRow(t, term, works[k].term, qual, works[k].qual, x - TO_WORK, y - 32, {
+      align: "right",
+      inline: false,
+      width,
+      noteWidth: noteWidth2,
+      build: true,
+      buildTerm: true,
+      alpha: a
+    });
+  });
+  const marked = c.tiers.reduce(
+    (y, at2, k) => mix(y, TIER_Y[k], soon(t, at2 - 0.15, 0.4)),
+    TIER_Y[0]
+  );
+  dot(x, marked, 6, { color: P.authority, alpha: a * ramp(t, c.tiers[0] - 0.15, 0.4) });
+  const docRight = x + DOC_RIGHT, times = recordTimes(c);
+  RECORD2().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
+    const [w, h] = DOCS[k], at2 = times[k].term[0], on = a * ramp(t, at2 - 0.15, 0.4);
+    tierDoc(docRight - w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
+    termRow(t, term, times[k].term, qual, times[k].qual, docRight + NAME_GAP, TIER_Y[k] - 32, {
+      align: "left",
+      inline: false,
+      width,
+      noteWidth: noteWidth2,
+      build: true,
+      buildTerm: true,
+      alpha: a
+    });
+  });
+}
+var E = {
+  tierY: 350,
+  nightY: 330,
+  drop: L(64, 48),
+  lean: 24,
+  scale: 0.55,
+  hours: [-1, 3],
+  lens: 30,
+  agent: 180
+};
+var FIX_Y = [318, 420];
+var NIGHT_REACH = 2 * 99;
+var FIX_TURN = 40;
+var FIX_STEP = 24;
+var BUBBLE = 39;
+var EXAMINED = () => L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]);
+var FIXES = () => L(["换供应商", "改生产环境里的采集任务"], ["A new vendor", "Collection job in production"]);
+function stageReview(t, a, c) {
+  const [w3, h3] = DOCS[2], lit = ramp(t, c.belongs - 0.15, 0.4), vt = voiceTime(t), tierY = E.tierY + E.drop, nightY = E.nightY + E.drop, work = WORK()[2], workTop = tierY + h3 / 2 + NAME_GAP, fixRoom = Math.max(...FIXES().map((v) => measure(v))) + 2 * NAME_GAP, nightAt = w3 / 2 + 10 + fixRoom + FIX_STEP + FIX_TURN + NIGHT_REACH, upperLeft = -Math.max(w3 / 2, blockWidth(work) / 2), tierX = 960 + E.lean - (upperLeft + nightAt + NIGHT_REACH) / 2;
+  tierDoc(tierX, tierY, w3, h3, { alpha: a, color: blend(P.ink, P.authority, lit), rows: 4 });
+  const { term, qual, width = Infinity, noteWidth: noteWidth2 = width } = work;
+  const workBlock = termRow(t, term, [-Infinity], qual, [-Infinity], tierX, workTop, {
+    align: "center",
+    inline: false,
+    width,
+    noteWidth: noteWidth2,
+    alpha: a
+  });
+  const night = lastNight(tierX + nightAt, nightY, E.scale, {
+    alpha: a,
+    card: 1,
+    hours: E.hours,
+    flow: vt * 0.25 % 1,
+    names: { axis: { v: L("昨晚的事", "Last night's case"), alpha: named(t, c.lastCase) } }
+  });
+  FIXES().forEach((v, i) => {
+    const y2 = FIX_Y[i] + E.drop, on = a * ramp(t, c.fixes[i] - 0.15, 0.4);
+    link(night.left - 6, i ? nightY + 4 : nightY - 4, tierX + w3 / 2 + 10, y2, {
+      route: "hvh",
+      mid: night.left - FIX_TURN - i * FIX_STEP,
+      alpha: on,
+      upto: soon(t, c.fixes[i] + 0.05, 0.7),
+      width: 2.5
+    });
+    nameText(v, (tierX + w3 / 2 + 10 + night.left - FIX_TURN - FIX_STEP) / 2, y2 - NAME_GAP + 6, {
+      valign: "bottom",
+      alpha: a * listIn(t, c.fixes, i),
+      set: "fixes"
+    });
+  });
+  const y = Math.max(660, workBlock.bottom + NAME_GAP + BUBBLE), names = rowNameTop([y + 18, y + 20]), r = E.lens, reviewName = L("独立评审", "Independent review"), authorName = L("作者", "Author"), agentName = L("智能体", "Agent"), account = L("自己怎么说", "Own account"), refusal = (measure(account) + 42) / 2, stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal, lensAt = stop + refusal + 2 * NAME_GAP + r, textAt = lensAt + r * 1.4 + NAME_GAP, reach = textAt + blockWidth({ term: [reviewName], qual: EXAMINED() }), authorX = tierX + nightAt + NIGHT_REACH - reach, agentX = authorX + E.agent, stopX = authorX + stop, lensX = authorX + lensAt;
+  const review = a * ramp(t, c.review - 0.15, 0.4);
+  lens(lensX, y, r, { alpha: review });
+  termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, authorX + textAt, y - 32, {
+    align: "left",
+    inline: false,
+    build: true,
+    alpha: a
+  });
+  const author = a * ramp(t, c.author - 0.15, 0.4), agent2 = a * ramp(t, c.agent - 0.15, 0.4);
+  speaker(authorX, y, { alpha: author });
+  nameText(authorName, authorX, names, { valign: "top", alpha: a * named(t, c.author) });
+  speaker(agentX, y, { alpha: agent2, agent: true });
+  nameText(agentName, agentX, names, { valign: "top", alpha: a * named(t, c.agent) });
+  const own = a * ramp(t, c.own - 0.15, 0.4), way = soon(t, c.own + 0.05, 0.5);
+  link(authorX + 24, y, agentX - 26, y, { alpha: own, upto: way, width: 2.5, end: false });
+  link(agentX + 26, y, stopX - 8, y, { alpha: own, upto: way, width: 2.5, end: false });
+  link(lensX - r - 6, y, stopX + 8, y, { alpha: own, upto: way, width: 2.5, end: false });
+  bar(stopX, y, { alpha: own * ramp(t, c.own + 0.5, 0.2), vertical: true, length: 36 });
+  rejectedName(account, stopX, names, {
+    valign: "top",
+    alpha: own,
+    mark: ramp(t, c.own + 0.05, 0.3)
+  });
+}
+
+// picture/film/scenes/p04/scene.js
+var each = (zh, en2) => L(zh, en2)();
+function cuesOf4(s) {
+  const lastCase = cue(s, "昨晚的事", "Last night's case"), tiers = [
+    cue(s, "局部", "Local"),
+    cue(s, "跨角色", "Cross-role"),
+    cue(s, "涉及生产", "Work touching production")
+  ], oneClear = cue(s, "一次讲清", "one clear exchange"), recordQual = cue(s, "问题", "the problem");
+  return {
+    four: cue(s, "四条底线", "Four boundaries"),
+    never: cue(s, "不能越过", "never be crossed"),
+    // The ordinal that brings each boundary; the first, 04.2's first word, cuts the list's stage in.
+    ordinals: [
+      cue(s, "第一", "First"),
+      cue(s, "第二", "Second"),
+      cue(s, "第三", "Third"),
+      cue(s, "第四", "Fourth")
+    ],
+    rows: [
+      cue(s, "说真话", "tell the truth"),
+      cue(s, "守边界", "stay in bounds"),
+      cue(s, "责任落到人", "name the owner"),
+      cue(s, "不虚报完成", "do not claim false completion")
+    ],
+    quals: [
+      [
+        cue(s, "不编造", "no fabrication"),
+        cue(s, "不隐瞒", "no hiding"),
+        cue(s, "不挑着说", "no cherry-picking"),
+        cue(s, "没把握", "no uncertainty")
+      ],
+      [
+        cue(s, "对象和时间", "subject"),
+        cue(s, "能力和权限", "competence"),
+        cue(s, "数据", "data"),
+        ...each(
+          () => [cue(s, "安全", ""), cue(s, "合规", "")],
+          () => [cue(s, "", "security"), cue(s, "", "compliance"), cue(s, "", "action")]
+        )
+      ],
+      [
+        cue(s, "重要的判断", "every important judgment"),
+        cue(s, "决定", "decision"),
+        cue(s, "变更", "and acceptance")
+      ],
+      each(
+        () => [
+          cue(s, "做完了", ""),
+          cue(s, "做对了", ""),
+          cue(s, "能用了", ""),
+          cue(s, "有人在用", ""),
+          cue(s, "都要有当前", ""),
+          cue(s, "对得上", "")
+        ],
+        () => [cue(s, "", "without current evidence"), cue(s, "", "call nothing complete")]
+      )
+    ],
+    // The fourth boundary's last words, on which the list of the four counts as said.
+    listEnd: cue(s, "证据", "adopted"),
+    inside: cue(s, "在这四条底线之内", "Inside them"),
+    free: cue(s, "自主", "autonomy"),
+    near: cue(s, "快要越线时", "When an action would cross one"),
+    halt: cue(s, "停下来", "stop"),
+    ladder: cue(s, "要留多少记录", "Risk sets the process"),
+    risk: cue(s, "多少记录", "Risk sets the process"),
+    riskWord: cue(s, "看风险", "Risk sets the process"),
+    process: cue(s, "多少手续", "the process"),
+    tiers,
+    tierQuals: [
+      cue(s, "不对外承诺", "no external commitment"),
+      cue(s, "几种方案", "competing options"),
+      cue(s, "删除覆盖", "deletion")
+    ],
+    // The later parts of the highest tier's work, its term's and its qualifier's, each on its words; English sets its
+    // term in its two lines.
+    tierParts: each(
+      () => ({
+        term: [cue(s, "资金", ""), cue(s, "敏感数据", ""), cueFrom(s, "安全合规", "", tiers[2])],
+        qual: [cueFrom(s, "对外承诺", "", tiers[2]), cue(s, "不可逆", "")]
+      }),
+      () => ({
+        term: [cueFrom(s, "", "security", tiers[2])],
+        qual: [
+          cue(s, "", "overwrite"),
+          cueFrom(s, "", "external commitment", tiers[2]),
+          cue(s, "", "irreversible")
+        ]
+      })
+    ),
+    oneClear,
+    clearQual: cue(s, "结论", "conclusion"),
+    // The later parts of the first record's qualifier and of the second record's contents.
+    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "做法", "action", oneClear)],
+    record: cue(s, "现有的工作记录", "existing work record"),
+    recordQual,
+    recordParts: [
+      cueFrom(s, "方案", "options", recordQual),
+      cueFrom(s, "做法", "execution path", recordQual),
+      cueFrom(s, "验收", "acceptance", recordQual)
+    ],
+    written: [
+      cue(s, "书面决定", "a written decision"),
+      cue(s, "明确授权", "explicit authorization"),
+      cue(s, "回滚", "a rollback"),
+      cue(s, "独立评审", "independent review"),
+      cue(s, "由人验收", "human acceptance")
+    ],
+    lastCase,
+    fixes: [
+      cue(s, "换供应商", "a new vendor"),
+      cue(s, "改生产环境", "a change to the collection job")
+    ],
+    belongs: cue(s, "都属于这一类", "belongs here"),
+    review: cueFrom(s, "独立评审", "Independent review", lastCase),
+    examined: [
+      cue(s, "实际的事实", "the actual facts"),
+      cue(s, "推理", "reasoning"),
+      cueFrom(s, "变更", "changes", lastCase),
+      cueFrom(s, "证据", "evidence", lastCase)
+    ],
+    author: cue(s, "作者", "the author's"),
+    agent: cue(s, "智能体", "the Agent's"),
+    own: cue(s, "自己怎么说", "own account"),
+    whatever: cue(s, "风险高低", "Whatever the risk"),
+    duty: cue(s, "该尽的义务", "every duty")
+  };
+}
+var A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
+function stageField(t, a, c) {
+  field(A.x, A.y, A.w, A.h, {
+    alpha: a,
+    drawn: [0, 1, 2, 3].map((k) => soon(t, c.four - 0.15 + 0.08 * k, 0.3)),
+    lit: [1, 1, 1, 1]
+  });
+  nameText(L("四条底线", "Four boundaries"), A.x, A.y - A.h / 2 - NAME_GAP, {
+    valign: "bottom",
+    alpha: a * named(t, c.four)
+  });
+  const run = soon(t, c.never + 0.05, 0.7);
+  dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
+    color: P.ink,
+    alpha: a * ramp(t, c.four - 0.15, 0.3)
+  });
+}
+var F = { xs: [600, 960, 1320], y: 480, s: 260 };
+var DOCS2 = [
+  [60, 76],
+  [88, 112],
+  [120, 152]
+];
+function stageDuty(t, a, c) {
+  fieldRow(F.xs, F.y, F.s, { alpha: a, lit: ramp(t, c.duty - 0.15, 0.4) });
+  F.xs.forEach((x, k) => tierDoc(x, F.y, ...DOCS2[k], { alpha: a, rows: 2 + k }));
+  nameText(L("风险高低", "Every level of risk"), 960, F.y + F.s / 2 + NAME_GAP, {
+    valign: "top",
+    alpha: a * named(t, c.whatever)
+  });
+  nameText(L("该尽的义务", "Every duty"), 960, F.y - F.s / 2 - NAME_GAP, {
+    valign: "bottom",
+    alpha: a * named(t, c.duty)
+  });
+}
+scenes["04"] = function(s, t) {
+  const c = cuesOf4(s);
+  const SA = stageOut(t, c.ordinals[0]), SB = stageIn(t, c.ordinals[0]) * stageOut(t, c.inside), SC = stageIn(t, c.inside) * stageOut(t, c.ladder), SD = stageIn(t, c.ladder) * stageOut(t, c.lastCase), SE = stageIn(t, c.lastCase) * stageOut(t, c.whatever), SF = stageIn(t, c.whatever);
+  if (SA > 0) stageField(t, SA, c);
+  if (SB > 0) stageLines(t, SB, c);
+  if (SC > 0) stageCases(t, SC, c);
+  if (SD > 0) stageLadder(t, SD, c);
+  if (SE > 0) stageReview(t, SE, c);
+  if (SF > 0) stageDuty(t, SF, c);
+  illustrative(SE);
+};
 
 // picture/film/scenes/p05/kit.js
 var early = (t, clause, at2) => named(t, Math.max(clause - 0.2, at2 - 1.35));
@@ -3968,7 +4026,7 @@ function scopeStage(s, t, c, g) {
     })
   );
 }
-var E = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
+var E2 = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
 function viewIcon(i, x, y, a) {
   if (i === 0) documentIcon(x - 34, y, 68, 88, { alpha: a, rows: 2 });
   else if (i === 1) {
@@ -3998,26 +4056,26 @@ function viewIcon(i, x, y, a) {
   }
 }
 function viewsStage(s, t, c, g) {
-  const [cw, ch] = E.card, bottom = E.top + ch, barY = bottom + 26, views = c.views, xs = E.xs, reach = views.map((at2) => soon(t, at2 - 0.15, 0.6)), shown = views.map((at2) => g * ramp(t, at2 - 0.15, 0.4));
-  tableIcon(960 - cw / 2, E.top, cw, ch, { alpha: g });
-  nameText(L("数据", "Data"), 960, E.top - NAME_GAP, { valign: "bottom", alpha: g });
+  const [cw, ch] = E2.card, bottom = E2.top + ch, barY = bottom + 26, views = c.views, xs = E2.xs, reach = views.map((at2) => soon(t, at2 - 0.15, 0.6)), shown = views.map((at2) => g * ramp(t, at2 - 0.15, 0.4));
+  tableIcon(960 - cw / 2, E2.top, cw, ch, { alpha: g });
+  nameText(L("数据", "Data"), 960, E2.top - NAME_GAP, { valign: "bottom", alpha: g });
   stroke(
     () => {
       ctx.moveTo(960, bottom + 8);
-      ctx.lineTo(960, E.bus);
-      ctx.moveTo(xs[0], E.bus);
-      ctx.lineTo(xs.at(-1), E.bus);
+      ctx.lineTo(960, E2.bus);
+      ctx.moveTo(xs[0], E2.bus);
+      ctx.lineTo(xs.at(-1), E2.bus);
       xs.forEach((x, i) => {
         const q = clamp((reach[i] - 0.5) * 2);
         if (q <= 0) return;
-        ctx.moveTo(x, E.bus);
-        ctx.lineTo(x, mix(E.bus, E.icon - 2, q));
+        ctx.moveTo(x, E2.bus);
+        ctx.lineTo(x, mix(E2.bus, E2.icon - 2, q));
       });
     },
     { color: P.line, alpha: g, width: 2 }
   );
   xs.forEach((x, i) => {
-    if (shown[i] > 0) viewIcon(i, x, E.icon, shown[i]);
+    if (shown[i] > 0) viewIcon(i, x, E2.icon, shown[i]);
   });
   railNames(
     L(
@@ -4025,21 +4083,21 @@ function viewsStage(s, t, c, g) {
       ["Report", "Catalog", "Cache", "Agent summary"]
     ),
     xs,
-    E.icon + 88,
+    E2.icon + 88,
     { gap: NAME_GAP, alpha: (i) => g * listIn(t, views, i), set: "views" }
   );
   bar2(960, barY, { alpha: g * ramp(t, c.become + 0.05, 0.3), length: 48 });
   runPoint(
     [
-      [xs[3], E.icon - 10],
-      [xs[3], E.bus],
-      [960, E.bus],
+      [xs[3], E2.icon - 10],
+      [xs[3], E2.bus],
+      [960, E2.bus],
       [960, barY + 10]
     ],
     soon(t, c.become + 0.05, 1.4),
     { alpha: shown[3] }
   );
-  const truth = g * named(t, c.truth), sx = 960 + cw / 2 + 48, sy = E.top + ch / 2;
+  const truth = g * named(t, c.truth), sx = 960 + cw / 2 + 48, sy = E2.top + ch / 2;
   seal(sx, sy, 26, { color: P.evidence, alpha: truth });
   nameText(L("权威来源", "Source of truth"), sx + 26 + NAME_GAP, sy, {
     align: "left",
@@ -4207,14 +4265,14 @@ function cuesOf5(s) {
 }
 scenes["05"] = function(s, t) {
   const c = cuesOf5(s);
-  const A5 = stageOut(t, c.first1b), A23 = stageIn(t, c.first1b) * stageOut(t, c.first2), B6 = stageIn(t, c.first2) * stageOut(t, c.first2b), B22 = stageIn(t, c.first2b) * stageOut(t, c.first3), C4 = stageIn(t, c.first3) * stageOut(t, c.first4), D3 = stageIn(t, c.first4) * stageOut(t, c.first5), E3 = stageIn(t, c.first5);
+  const A5 = stageOut(t, c.first1b), A23 = stageIn(t, c.first1b) * stageOut(t, c.first2), B6 = stageIn(t, c.first2) * stageOut(t, c.first2b), B22 = stageIn(t, c.first2b) * stageOut(t, c.first3), C4 = stageIn(t, c.first3) * stageOut(t, c.first4), D3 = stageIn(t, c.first4) * stageOut(t, c.first5), E4 = stageIn(t, c.first5);
   if (A5 > 0) evidenceStage(s, t, c, A5);
   if (A23 > 0) fitStage(s, t, c, A23);
   if (B6 > 0) questionsStage(s, t, c, B6);
   if (B22 > 0) scopeStage(s, t, c, B22);
   if (C4 > 0) nightStage(s, t, c, C4);
   if (D3 > 0) hindsightStage(s, t, c, D3);
-  if (E3 > 0) viewsStage(s, t, c, E3);
+  if (E4 > 0) viewsStage(s, t, c, E4);
   illustrative(C4 + D3);
 };
 
@@ -4931,39 +4989,39 @@ function delegationStage(s, t, c, g) {
     alpha: stop
   });
 }
-var E2 = { y: 410, caller: 540, agent: 1380, work: 660 };
+var E3 = { y: 410, caller: 540, agent: 1380 };
 function callerStage(s, t, c, g) {
-  const endTop = rowNameTop([E2.y + 56, E2.y + 53]);
-  person(E2.caller, E2.y + 14, { alpha: g, size: 1.7 });
-  nameText(L("调用智能体的人", "The caller"), E2.caller, endTop, { valign: "top", alpha: g });
-  agent(E2.agent, E2.y, { alpha: g, size: 2.4 });
-  nameText(L("智能体", "Agent"), E2.agent, endTop, {
+  const endTop = rowNameTop([E3.y + 56, E3.y + 53]);
+  person(E3.caller, E3.y + 14, { alpha: g, size: 1.7 });
+  nameText(L("调用智能体的人", "The caller"), E3.caller, endTop, { valign: "top", alpha: g });
+  agent(E3.agent, E3.y, { alpha: g, size: 2.4 });
+  nameText(L("智能体", "Agent"), E3.agent, endTop, {
     valign: "top",
     alpha: g * named(t, c.agent5)
   });
   const ownNames = L(
     ["信息", "权限", "核验", "结果"],
     ["Context", "Permissions", "Verification", "Result"]
-  ), pitch = L(150, 196), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns;
-  line(E2.caller + 50, E2.y, E2.agent - 50, E2.y, { color: P.line, alpha: g, width: 2.5 });
+  ), pitch = L(170, 196), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns;
+  line(E3.caller + 50, E3.y, E3.agent - 50, E3.y, { color: P.line, alpha: g, width: 2.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
-    dot(x, E2.y, 10, { color: P.ground, alpha: a });
-    dot(x, E2.y, 10, { color: P.authority, alpha: a, hollow: true, width: 3 });
-    dot(x, E2.y, 4, { color: P.authority, alpha: a });
+    dot(x, E3.y, 10, { color: P.ground, alpha: a });
+    dot(x, E3.y, 10, { color: P.authority, alpha: a, hollow: true, width: 3 });
+    dot(x, E3.y, 4, { color: P.authority, alpha: a });
   });
-  railNames(ownNames, xs, E2.y, {
+  railNames(ownNames, xs, E3.y, {
     gap: 10 + NAME_GAP,
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns"
   });
-  const sub = g * named(t, c.submit), wx = mix(E2.caller, E2.work, soon(t, c.submit, 0.8)), wy = E2.y + 200;
+  const sub = g * named(t, c.submit), wx = mix(E3.caller, xs[0], soon(t, c.submit, 0.8)), wy = E3.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });
   line(wx - 24, wy + 8, wx + 10, wy + 8, { color: P.muted, alpha: sub, width: 2 });
   const rowTop = rowNameTop([wy + 30, wy + 12]);
-  nameText(L("提交", "Submitting"), E2.work, rowTop, { valign: "top", alpha: sub });
-  const vx = L([880, 1040, 1200], [840, 1040, 1240]), vats = c.vouch;
+  nameText(L("提交", "Submitting"), xs[0], rowTop, { valign: "top", alpha: sub });
+  const vx = xs.slice(1), vats = c.vouch;
   vx.forEach((x, i) => check(x, wy, 30, { alpha: g * ramp(t, vats[i] - 0.15, 0.4) }));
   railNames(
     L(["看懂了", "检查过", "为后果负责"], ["Understood", "Checked", "Responsibility"]),
@@ -5196,12 +5254,12 @@ function cuesOf7(s) {
 }
 scenes["07"] = function(s, t) {
   const c = cuesOf7(s);
-  const A5 = stageOut(t, c.first2), B6 = stageIn(t, c.first2) * stageOut(t, c.first3), C4 = stageIn(t, c.first3) * stageOut(t, c.first4), D3 = stageIn(t, c.first4) * stageOut(t, c.first5), E3 = stageIn(t, c.first5);
+  const A5 = stageOut(t, c.first2), B6 = stageIn(t, c.first2) * stageOut(t, c.first3), C4 = stageIn(t, c.first3) * stageOut(t, c.first4), D3 = stageIn(t, c.first4) * stageOut(t, c.first5), E4 = stageIn(t, c.first5);
   if (A5 > 0) collaborationStage(s, t, c, A5);
   if (B6 > 0) pagesStage(s, t, c, B6);
   if (C4 > 0) boundaryStage(s, t, c, C4);
   if (D3 > 0) delegationStage(s, t, c, D3);
-  if (E3 > 0) callerStage(s, t, c, E3);
+  if (E4 > 0) callerStage(s, t, c, E4);
   illustrative(B6 + D3);
 };
 

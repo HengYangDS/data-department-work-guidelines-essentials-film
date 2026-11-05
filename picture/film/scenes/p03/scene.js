@@ -1,10 +1,11 @@
 /* 03 两种依据 / Two kinds of authority, chapter 03 五个要点 / Five essentials. A (03.1-03.2): under the rising chapter
  * title, the two kinds stand apart, joined under their one name: authority to act, a seal, at the left, and authority
  * about facts, a record with its check, at the right; a divider rises between them; the left kind is named with what
- * it answers. B (03.3, from 「最先是法律」/ "Law"): authority to act's order of sources (order.js). C (03.4): the
- * two kinds again, the right one now named with what it answers; from 「要看原始记录」/ "primary records" what can
- * establish a fact, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
- * (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for each other (close.js). */
+ * it answers. B (03.3, from its first words, 「它有先后」/ "Law"): authority to act's order of sources (order.js). C
+ * (03.4): the two kinds again, the right one now named with what it answers; from 「要看原始记录」/ "primary records"
+ * what can establish a fact, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
+ * (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for each other (close.js).
+ * Each stage cuts in on the first words of a thought, except C's second, whose stage names nothing the first named. */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom } from "../../timing/cues.js";
@@ -20,15 +21,18 @@ import { stageOrder } from "./order.js";
 /* 「观察」/ "observation" is first said of the facts' observations; 03.5's is said after the publication time. */
 const checked = (s) => cue(s, "查过发布时间", "checks the publication time");
 
-/* The spoken cues, in the order they are said. Phrases said twice take their later occurrence through the words that
- * follow them only there (两种依据，不能 / "Neither kind", 行动依据再充分 / "Authority to act cannot"). */
+/* The spoken cues, in the order they are said. A phrase said twice takes its later occurrence through the words that
+ * follow it only there (两种依据，不能 / "Neither kind"). */
 function cuesOf(s) {
   const c = {
     two: cue(s, "两种依据", "Two kinds of authority"),
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    order: cue(s, "最先是法律", "Law"),
+    // The order opens on 03.3's first words. Its span grows on 「有先后」, where the Chinese announces the order; the
+    // English announces it in 03.2, so there the span grows on the first rank.
+    opens: cue(s, "它有先后", "Law"),
+    order: cue(s, "有先后", "Law"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "才是这件事", "the explicit decision"),
@@ -50,7 +54,7 @@ function cuesOf(s) {
     notPrimary: cue(s, "都不是原始记录", "are not primary records"),
     onlyLeads: cue(s, "线索", "leads"),
   };
-  return { ...c, ...caseCues(s), ...closeCues(s, c) };
+  return { ...c, ...caseCues(s), ...closeCues(s) };
 }
 function caseCues(s) {
   const choice = cue(s, "要不要换供应商", "Whether to change vendors");
@@ -71,7 +75,7 @@ function caseCues(s) {
     owner: cueFrom(s, "决策负责人", "decision owner", choice),
   };
 }
-function closeCues(s, c) {
+function closeCues(s) {
   return {
     meeting: cue(s, "前面说的那场会", "The meeting at the start"),
     before: cue(s, "会前", "Before it"),
@@ -87,7 +91,6 @@ function closeCues(s, c) {
     missing: cue(s, "还缺什么", "still missing"),
     neither: cue(s, "两种依据不能", "Neither kind"),
     substitute: cue(s, "互相替代", "stands in for"),
-    actAgain: cueFrom(s, "行动依据", "Authority to act", c.onlyLeads),
     falseTrue: cue(s, "假的变成真的", "false fact"),
     permission: cue(s, "去做的权限", "permission to act"),
     conflict: cue(s, "两者冲突时", "When the two conflict"),
@@ -99,8 +102,8 @@ function closeCues(s, c) {
 
 scenes["03"] = function (s, t) {
   const c = cuesOf(s);
-  const A = stageOut(t, c.order),
-    B = stageIn(t, c.order) * stageOut(t, c.another),
+  const A = stageOut(t, c.opens),
+    B = stageIn(t, c.opens) * stageOut(t, c.another),
     C1 = stageIn(t, c.another) * stageOut(t, c.primary),
     C2 = stageIn(t, c.primary) * stageOut(t, c.night),
     D = stageIn(t, c.night) * stageOut(t, c.meeting),
@@ -112,6 +115,6 @@ scenes["03"] = function (s, t) {
   if (C2 > 0) stageFacts(t, C2, c);
   if (D > 0) stageCase(t, D, c);
   if (E > 0) stageMeeting(t, E, c);
-  if (F > 0) stageApart(s, t, F, c);
+  if (F > 0) stageApart(t, F, c);
   illustrative(Math.max(D, E));
 };

@@ -1,10 +1,11 @@
 /* 04 四条底线 / Four boundaries. A (04.1): the field of the four boundaries, four separate sides that count in one after
- * another, centred, named on their words; a point inside runs to a side and stops at it. B (04.2-04.3, from 「说真话」/
- * "tell the truth"): the field at the left, its sides lighting one by one as a column of the four boundaries builds at
- * its right (lines.js). C (04.4): the field and the two cases, inside it and near a side (lines.js). D
- * (04.5-04.7): the ladder of risk and the record each tier needs; E (04.8): last night's case in the highest tier, and
- * the independent review that examines the work, not its authors' account (ladder.js). F (04.9, from 「风险高低」/
- * "Whatever the risk"): three tiers' documents, each inside the same field, every field's sides lit together. */
+ * another, centred, named over itself on their words; a point inside runs to a side and stops at it. B (04.2-04.3,
+ * from its first words 「第一」/ "First"): the field widens and deepens from its top round a list of the four boundaries
+ * that builds inside it, its sides lighting one by one, and its name stays over it (lines.js). C (04.4): the field and
+ * the two cases, inside it and near a side, the field named at the same place (lines.js). D (04.5-04.7): the ladder of
+ * risk and the record each tier needs; E (04.8): last night's case in the highest tier, and the independent review
+ * that examines the work, not its authors' account (ladder.js). F (04.9, from 「风险高低」/ "Whatever the risk"): three
+ * tiers' documents, each inside the same field, every field's sides lit together. */
 
 import { dot } from "../../drawing/strokes.js";
 import { illustrative } from "../../framing/chapters.js";
@@ -16,17 +17,31 @@ import { cue, cueFrom } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { stageCases, stageLines } from "./lines.js";
+import { FIELD, stageCases, stageLines } from "./lines.js";
 import { stageLadder, stageReview } from "./ladder.js";
 import { field, fieldRow, tierDoc } from "./marks.js";
 
 /* Each edition's cues where the two editions say a list in different parts; only the edition drawn is resolved. */
 const each = (zh, en) => L(zh, en)();
 function cuesOf(s) {
-  const lastCase = cue(s, "昨晚的事", "Last night's case");
+  const lastCase = cue(s, "昨晚的事", "Last night's case"),
+    tiers = [
+      cue(s, "局部", "Local"),
+      cue(s, "跨角色", "Cross-role"),
+      cue(s, "涉及生产", "Work touching production"),
+    ],
+    oneClear = cue(s, "一次讲清", "one clear exchange"),
+    recordQual = cue(s, "问题", "the problem");
   return {
     four: cue(s, "四条底线", "Four boundaries"),
     never: cue(s, "不能越过", "never be crossed"),
+    // The ordinal that brings each boundary; the first, 04.2's first word, cuts the list's stage in.
+    ordinals: [
+      cue(s, "第一", "First"),
+      cue(s, "第二", "Second"),
+      cue(s, "第三", "Third"),
+      cue(s, "第四", "Fourth"),
+    ],
     rows: [
       cue(s, "说真话", "tell the truth"),
       cue(s, "守边界", "stay in bounds"),
@@ -40,7 +55,15 @@ function cuesOf(s) {
         cue(s, "不挑着说", "no cherry-picking"),
         cue(s, "没把握", "no uncertainty"),
       ],
-      [cue(s, "对象和时间", "subject"), cue(s, "能力和权限", "competence"), cue(s, "数据", "data")],
+      [
+        cue(s, "对象和时间", "subject"),
+        cue(s, "能力和权限", "competence"),
+        cue(s, "数据", "data"),
+        ...each(
+          () => [cue(s, "安全", ""), cue(s, "合规", "")],
+          () => [cue(s, "", "security"), cue(s, "", "compliance"), cue(s, "", "action")],
+        ),
+      ],
       [
         cue(s, "重要的判断", "every important judgment"),
         cue(s, "决定", "decision"),
@@ -53,10 +76,13 @@ function cuesOf(s) {
           cue(s, "能用了", ""),
           cue(s, "有人在用", ""),
           cue(s, "都要有当前", ""),
+          cue(s, "对得上", ""),
         ],
         () => [cue(s, "", "without current evidence"), cue(s, "", "call nothing complete")],
       ),
     ],
+    // The fourth boundary's last words, on which the list of the four counts as said.
+    listEnd: cue(s, "证据", "adopted"),
     inside: cue(s, "在这四条底线之内", "Inside them"),
     free: cue(s, "自主", "autonomy"),
     near: cue(s, "快要越线时", "When an action would cross one"),
@@ -65,20 +91,39 @@ function cuesOf(s) {
     risk: cue(s, "多少记录", "Risk sets the process"),
     riskWord: cue(s, "看风险", "Risk sets the process"),
     process: cue(s, "多少手续", "the process"),
-    tiers: [
-      cue(s, "局部", "Local"),
-      cue(s, "跨角色", "Cross-role"),
-      cue(s, "涉及生产", "Work touching production"),
-    ],
+    tiers,
     tierQuals: [
       cue(s, "不对外承诺", "no external commitment"),
       cue(s, "几种方案", "competing options"),
       cue(s, "删除覆盖", "deletion"),
     ],
-    oneClear: cue(s, "一次讲清", "one clear exchange"),
+    // The later parts of the highest tier's work, its term's and its qualifier's, each on its words; English sets its
+    // term in its two lines.
+    tierParts: each(
+      () => ({
+        term: [cue(s, "资金", ""), cue(s, "敏感数据", ""), cueFrom(s, "安全合规", "", tiers[2])],
+        qual: [cueFrom(s, "对外承诺", "", tiers[2]), cue(s, "不可逆", "")],
+      }),
+      () => ({
+        term: [cueFrom(s, "", "security", tiers[2])],
+        qual: [
+          cue(s, "", "overwrite"),
+          cueFrom(s, "", "external commitment", tiers[2]),
+          cue(s, "", "irreversible"),
+        ],
+      }),
+    ),
+    oneClear,
     clearQual: cue(s, "结论", "conclusion"),
+    // The later parts of the first record's qualifier and of the second record's contents.
+    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "做法", "action", oneClear)],
     record: cue(s, "现有的工作记录", "existing work record"),
-    recordQual: cue(s, "问题", "the problem"),
+    recordQual,
+    recordParts: [
+      cueFrom(s, "方案", "options", recordQual),
+      cueFrom(s, "做法", "execution path", recordQual),
+      cueFrom(s, "验收", "acceptance", recordQual),
+    ],
     written: [
       cue(s, "书面决定", "a written decision"),
       cue(s, "明确授权", "explicit authorization"),
@@ -108,17 +153,17 @@ function cuesOf(s) {
 }
 
 /* A: the field centred, its four sides counting in on 「四条底线」/ "Four boundaries", lit in the colour of authority, and
- * named under itself; a point stands at its centre, and on 「不能越过」/ "never be crossed" it runs to its right side
- * and stops there. */
-const A = { x: 960, y: 480, w: 520, h: 440 };
+ * named over itself, where B and C name it too; a point stands at its centre, and on 「不能越过」/ "never be crossed" it
+ * runs to its right side and stops there. */
+const A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
 function stageField(t, a, c) {
   field(A.x, A.y, A.w, A.h, {
     alpha: a,
     drawn: [0, 1, 2, 3].map((k) => soon(t, c.four - 0.15 + 0.08 * k, 0.3)),
     lit: [1, 1, 1, 1],
   });
-  nameText(L("四条底线", "Four boundaries"), A.x, A.y + A.h / 2 + NAME_GAP, {
-    valign: "top",
+  nameText(L("四条底线", "Four boundaries"), A.x, A.y - A.h / 2 - NAME_GAP, {
+    valign: "bottom",
     alpha: a * named(t, c.four),
   });
   // A point stands inside from the first words; on 「不能越过」/ "never be crossed" it runs to the right side and stops.
@@ -152,8 +197,8 @@ function stageDuty(t, a, c) {
 
 scenes["04"] = function (s, t) {
   const c = cuesOf(s);
-  const SA = stageOut(t, c.rows[0]),
-    SB = stageIn(t, c.rows[0]) * stageOut(t, c.inside),
+  const SA = stageOut(t, c.ordinals[0]),
+    SB = stageIn(t, c.ordinals[0]) * stageOut(t, c.inside),
     SC = stageIn(t, c.inside) * stageOut(t, c.ladder),
     SD = stageIn(t, c.ladder) * stageOut(t, c.lastCase),
     SE = stageIn(t, c.lastCase) * stageOut(t, c.whatever),

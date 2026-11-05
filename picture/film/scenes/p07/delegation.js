@@ -156,10 +156,11 @@ export function delegationStage(s, t, c, g) {
   });
 }
 
-/* E: the caller and the Agent on one line; what the caller owns builds as stations on the way between them, one list;
- * then the work submitted, a card under the caller, with the three things submitting it vouches for beside it, one
- * list. */
-const E = { y: 410, caller: 540, agent: 1380, work: 660 };
+/* E: the caller and the Agent on one line; what the caller owns builds as stations on the way between them, one list,
+ * at one pitch wide enough for each edition's names; then the work submitted, a card that leaves the caller for the
+ * first station's column, with the three things submitting it vouches for under the other three stations, one list, so
+ * every name of the second row hangs under the column of the station above it. */
+const E = { y: 410, caller: 540, agent: 1380 };
 export function callerStage(s, t, c, g) {
   // The caller and the Agent end one line, so their names hang from one baseline under the lower of the two marks:
   // the figure's shoulders reach 56 px below the line and the Agent's diamond 53 px.
@@ -176,7 +177,8 @@ export function callerStage(s, t, c, g) {
       ["信息", "权限", "核验", "结果"],
       ["Context", "Permissions", "Verification", "Result"],
     ),
-    pitch = L(150, 196),
+    // Chinese takes 170 px, so its widest vouched name, 为后果负责, keeps a clear gap from the name beside it.
+    pitch = L(170, 196),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch),
     ats = c.owns;
   line(E.caller + 50, E.y, E.agent - 50, E.y, { color: P.line, alpha: g, width: 2.5 });
@@ -191,17 +193,18 @@ export function callerStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns",
   });
-  // Submitting: the work card leaves the caller, and three checks build beside it.
+  // Submitting: the work card leaves the caller for the first station's column, and three checks build under the
+  // other three stations.
   const sub = g * named(t, c.submit),
-    wx = mix(E.caller, E.work, soon(t, c.submit, 0.8)),
+    wx = mix(E.caller, xs[0], soon(t, c.submit, 0.8)),
     wy = E.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });
   line(wx - 24, wy + 8, wx + 10, wy + 8, { color: P.muted, alpha: sub, width: 2 });
   // The card and the three checks are one row: every name hangs one gap under the card, the row's lowest mark.
   const rowTop = rowNameTop([wy + 30, wy + 12]);
-  nameText(L("提交", "Submitting"), E.work, rowTop, { valign: "top", alpha: sub });
-  const vx = L([880, 1040, 1200], [840, 1040, 1240]),
+  nameText(L("提交", "Submitting"), xs[0], rowTop, { valign: "top", alpha: sub });
+  const vx = xs.slice(1),
     vats = c.vouch;
   vx.forEach((x, i) => check(x, wy, 30, { alpha: g * ramp(t, vats[i] - 0.15, 0.4) }));
   railNames(
