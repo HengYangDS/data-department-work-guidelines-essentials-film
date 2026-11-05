@@ -10,8 +10,13 @@ export const CONTENT_CY = 500;
 /* The top from which the names of a row of marks hang: one gap below the lowest bottom among the row's marks, so every
  * name of the row stands on one baseline however tall its own mark is. */
 export const rowNameTop = (bottoms, gap = NAME_GAP) => Math.max(...bottoms) + gap;
-/* Names along a rail: all on one side, on one baseline, each centred on its station; a name wider than its share of
- * the rail wraps onto a second line instead of stepping off the baseline. */
+/* Names along a rail: all on one side, on one baseline, each centred on its station; a name too wide to keep a gap from
+ * its neighbours wraps onto a second line instead of stepping off the baseline. */
+const RAIL_CLEAR = 30;
+const widestLine = (v, size) =>
+  Math.max(
+    ...(Array.isArray(v) ? v : String(v).split("\n")).map((line) => measure(line, size)),
+  );
 export function railNames(
   names,
   xs,
@@ -26,10 +31,16 @@ export function railNames(
     set = `rail:${names[0]}`,
   } = {},
 ) {
-  // Each name may use the rail up to its neighbours' share, less a gap, and wraps no wider than the rail's wrap width.
+  // Each name may reach to a gap from its neighbours' names, each measured on one line, the most it can take, and wraps
+  // no wider than the rail's wrap width: a name that fits beside its neighbours stays on one line, so a short name
+  // never breaks, nor a word inside it, because the rail is crowded only on paper.
+  const widths = names.map((v) => widestLine(v, size));
   const room = (i) =>
-    Math.min(i ? xs[i] - xs[i - 1] : Infinity, i + 1 < xs.length ? xs[i + 1] - xs[i] : Infinity) -
-    30;
+    2 *
+    Math.min(
+      i ? xs[i] - xs[i - 1] - widths[i - 1] / 2 - RAIL_CLEAR : Infinity,
+      i + 1 < xs.length ? xs[i + 1] - xs[i] - widths[i + 1] / 2 - RAIL_CLEAR : Infinity,
+    );
   names.forEach((v, i) => {
     const width = Math.min(wrap, room(i));
     nameText(v, xs[i], y + side * gap, {

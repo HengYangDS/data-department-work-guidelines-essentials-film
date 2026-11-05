@@ -1,9 +1,10 @@
 /* 01 晚了两个小时 / Two hours late, chapter 01 一次延迟 / One delay. The opening quiet shows the title signature and hands
  * the picture to last night's timeline in one swap just before the first word (A, 01.1). The timeline then re-forms
- * compact in the top band and the four failures build one row below it, each led away from the two hours by its own
- * link (B, 01.2-01.3); the timeline leaves, the failures keep busy and three open questions stand over them (C, 01.4);
- * the guidelines' document takes the top band and its links reach the four failures (D, 01.5). The whole part is the
- * made-up case, so the Illustrative chip stands from the swap. */
+ * compact in the top band, its two hours leading down to a rail across the whole row, and the four failures build
+ * that row below it, each hanging from the rail by its own link (B, 01.2-01.3); the timeline leaves, the failures
+ * keep busy and three open questions stand over them (C, 01.4); the guidelines' document takes the top band and its
+ * links reach the four failures (D, 01.5). The whole part is the made-up case, so the Illustrative chip stands from
+ * the swap. */
 
 import { link } from "../../drawing/links.js";
 import { line } from "../../drawing/strokes.js";
@@ -21,7 +22,7 @@ import { clamp, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { forkMark, glide, meetingMark, openMark, pagesMark, patchMark } from "./failures.js";
+import { forkMark, meetingMark, openMark, pagesMark, patchMark } from "./failures.js";
 
 /* The spoken cues, in the order they are said. */
 function cuesOf(s) {
@@ -53,10 +54,14 @@ function cuesOf(s) {
 }
 
 /* The row of failures: four places at a pitch of 340 px about the frame's centre, each figure centred on ROW_Y with
- * its name hanging from NAME_TOP; the links reach each figure at its own top. */
+ * its name hanging from NAME_TOP; the links reach each figure at its own top. The row's lines span SPAN px each side
+ * of the centre, the rail over it in B and the bracket under its names in C and D, and the rail of B and the links of
+ * D run across the frame at CROSS_Y. */
 const XS = [450, 790, 1130, 1470],
   ROW_Y = 570,
   NAME_TOP = 675,
+  SPAN = 640,
+  CROSS_Y = 425,
   TOPS = [
     [0, -27],
     [0, -30],
@@ -147,29 +152,28 @@ function figure(k, x, t, a, c, busy = false) {
     });
 }
 
-/* B: the compact timeline over the row of failures. The row builds left to right and stands centred on what has
- * arrived, gliding one place left as each next failure comes; each arrives with its name and its link from the two
- * hours, and what went wrong joins its name on its own words. */
+/* B: the compact timeline over the row of failures. Its two hours lead down to a rail across the row's whole width,
+ * which stands with the timeline from the cut, so the picture has its final extent before the failures fill it and
+ * stays balanced while they build. The row builds left to right, each failure at its own place from its words and
+ * joined to the rail by its own link, and what went wrong joins its name on its own words. */
 function stageFailures(t, a, c) {
   compactNight(a, t);
+  // The rail is a bracket over the row, the one that holds the row's names in C and D turned to face it.
+  const rail = { color: P.line, alpha: a, width: 2 };
+  line(960, 362, 960, CROSS_Y, rail);
+  line(960 - SPAN, CROSS_Y, 960 + SPAN, CROSS_Y, rail);
+  [-SPAN, SPAN].forEach((dx) => line(960 + dx, CROSS_Y, 960 + dx, CROSS_Y + 10, rail));
   const ats = [c.vendor, c.patch, c.meeting, c.agent],
-    shift = glide(
-      t,
-      510,
-      ats.slice(1).map((at, i) => [at, 340 - 170 * i]),
-    ),
     terms = TERMS(),
     quals = QUALS(),
     qualAts = [[c.facts], [c.mechanism], [], [c.judgment]],
     seats = [c.decide, c.act];
   ats.forEach((at, k) => {
-    const x = XS[k] + shift,
+    const x = XS[k],
       [dx, dy] = TOPS[k];
-    link(960, 362, x + dx, ROW_Y + dy, {
-      route: "vhv",
-      mid: 425,
+    link(x + dx, CROSS_Y, x + dx, ROW_Y + dy, {
       alpha: a * ramp(t, at - 0.15, 0.3),
-      upto: soon(t, at + 0.05, 0.6),
+      upto: soon(t, at + 0.05, 0.4),
     });
     figure(k, x, t, a, c);
     termRow(t, [terms[k]], [at], quals[k], qualAts[k], x, NAME_TOP, {
@@ -211,10 +215,12 @@ function busyRow(t, a, c) {
 function rowName(v, t, at, a) {
   const y = NAME_TOP + 54,
     on = a * soon(t, at - 0.1, 0.5),
-    reach = 640 * on;
+    reach = SPAN * on;
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
   if (on > 0.98)
-    [-640, 640].forEach((dx) => line(960 + dx, y, 960 + dx, y - 10, { color: P.line, alpha: a, width: 2 }));
+    [-SPAN, SPAN].forEach((dx) =>
+      line(960 + dx, y, 960 + dx, y - 10, { color: P.line, alpha: a, width: 2 }),
+    );
   nameText(v, 960, y + NAME_GAP, { valign: "top", alpha: a * named(t, at) });
 }
 
@@ -254,7 +260,7 @@ function stageGuide(t, a, c) {
     const [dx, dy] = TOPS[k];
     link(left + W / 2, TOP + H + 8, x + dx, ROW_Y + dy, {
       route: "vhv",
-      mid: 425,
+      mid: CROSS_Y,
       alpha: a,
       upto: soon(t, c.against + 0.05 + 0.1 * k, 0.6),
     });

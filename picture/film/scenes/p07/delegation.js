@@ -10,11 +10,11 @@ import { agent, check, clock, lock, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
-import { railNames } from "../../naming/placement.js";
+import { railNames, rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, early, flowOf, glide, openMark } from "../p05/kit.js";
+import { bar, centring, early, flowOf, openMark } from "../p05/kit.js";
 
 /* Failure 1's fork: a way that splits, its taken branch in the colour of authority. */
 function fork(x, y, { alpha = 1 } = {}) {
@@ -41,8 +41,8 @@ function fork(x, y, { alpha = 1 } = {}) {
  * scope named at its corner; each part takes its place inside on its words, centred on the boundary's axis: the
  * purpose with failure 1's fork, the limits with a lock, then the deliverable, the compact timeline with an open mark
  * on each time to find, a source under each and an open mark for what could not be verified. The schedule stands
- * outside at the right, and the way to it stops at a bar on the boundary's edge. The stage stands centred and glides
- * left as the schedule arrives. */
+ * outside at the right, and the way to it stops at a bar on the boundary's edge. The stage stands once at the midpoint
+ * of the places that centre it before and after the stop and the schedule come at its right. */
 const D = {
   top: 280,
   bottom: 700,
@@ -51,11 +51,15 @@ const D = {
   rail: 530,
   sources: 600,
   scale: 0.7,
-  out: 140,
+  out: 120,
 };
 export function delegationStage(s, t, c, g) {
-  const reach = D.half + D.out + 50,
-    x = 960 + glide(t, 0, [[Math.min(c.schedule, c.stop), -(reach - D.half) / 2]]),
+  // What comes at the right: the stop's name beside the bar, and the schedule's clock with its name under it.
+  const reach = Math.max(
+      D.half + NAME_GAP + measure(L("停下来问我", "Stop and ask")),
+      D.half + D.out + Math.max(22, measure(L("调度", "Schedule")) / 2),
+    ),
+    x = (centring(-D.half, D.half) + centring(-D.half, reach)) / 2,
     x0 = x - D.half,
     x1 = x + D.half;
   stroke(
@@ -157,13 +161,13 @@ export function delegationStage(s, t, c, g) {
  * list. */
 const E = { y: 410, caller: 540, agent: 1380, work: 660 };
 export function callerStage(s, t, c, g) {
+  // The caller and the Agent end one line, so their names hang from one baseline under the lower of the two marks:
+  // the figure's shoulders reach 56 px below the line and the Agent's diamond 53 px.
+  const endTop = rowNameTop([E.y + 56, E.y + 53]);
   person(E.caller, E.y + 14, { alpha: g, size: 1.7 });
-  nameText(L("调用智能体的人", "The caller"), E.caller, E.y + 60 + NAME_GAP, {
-    valign: "top",
-    alpha: g,
-  });
+  nameText(L("调用智能体的人", "The caller"), E.caller, endTop, { valign: "top", alpha: g });
   agent(E.agent, E.y, { alpha: g, size: 2.4 });
-  nameText(L("智能体", "Agent"), E.agent, E.y + 53 + NAME_GAP, {
+  nameText(L("智能体", "Agent"), E.agent, endTop, {
     valign: "top",
     alpha: g * named(t, c.agent5),
   });
@@ -194,7 +198,9 @@ export function callerStage(s, t, c, g) {
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });
   line(wx - 24, wy + 8, wx + 10, wy + 8, { color: P.muted, alpha: sub, width: 2 });
-  nameText(L("提交", "Submitting"), E.work, wy + 30 + NAME_GAP, { valign: "top", alpha: sub });
+  // The card and the three checks are one row: every name hangs one gap under the card, the row's lowest mark.
+  const rowTop = rowNameTop([wy + 30, wy + 12]);
+  nameText(L("提交", "Submitting"), E.work, rowTop, { valign: "top", alpha: sub });
   const vx = L([880, 1040, 1200], [840, 1040, 1240]),
     vats = c.vouch;
   vx.forEach((x, i) => check(x, wy, 30, { alpha: g * ramp(t, vats[i] - 0.15, 0.4) }));
@@ -203,7 +209,7 @@ export function callerStage(s, t, c, g) {
     vx,
     wy,
     {
-      gap: 18 + NAME_GAP,
+      gap: rowTop - wy,
       alpha: (i) => g * listIn(t, vats, i),
       set: "vouch",
     },

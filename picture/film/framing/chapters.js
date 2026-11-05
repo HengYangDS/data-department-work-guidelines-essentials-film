@@ -1,4 +1,4 @@
-/* Chapter cards, the running head and the illustrative chip of the head band. From ddwg-film v1.0.0 (c4e8aac), picture/film.js. */
+/* Chapter cards, the running head with the part being shown and the illustrative chip of the head band. From ddwg-film v1.0.0 (c4e8aac), picture/film.js. */
 
 import { ctx, measuring, resolution } from "../canvas.js";
 import { blend } from "../drawing/colour.js";
@@ -101,6 +101,24 @@ export function runningHead(s, t) {
         : 0);
   const chapter = film.chapters.find((c) => c.id === s.chapter);
   text(`${chapterNumber(s.chapter)}  ${chapter.title}`, 96, 72, 24, {
+    color: P.muted,
+    alpha: a,
+    role: "chapter",
+  });
+}
+
+/* The part being shown, when its chapter holds more than one: after the running head and a short rule, its number in
+ * the chapter and its title, so the five essentials are counted and named while each is explained. It arrives with the
+ * running head and changes at the scene's own cut. */
+export function partHead(v, t) {
+  const parts = film.segments.filter((x) => x.chapter === v.chapter);
+  if (parts.length < 2) return;
+  const a = 0.72 * ramp(t, cardLanding(parts[0]), 0.3);
+  if (a <= 0) return;
+  const chapter = film.chapters.find((c) => c.id === v.chapter),
+    x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22;
+  line(x, 61, x, 83, { color: P.line, alpha: a });
+  text(`${parts.indexOf(v) + 1}  ${v.title}`, x + 22, 72, 24, {
     color: P.muted,
     alpha: a,
     role: "chapter",

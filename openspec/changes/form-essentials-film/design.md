@@ -82,8 +82,10 @@ The composition in `picture/` is new and follows the DDWG visual system, includi
 - a list builds and leaves whole, never as a sliding window, with the current item in full ink and earlier ones at 0.58;
 - two text sizes, no pills and no dot joins;
 - relations are drawn as orthogonal links with end dots, not plain arrows;
-- each thought holds at most twelve names, balanced on the content centre (960, 510), and a list that builds over one thought grows about that centre;
+- each thought holds at most twelve names, balanced on the content centre (960, 510); a list or structure that builds over one thought stands from its first item where it will stand, so no name moves once shown, placed so that every state it holds keeps within the balance limits, and a structure whose states differ too much for one place shows its full extent from its first item;
 - emphasis never makes a concept look like a person.
+
+The running head names the chapter; in the chapter of the five essentials it also shows, after a short rule, the part being explained, its number in the chapter and its title, so the five are counted and named while each is explained.
 
 The composition is authored as ES modules under `picture/film/`, which esbuild bundles unminified into the tracked `picture/film.js` that the engine reads, as in `ethos-film`. The primitives for names, placement, timing, framing and links are copied from `ethos-film`'s composition at `v1.0.1`, whose modules name their source; moving them into `filmkit` stays rejected for the reason `ethos-film` gives, since each film would keep its own copy until its next edition.
 

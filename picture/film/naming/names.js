@@ -214,7 +214,9 @@ export function growName(
 /* A key term and its qualifier, read as one name: the term at the label size, the qualifier smaller and muted after it
  * on the same centre line, or on the next line when the row would be wider than `width`. The term stands whole from its
  * words and the qualifier joins it whole on its own, so a long condition reads as a few key words rather than a
- * sentence; a qualifier that lists what is said over several seconds may `build`, each part on its own words. */
+ * sentence; a qualifier that lists what is said over several seconds may `build`, each part on its own words, and so
+ * may a term of several parts said one by one (`buildTerm`). A qualifier set under its term wraps at `noteWidth`, the
+ * term's `width` unless given, so the two sides of a structure can keep the same lines. */
 export const NOTE = 22,
   TERM_GAP = 16;
 /* A qualifier set under its term stands this far below the term's line, so at least 12 px of ground stays clear
@@ -249,6 +251,8 @@ export function termRow(
     inline = null,
     align = "left",
     qualLeft = null,
+    noteWidth = width,
+    buildTerm = false,
   } = {},
 ) {
   // A left-aligned list whose terms differ in width passes `qualLeft`, one x for every inline qualifier after its widest
@@ -267,6 +271,7 @@ export function termRow(
       color,
       whole,
       set,
+      build: buildTerm,
       align: shared ? "left" : align,
     });
   if (!qual.length) return head;
@@ -284,7 +289,7 @@ export function termRow(
       size: NOTE,
       alpha,
       color: P.muted,
-      width: one ? Infinity : width,
+      width: one ? Infinity : noteWidth,
       whole,
       set,
       build,

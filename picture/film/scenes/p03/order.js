@@ -3,8 +3,8 @@
  * span that 「有先后」/ "has an order" announced, and a point runs down it in voice time. The four ranks join it one by
  * one, each a station on the spine with its name, whole from its first words, the rank being said at full ink and
  * those before it at the list's second level. The explicit decision's owner stands as a small figure in the colour of
- * authority beside its station: the rank is the decision, never the person alone. The column glides as one to stay
- * centred as wider ranks arrive. */
+ * authority beside its station: the rank is the decision, never the person alone. The column stands at one place
+ * while the ranks arrive, so no name moves once shown. */
 
 import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
 import { person, seal } from "../../drawing/symbols.js";
@@ -14,7 +14,6 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
-import { glide } from "../p01/failures.js";
 
 const HEAD_Y = 300,
   SEAL_R = 46,
@@ -39,27 +38,19 @@ const RANKS = () =>
   );
 const HEAD = () => L("行动依据", "Authority to act"),
   QUESTION = () => L("谁可以决定做什么", "who may decide");
-/* The spine's x at t: the column's box, from the owner's figure to the widest name standing, is centred on the frame,
- * gliding as one just after the words of each rank that widens it. */
-function spineX(t, c) {
-  const left = OWNER.dx - 15 * OWNER.size,
+/* The spine's x: it never moves. The stage opens on the first rank's words, so each state the column holds has the
+ * head and one rank or more, and its box runs from the owner's shoulders to the widest name standing. The spine stands
+ * at the midpoint of the shifts that would centre those states, so the most off-centre of them is off by as little as
+ * possible. */
+function spineX() {
+  const left = OWNER.dx - 1.55 * 15 * OWNER.size,
     head = SEAL_R + NAME_GAP + Math.max(measure(HEAD()), measure(QUESTION(), NOTE)),
-    right = (k) =>
-      Math.max(
-        head,
-        ...RANKS()
-          .slice(0, k)
-          .map((v) => TO_NAMES + measure(v)),
-      );
-  const at = (k) => 960 - (left + right(k)) / 2;
-  return glide(
-    t,
-    at(0),
-    c.ranks.map((when, k) => [when, at(k + 1)]),
-  );
+    rights = RANKS().map((v) => TO_NAMES + measure(v)),
+    shifts = rights.map((_, k) => 960 - (left + Math.max(head, ...rights.slice(0, k + 1))) / 2);
+  return (Math.max(...shifts) + Math.min(...shifts)) / 2;
 }
 export function stageOrder(t, a, c) {
-  const x = spineX(t, c),
+  const x = spineX(),
     grow = soon(t, c.order + 0.05, 0.8),
     top = HEAD_Y + SEAL_R + 4;
   seal(x, HEAD_Y, SEAL_R, { alpha: a });

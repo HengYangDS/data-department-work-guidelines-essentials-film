@@ -13,7 +13,7 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { early, flowOf, glide } from "../p05/kit.js";
+import { centring, early, flowOf } from "../p05/kit.js";
 
 /* People drawn as one mark: their heads one fill and their shoulders one stroke, so a group named once does not read
  * as members that each wait for a name. Each person is [x, y]. */
@@ -46,9 +46,11 @@ export function boundary(x0, y0, x1, y1, { alpha = 1, color = P.line, width = 2.
 }
 
 /* A: the relationship. A group of people at the left and the Agent at the right on one line, joined by a link that
- * carries the delegation and is named over its middle as the whole relationship. The Agent's boundary closes round it
- * and grows just before each thing it holds is said: what it extends, then what it cannot give. Under the people,
- * what stays with them builds as one list, and a tinted field gathers it when it is said to stay. */
+ * carries the delegation and is named over its middle as the whole relationship. The Agent's boundary closes round it,
+ * the link running in through its side, and grows just before each thing it holds is said: what it extends, then what
+ * it cannot give. It grows about the Agent from a top edge that stays, so its name, centred over that edge, and the
+ * link's name, over the part of the link the grown boundary leaves outside, never move. Under the people, what stays
+ * with them builds as one list, and a tinted field gathers it when it is said to stay. */
 const A = { y: 410, px: 560, ax: 1260 };
 const GROUP = [
   [-62, -34],
@@ -59,10 +61,10 @@ const GROUP = [
 ];
 export function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"),
-    halfTerm = measure(term) / 2 + 34,
+    wide = Math.max(measure(term) / 2 + 34, L(150, 230)),
     grow = soon(t, c.extend - 0.6, 0.45),
     deep = soon(t, c.refusals[0] - 0.6, 0.45),
-    halfW = mix(110, Math.max(halfTerm, L(150, 230)), grow),
+    halfW = mix(110, wide, grow),
     y = A.y,
     ax = A.ax,
     px = A.px;
@@ -79,12 +81,13 @@ export function collaborationStage(s, t, c, g) {
   agent(ax, y, { alpha: g, size: 2 });
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
   // The relationship, named over its middle: the English waits for its caption line to pass, so the name does not
-  // repeat the line that says it.
+  // repeat the line that says it. The link reaches the Agent across the boundary's side; its name centres on the part
+  // that stays outside the grown boundary, two gaps clear of the side.
   const left = px + 110,
-    right = ax - halfW - 10,
+    outEnd = ax - wide - 2 * NAME_GAP,
     collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab));
-  link(left, y, right, y, { alpha: g, flow: flowOf(t, 0.3), width: 2.5 });
-  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + right) / 2, y - NAME_GAP, {
+  link(left, y, ax - 56, y, { alpha: g, flow: flowOf(t, 0.3), width: 2.5 });
+  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + outEnd) / 2, y - NAME_GAP, {
     valign: "bottom",
     alpha: collab,
   });
@@ -93,8 +96,7 @@ export function collaborationStage(s, t, c, g) {
     bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow),
     inBoundary = g * early(t, c.boundaryClause, c.boundary);
   boundary(ax - halfW, top, ax + halfW, bottom, { alpha: inBoundary });
-  nameText(L("委托范围", "A delegated boundary"), ax - halfW, top - NAME_GAP, {
-    align: "left",
+  nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
     valign: "bottom",
     alpha: inBoundary,
   });
@@ -129,9 +131,10 @@ export function collaborationStage(s, t, c, g) {
 }
 
 /* B: the ten pages return, an Agent beside its stack, which climbs a page at a time as the thought begins; the stage
- * stands centred on them. The decision they should have served arrives at the left, a ring with its point, and the
- * stage glides to hold both; its link runs to the pages, the decision first. */
-const B = { y: 505 };
+ * stands centred on them. The decision they should have served arrives over the Agent, a ring with its point named
+ * over it, inside the extent the Agent and its pages already hold, so the stage never moves; its link runs down to the
+ * Agent, the decision first. */
+const B = { y: 530, decision: 200 };
 const PAGE = [190, 250];
 function stack(x, y, pages, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
@@ -153,8 +156,8 @@ function stack(x, y, pages, { alpha = 1 } = {}) {
 }
 export function pagesStage(s, t, c, g) {
   const decided = g * named(t, c.decision),
-    // Extents from x: the Agent's left at -266, the stack's right at +166, the decision's left at -560.
-    x = 960 + glide(t, (266 - 166) / 2, [[c.decision, (560 - 166) / 2]]),
+    // Extents from x: the Agent's left at -266 and the stack's right at +166.
+    x = 960 + (266 - 166) / 2,
     pages = g * early(t, c.first2, c.pages),
     climbed = 4 + 6 * soon(t, c.first2, 3.6);
   agent(x - 200, B.y, { alpha: pages, size: 3 });
@@ -163,45 +166,55 @@ export function pagesStage(s, t, c, g) {
     valign: "top",
     alpha: pages,
   });
-  const dx = x - 500;
-  ring(dx, B.y, 52, { color: P.authority, alpha: decided, width: 3.5 });
-  dot(dx, B.y, 12, { color: P.authority, alpha: decided });
-  nameText(L("哪个决定", "Which decision"), dx, B.y + 52 + NAME_GAP, {
-    valign: "top",
+  const dx = x - 200,
+    dy = B.y - B.decision;
+  ring(dx, dy, 52, { color: P.authority, alpha: decided, width: 3.5 });
+  dot(dx, dy, 12, { color: P.authority, alpha: decided });
+  nameText(L("哪个决定", "Which decision"), dx, dy - 52 - NAME_GAP, {
+    valign: "bottom",
     alpha: decided,
   });
-  link(dx + 60, B.y, x - 278, B.y, {
+  link(dx, dy + 60, dx, B.y - 78, {
     alpha: decided,
     upto: soon(t, c.decision, 0.7),
     flow: t > c.decision + 0.8 ? flowOf(t, 0.4) : null,
   });
 }
 
-/* C: a clear boundary round the Agent, at first sized to it; the pile of context at the left, refused; and the five
- * things a consequential delegation states build as one list in a column inside the boundary, which widens as they are
- * announced and deepens just before each is said. The boundary stands centred alone and glides right as the pile
- * arrives; the boundary deepens about one height, and the pile stands at that height. */
-const C = { x: 1160, pile: 700, pileY: 466 };
+/* C: a clear boundary round the Agent, as wide from the first as the five things it will hold need, with even room
+ * above and below the Agent, and named at the left of its top edge; the pile of context at its left, lower, by where
+ * the list builds, refused; and the five things a consequential delegation states build as one list in a column inside
+ * the boundary, which deepens just before each is said, down from a top edge that stays. The stage stands once at the
+ * midpoint of the places that centre the boundary alone and the boundary with the pile: the boundary's name already
+ * reaches toward where the pile comes. */
+const C = { y: 425, pile: 170, clear: 34 };
+const PILE = () => L("一堆背景材料", "A pile of context");
 export function boundaryStage(s, t, c, g) {
   const ats = c.five,
-    shift = glide(t, 960 - C.x, [[c.pile, 0]]),
-    x = C.x + shift,
     items = L(
       ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
       ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"],
     ),
     half = Math.max(...items.map((v) => measure(v) / 2 + 36)),
+    name = L("边界", "A clear boundary"),
+    // The Chinese boundary, narrower as its names are, takes more room round the Agent, so its first picture is not a
+    // sliver; the English one stays smaller than a frame that holds a group, which must be half filled.
+    room = L(105, 72),
+    // The pile's words and their cross centre under it, `C.clear` from the boundary's side.
+    pileHalf = Math.max(60, (measure(PILE()) + 42) / 2),
+    toPile = half + C.clear + pileHalf,
+    nameLeft = -half - NAME_GAP - measure(name),
+    x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2,
     grown = ats.reduce((v, at) => v + soon(t, at - 0.6, 0.45), 0),
-    width = mix(200, half, soon(t, c.important - 0.1, 0.6)),
-    deep = 75 + grown * 52 + (grown > 0 ? 34 : 0),
-    y = 505 - (deep - 70) / 2 - 20,
-    top = y - 70,
-    bottom = y + deep;
+    y = C.y,
+    top = y - room,
+    // The first thing said takes the bottom from the Agent's room to under the first row (y + 161), each further one a
+    // row lower.
+    bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
-  boundary(x - width, top, x + width, bottom, { alpha: g, width: 3.5 });
-  nameText(L("边界", "A clear boundary"), x - width, top - NAME_GAP, {
-    align: "left",
-    valign: "bottom",
+  boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
+  nameText(name, x - half - NAME_GAP, top, {
+    align: "right",
     alpha: g * early(t, c.first3, c.clear),
   });
   items.forEach((v, i) =>
@@ -209,15 +222,16 @@ export function boundaryStage(s, t, c, g) {
   );
   // The pile of context, refused.
   const pile = g * named(t, c.pile),
-    px = C.pile + shift;
+    px = x - toPile,
+    py = y + C.pile;
   stroke(
     () => {
       for (let k = 0; k < 5; k++)
-        ctx.roundRect(px - 60 + (k % 2) * 14, C.pileY + 10 - k * 16, 110, 12, 3);
+        ctx.roundRect(px - 60 + (k % 2) * 14, py + 10 - k * 16, 110, 12, 3);
     },
     { color: P.muted, alpha: pile, width: 2.5 },
   );
-  rejectedName(L("一堆背景材料", "A pile of context"), px, C.pileY + 40 + NAME_GAP, {
+  rejectedName(PILE(), px, py + 40 + NAME_GAP, {
     valign: "top",
     alpha: pile,
     mark: pile,

@@ -12,60 +12,74 @@ import { blend } from "../../drawing/colour.js";
 import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, growName, nameText, rejectedName, termRow } from "../../naming/names.js";
+import { NAME_GAP, NOTE, growTexts, nameText, rejectedName, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { glide } from "../p01/failures.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { bar } from "../p03/marks.js";
 import { lens, speaker, tierDoc } from "./marks.js";
 
-/* The tiers: each one's work (a term and its qualifier, key words) and the record it needs (a document's size, its name
- * and what it holds). */
+/* Each tier's two sides are term rows: at the spine's left the work (a term and its qualifier), at its right the
+ * record it needs (its name and what it holds or takes). Each edition sets its own lines: English sets its longer tiers
+ * on more lines, and a tier's two sides always keep the same lines, so their rows share baselines. `width` wraps a term
+ * and `noteWidth` its qualifier. */
 const WORK = () =>
   L(
     [
-      ["局部、可逆", "无对外承诺"],
-      ["跨角色、做得久", "几种方案、重大不确定"],
-      ["生产、资金、敏感数据、合规", "删除覆盖、对外承诺、不可逆"],
+      { term: ["局部、可逆"], qual: ["无对外承诺"] },
+      { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定"] },
+      { term: ["生产、资金、敏感数据、安全合规"], qual: ["删除覆盖、对外承诺、不可逆"] },
     ],
     [
-      ["Local, reversible work", "no external commitment"],
-      ["Cross-role or lasting work", "competing options, material uncertainty"],
-      [
-        "Production, funds, sensitive data, compliance",
-        "deletion, overwrite, external commitment, irreversibility",
-      ],
+      { term: ["Local, reversible work"], qual: ["no external commitment"] },
+      {
+        term: ["Cross-role ", "or extended work"],
+        qual: ["competing options, material uncertainty"],
+        width: 260,
+        noteWidth: Infinity,
+      },
+      {
+        term: ["Production, funds, sensitive data, ", "security or compliance"],
+        qual: ["deletion, overwrite, ", "external commitment, irreversibility"],
+        width: 490,
+        noteWidth: 420,
+      },
     ],
   );
-/* The second tier's record: Chinese says the record and then what it holds, English what it holds and then the
- * record, so English names the contents as the record's term and the record as its qualifier, each on its words. */
-const recordAt = (c) => L(c.record, c.recordQual);
+/* The records: one clear exchange, the existing work record and, for the highest tier, a written decision with its
+ * explicit authorization, its other requirements as the qualifier, each part on its own words. English says the second
+ * tier's contents before the record, so it names the contents as the term and the record as its qualifier. */
 const RECORD = () =>
   L(
     [
-      ["一次讲清", ["结论、依据、做法"]],
-      ["现有的工作记录", ["问题、方案、做法、验收"]],
+      { term: ["一次讲清"], qual: ["结论、依据、做法"] },
+      { term: ["现有的工作记录"], qual: ["问题、方案、做法、验收"] },
+      { term: ["书面决定、", "明确授权"], qual: ["回滚或降级预案、", "独立评审、", "由人验收"] },
     ],
     [
-      ["One clear exchange", ["conclusion, basis, action"]],
-      ["Problem, options, execution path, acceptance", ["existing work record"]],
+      { term: ["One clear exchange"], qual: ["conclusion, basis, action"] },
+      {
+        term: ["Problem, options, ", "execution path, acceptance"],
+        qual: ["existing work record"],
+        width: 370,
+        noteWidth: Infinity,
+      },
+      {
+        term: ["A written decision, ", "explicit authorization"],
+        qual: ["a rollback or degradation path, ", "independent review, ", "human acceptance"],
+        width: 310,
+        noteWidth: 470,
+      },
     ],
   );
-/* The highest tier's record: a written decision and what else it takes, one name built part by part on two lines. */
-const WRITTEN = () =>
-  L(
-    ["书面决定、", "明确授权、", "回滚预案、", "独立评审、", "由人验收"],
-    [
-      "A written decision, ",
-      "explicit authorization, ",
-      "rollback path, ",
-      "independent review, ",
-      "human sign-off",
-    ],
-  );
-const WRITTEN_WIDTH = () => L(380, 560);
+/* When each record's term and qualifier arrive: the second tier's on their words in each edition's order, the third's
+ * part by part. */
+const recordTimes = (c) => [
+  { term: [c.oneClear], qual: [c.clearQual] },
+  { term: [L(c.record, c.recordQual)], qual: [L(c.recordQual, c.record)] },
+  { term: c.written.slice(0, 2), qual: c.written.slice(2), build: true },
+];
 /* The spine's names: its name over its top, and in Chinese what it decides at its two sides, how much record and how
  * much process; English names the process at its right. */
 const HEAD = () =>
@@ -83,36 +97,41 @@ const TIER_Y = [330, 520, 720],
   /* The spine's side names stand this far from it, so the spine with its names covers a tenth of the frame. */
   HEAD_GAP = 70,
   TO_WORK = 40,
-  TO_DOC = 64;
-/* The spine's x at t: what stands at its left and at its right, the widest of each so far, is centred on the frame,
- * the ladder gliding as one just after the words of each part that widens it. */
-function spineX(t, c) {
+  TO_DOC = 64,
+  /* The documents stand with their right edges on one line, so the three records begin at one left edge. */
+  DOC_RIGHT = TO_DOC + DOCS[2][0];
+/* The widest line of a term row's block, as termRow sets it. */
+const blockWidth = ({ term, qual, width = Infinity, noteWidth = width }) =>
+  Math.max(
+    ...growTexts(term, width).map((line) => line.reduce((w, [, v]) => w + measure(v), 0)),
+    ...growTexts(qual, noteWidth, NOTE).map((line) =>
+      line.reduce((w, [, v]) => w + measure(v, NOTE), 0),
+    ),
+  );
+/* The spine's x: it never moves, so no name moves once shown. The ladder builds side by side, and each state it holds
+ * stands off the frame's centre by half the difference of its two sides; the spine stands where the most off-centre
+ * of those states, at either side, is off by as little as possible, which keeps every state within the reviewers'
+ * 90 px. */
+function spineX(c) {
   const head = HEAD(),
-    work = WORK().map(([v, q]) => TO_WORK + Math.max(measure(v), measure(q, NOTE))),
-    records = [
-      ...RECORD().map(
-        ([v, q], k) => TO_DOC + DOCS[k][0] + NAME_GAP + Math.max(measure(v), measure(q[0], NOTE)),
-      ),
-      TO_DOC + DOCS[2][0] + NAME_GAP + WRITTEN_WIDTH(),
-    ],
+    top = measure(head.top) / 2,
+    records = recordTimes(c),
     parts = [
-      [c.risk, head.left ? HEAD_GAP + measure(head.left) : 0, HEAD_GAP + measure(head.right)],
-      ...c.tiers.map((at, k) => [at, work[k], 0]),
-      [c.oneClear, 0, records[0]],
-      [recordAt(c), 0, records[1]],
-      [c.written[0], 0, records[2]],
+      [c.risk, Math.max(top, head.left ? HEAD_GAP + measure(head.left) : 0), Math.max(top, HEAD_GAP + measure(head.right))],
+      ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
+      ...RECORD().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)]),
     ].sort((p, q) => p[0] - q[0]);
   let left = 0,
     right = 0;
-  const steps = parts.map(([at, l, r]) => {
+  const offsets = parts.map(([, l, r]) => {
     left = Math.max(left, l);
     right = Math.max(right, r);
-    return [at, 960 + (left - right) / 2];
+    return (right - left) / 2;
   });
-  return glide(t, steps[0][1], steps.slice(1));
+  return 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2;
 }
 export function stageLadder(t, a, c) {
-  const x = spineX(t, c),
+  const x = spineX(c),
     head = HEAD(),
     top = SPINE[0];
   line(x, top, x, SPINE[1], { color: P.line, alpha: a, width: 4 });
@@ -128,71 +147,63 @@ export function stageLadder(t, a, c) {
   if (head.left)
     nameText(head.left, x - HEAD_GAP, top + 12, { align: "right", alpha: a * named(t, c.risk) });
   nameText(head.right, x + HEAD_GAP, top + 12, { align: "left", alpha: a * named(t, c.process) });
-  WORK().forEach(([term, qual], k) => {
+  WORK().forEach(({ term, qual, width = Infinity, noteWidth = width }, k) => {
     const y = TIER_Y[k],
       on = a * ramp(t, c.tiers[k] - 0.15, 0.4);
     line(x - 10, y, x + 10, y, { color: P.ink, alpha: on, width: 4 });
-    termRow(t, [term], [c.tiers[k]], [qual], [c.tierQuals[k]], x - TO_WORK, y - 32, {
+    termRow(t, term, [c.tiers[k]], qual, [c.tierQuals[k]], x - TO_WORK, y - 32, {
       align: "right",
       inline: false,
+      width,
+      noteWidth,
       alpha: a,
     });
   });
-  // The records, each a document at the spine's right, named beside itself.
-  const docX = x + TO_DOC;
-  RECORD().forEach(([name, holds], k) => {
+  // The records, each a document at the spine's right, their right edges on one line, named beside it.
+  const docRight = x + DOC_RIGHT,
+    times = recordTimes(c);
+  RECORD().forEach(({ term, qual, width = Infinity, noteWidth = width }, k) => {
     const [w, h] = DOCS[k],
-      at = k ? recordAt(c) : c.oneClear,
+      at = times[k].term[0],
       on = a * ramp(t, at - 0.15, 0.4);
-    tierDoc(docX + w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
-    termRow(
-      t,
-      [name],
-      [at],
-      holds,
-      [k ? L(c.recordQual, c.record) : c.clearQual],
-      docX + w + NAME_GAP,
-      TIER_Y[k] - 32,
-      {
-        align: "left",
-        inline: false,
-        alpha: a,
-      },
-    );
-  });
-  const [w3, h3] = DOCS[2];
-  tierDoc(docX + w3 / 2, TIER_Y[2], w3, h3, {
-    alpha: a * ramp(t, c.written[0] - 0.15, 0.4),
-    rows: 4,
-  });
-  growName(t, WRITTEN(), c.written, docX + w3 + NAME_GAP, TIER_Y[2], {
-    valign: "middle",
-    size: NOTE,
-    width: WRITTEN_WIDTH(),
-    build: true,
-    alpha: a,
+    tierDoc(docRight - w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
+    termRow(t, term, times[k].term, qual, times[k].qual, docRight + NAME_GAP, TIER_Y[k] - 32, {
+      align: "left",
+      inline: false,
+      width,
+      noteWidth,
+      build: times[k].build ?? false,
+      buildTerm: times[k].build ?? false,
+      alpha: a,
+    });
   });
 }
 
 /* E's places: the highest tier at the left, last night compact at the right, the review under them. */
-const TIER = { x: 520, y: 350 },
+/* The column of the tier and the review: English stands it further right, so its longer tier name keeps the settled
+ * picture within 50 px of the centre. */
+const columnX = () => L(520, 545);
+const TIER = { y: 350 },
   NIGHT = { x: 1360, y: 330, scale: 0.55 },
   FIX_Y = [318, 420],
-  /* The upper group stands this much lower, centred on its own, until the review comes under it. */
-  DROP = 120,
-  LENS = { x: 520, y: 660, r: 30 },
+  /* The upper group, the tier and last night's case, stands this much below the places above for the whole stage: the
+   * drop that centres it alone on the content centre is 134 px and the one that centres it with the review and the
+   * accounts under it -6 px, so it stands at their midpoint, where neither state stands far off. */
+  DROP = 64,
+  LENS = { y: 660, r: 30 },
   SPEAKERS = [1250, 1430],
   SPEAK_Y = 690;
 export function stageReview(t, a, c) {
   const [w3, h3] = DOCS[2],
     lit = ramp(t, c.belongs - 0.15, 0.4),
     vt = voiceTime(t),
-    dy = glide(t, DROP, [[c.review, 0]]),
-    tierY = TIER.y + dy,
-    nightY = NIGHT.y + dy;
-  tierDoc(TIER.x, tierY, w3, h3, { alpha: a, color: blend(P.ink, P.authority, lit), rows: 4 });
-  const [term, qual] = WORK()[2];
-  termRow(t, [term], [-Infinity], [qual], [-Infinity], TIER.x, tierY + h3 / 2 + NAME_GAP, {
+    tierY = TIER.y + DROP,
+    nightY = NIGHT.y + DROP;
+  const tierX = columnX();
+  tierDoc(tierX, tierY, w3, h3, { alpha: a, color: blend(P.ink, P.authority, lit), rows: 4 });
+  // The tier's work under its document, its term and its qualifier each on one line: the review stands under them.
+  const { term, qual } = WORK()[2];
+  termRow(t, term, [-Infinity], qual, [-Infinity], tierX, tierY + h3 / 2 + NAME_GAP, {
     align: "center",
     inline: false,
     alpha: a,
@@ -208,16 +219,16 @@ export function stageReview(t, a, c) {
     ["换供应商", "改生产环境里的采集任务"],
     ["A new vendor", "Collection job in production"],
   ).forEach((v, i) => {
-    const y = FIX_Y[i] + dy,
+    const y = FIX_Y[i] + DROP,
       on = a * ramp(t, c.fixes[i] - 0.15, 0.4);
-    link(night.left - 6, i ? nightY + 4 : nightY - 4, TIER.x + w3 / 2 + 10, y, {
+    link(night.left - 6, i ? nightY + 4 : nightY - 4, tierX + w3 / 2 + 10, y, {
       route: "hvh",
       mid: night.left - 40 - i * 24,
       alpha: on,
       upto: soon(t, c.fixes[i] + 0.05, 0.7),
       width: 2.5,
     });
-    nameText(v, (TIER.x + w3 / 2 + night.left - 40) / 2, y - NAME_GAP + 6, {
+    nameText(v, (tierX + w3 / 2 + night.left - 40) / 2, y - NAME_GAP + 6, {
       valign: "bottom",
       alpha: a * listIn(t, c.fixes, i),
       set: "fixes",
@@ -225,14 +236,14 @@ export function stageReview(t, a, c) {
   });
   // The independent review: a lens, named with what it examines, built part by part.
   const review = a * ramp(t, c.review - 0.15, 0.4);
-  lens(LENS.x, LENS.y, LENS.r, { alpha: review });
+  lens(tierX, LENS.y, LENS.r, { alpha: review });
   termRow(
     t,
     [L("独立评审", "Independent review")],
     [c.review],
     L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]),
     c.examined,
-    LENS.x + LENS.r * 1.4 + NAME_GAP,
+    tierX + LENS.r * 1.4 + NAME_GAP,
     LENS.y - 32,
     { align: "left", inline: false, build: true, alpha: a },
   );

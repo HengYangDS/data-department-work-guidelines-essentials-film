@@ -4,9 +4,9 @@
  * seats of failure 3 fill with a decision and with the person who does what by when, or a branch ends in an open
  * question, what is still missing. F1, from 「两种依据，不能」/ "Neither kind": the two kinds apart again, each one's way
  * toward the other stopping at the divider between them. F2, from 「行动依据再充分」/ "Authority to act cannot": the
- * two kinds at the top; the seal's way to a false fact and the record's way to an action each stop at a bar; when the
- * two conflict, the conflict stands between them and its way runs down to a report of the conflict and its impact,
- * beside which the two ways it must not take are refused. */
+ * two kinds at the top, and under them a rail on which the outcomes will stand; the seal's way to a false fact and the
+ * record's way to an action each stop at a bar; when the two conflict, the conflict stands between them and its way
+ * runs down to a report of the conflict and its impact, under which the two ways it must not take are refused. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
@@ -19,7 +19,7 @@ import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
-import { glide, meetingMark, openMark, people } from "../p01/failures.js";
+import { meetingMark, openMark, people } from "../p01/failures.js";
 import { KINDS, twoKinds } from "./kinds.js";
 import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } from "./marks.js";
 
@@ -151,16 +151,18 @@ export function stageApart(s, t, a, c) {
   if (F2 > 0) refusals(t, F2, c);
 }
 
-/* F2's places: the kinds on the top row, the false fact, the report and the action on the middle row, their names on
- * one baseline under them, and the refusals the report keeps under its name. */
+/* F2's places: the kinds on the top row; the false fact, the report and the action stand over one rail, their names on
+ * one baseline under it, and the refusals the report keeps under its name. The rail stands whole in the line tone from
+ * the stage's first frame, as the trust chain's does, so the picture already reaches below the frame's middle while
+ * the two kinds stand alone on the top row, and nothing has to move to make room for what comes under them. */
 const TOP = 285,
   MID = 560,
-  MID_NAMES = MID + 52 + NAME_GAP,
+  RAIL = MID + 60,
+  MID_NAMES = RAIL + NAME_GAP,
   SIDES = [600, 1320];
 function refusals(t, a, c) {
-  // Until the first refusal the two kinds stand alone at the frame's middle; they glide up to the top row as it comes.
-  ctx.save();
-  ctx.translate(0, glide(t, MID - TOP - 50, [[c.falseTrue, 0]]));
+  // The two kinds on the top row and the outcomes' rail under them stand from the stage's first frame.
+  line(SIDES[0] - 60, RAIL, SIDES[1] + 60, RAIL, { color: P.line, alpha: a, width: 2.5 });
   seal(SIDES[0], TOP, 46, { alpha: a });
   recordMark(SIDES[1], TOP, 88, 112, { alpha: a });
   nameText(L("行动依据", "Authority to act"), SIDES[0] - 46 - NAME_GAP, TOP, {
@@ -235,7 +237,7 @@ function refusals(t, a, c) {
     alpha: a * named(t, c.report),
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "照其中一边去做"], ["Altering the record", "Acting for one side"]).forEach((v, i) =>
+  L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach((v, i) =>
     rejectedName(v, 960, MID_NAMES + 58 + i * 44, {
       valign: "top",
       alpha: a * listIn(t, refused, i),
@@ -243,5 +245,4 @@ function refusals(t, a, c) {
       set: "refused",
     }),
   );
-  ctx.restore();
 }

@@ -1,11 +1,12 @@
 /* 02 工作的价值 / What the work is worth, chapter 02 指南是什么 / What the guidelines are. A (02.1): under the rising
- * chapter title, the guidelines' page stands at the centre with its name; the seal of its contract stamps it; the
- * department's members and the Agents they delegate to arrive below it, each joined to it, and the delegation runs from
- * the members to the Agents. B (02.2): the way of the work's value across the frame, with what a piece of work merely
- * hands over refused below it, one thing on each one's words; on its words a signal from the world runs in at the
- * way's left. B2, from 「变成」/ "into judgments": the refused things leave whole and what the signal becomes hangs from
- * the way where they stood, judgments, data assets and actions, carried along the way to the others at its end, with
- * the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by tasks.js. */
+ * chapter title, the guidelines' page stands with its name, centred across the frame and high enough to leave room
+ * below it; the seal of its contract stamps it; the department's members and the Agents they delegate to arrive below
+ * it, each joined to it, and the delegation runs from the members to the Agents. B (02.2): the way of the work's value
+ * across the frame, with what a piece of work merely hands over refused below it, one thing on each one's words; on
+ * its words a signal from the world runs in at the way's left. B2, from 「变成」/ "into judgments": the refused things
+ * leave whole and what the signal becomes hangs from the way where they stood, judgments, data assets and actions,
+ * carried along the way to the others at its end, with the qualities the others rely on under them. C and C2
+ * (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
 import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
@@ -19,7 +20,6 @@ import { mix, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { glide } from "../p01/failures.js";
 import { agents, guidePage, handedMark, outputMark, people, toAndFro, wave } from "./marks.js";
 import { stageOutcomes, taskCues } from "./tasks.js";
 
@@ -59,12 +59,16 @@ function cuesOf(s) {
 }
 
 /* A: the guidelines open as a booklet, wide enough with its two names that the opening's picture covers a tenth of
- * the frame by its second second. It stands centred under the rising title, at full ink as the voice begins, until the
- * members come, then glides up as one to leave the row of members and Agents room below it. The members stand left of
+ * the frame by its second second. It stands under the rising title, at full ink as the voice begins, at one height
+ * from the first word until the stage leaves: as low as the row of members and Agents below it allows, whose links
+ * cross CROSS px under the booklet and reach the members' heads (HEADS) as far again below, so the booklet alone
+ * stands as near the content centre as it can and the picture with the row stands on it. The members stand left of
  * the centre and the Agents right of it, so the picture stays within 90 px of the centre while the members wait. */
 const PAGE = { w: 400, h: 350 },
-  PAGE_TOP = [300, 170],
   ROW = 700,
+  HEADS = ROW - 36,
+  CROSS = 42,
+  PAGE_TOP = HEADS - 2 * CROSS - PAGE.h,
   MEMBERS = [620, 680, 740],
   AGENTS = [1180, 1240],
   ROW_NAMES = ROW + 22 + NAME_GAP;
@@ -74,17 +78,16 @@ function stageGuide(s, t, a, c) {
     960 -
     PAGE.w / 2 -
     (measure(L("契约", "Contract")) - measure(L("这份指南", "The guidelines"))) / 2;
-  const top = glide(t, PAGE_TOP[0], [[c.members, PAGE_TOP[1]]]),
-    g = a * clearOfTitle(s, t, top),
-    bottom = top + PAGE.h,
-    mid = PAGE_TOP[1] + PAGE.h + 76,
+  const g = a * clearOfTitle(s, t, PAGE_TOP),
+    bottom = PAGE_TOP + PAGE.h,
+    mid = bottom + CROSS,
     agentsX = (AGENTS[0] + AGENTS[1]) / 2;
-  const sealAt = guidePage(x, top, PAGE.w, PAGE.h, {
+  const sealAt = guidePage(x, PAGE_TOP, PAGE.w, PAGE.h, {
     alpha: g * ramp(t, s.voice_start - 0.4, 0.35),
     seal: ramp(t, c.seal - 0.15, 0.4),
     stamp: ramp(t, c.stamp - 0.1, 0.35),
   });
-  nameText(L("这份指南", "The guidelines"), x - NAME_GAP, top + PAGE.h / 2, {
+  nameText(L("这份指南", "The guidelines"), x - NAME_GAP, PAGE_TOP + PAGE.h / 2, {
     align: "right",
     alpha: g * named(t, c.guide),
   });
@@ -92,15 +95,15 @@ function stageGuide(s, t, a, c) {
     align: "left",
     alpha: g * named(t, c.seal),
   });
-  // The members, joined to the page once it has glided up; the Agents, joined on their own words.
+  // The members and the Agents, each joined to the page just after their own words.
   const members = g * ramp(t, c.members - 0.15, 0.4),
     agentsOn = g * ramp(t, c.agents - 0.15, 0.4);
   people(MEMBERS, ROW, { alpha: members });
-  link(x + PAGE.w * 0.25, bottom, MEMBERS[1], ROW - 36, {
+  link(x + PAGE.w * 0.25, bottom, MEMBERS[1], HEADS, {
     route: "vhv",
     mid,
     alpha: members,
-    upto: soon(t, c.members + 0.6, 0.5),
+    upto: soon(t, c.members + 0.05, 0.5),
   });
   nameText(L("部门成员", "Members"), MEMBERS[1], ROW_NAMES, {
     valign: "top",
@@ -111,7 +114,7 @@ function stageGuide(s, t, a, c) {
     route: "vhv",
     mid,
     alpha: agentsOn,
-    upto: soon(t, Math.max(c.agents, c.members + 0.6) + 0.05, 0.5),
+    upto: soon(t, c.agents + 0.05, 0.5),
   });
   nameText(L("智能体", "Agents"), agentsX, ROW_NAMES, {
     valign: "top",
@@ -222,5 +225,5 @@ scenes["02"] = function (s, t) {
   if (A > 0) stageGuide(s, t, A, c);
   if (B > 0) stageHanded(t, B, c);
   if (B2 > 0) stageOutputs(t, B2, c);
-  stageOutcomes(t, c);
+  stageOutcomes(s, t, c);
 };

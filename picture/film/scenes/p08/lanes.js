@@ -14,7 +14,7 @@ import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.j
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, flowOf, glide, openMark } from "../p05/kit.js";
+import { centring, early, flowOf, openMark } from "../p05/kit.js";
 
 /* A: two lanes at 0.8 sharing the agreed time. The upper lane is last night, its two hours lit and named over them;
  * the lower lane is the next nights, where the same delay may recur, drawn dashed and named over it, and which is the
@@ -168,19 +168,23 @@ export function aimStage(s, t, c, g) {
 /* B: early signs. Four nights before last night in a row, named over it from the first words that speak of them; a few
  * of them a few minutes late, their delays lit as one stroke and named under them; a rescue mark over each late night,
  * one stroke, named; under the row two checks, the pattern and the impact, each named. Then a needed safeguard,
- * dashed, stands at the row's right, the stage gliding left to make room for it, and the incident it must not wait for
- * is refused under it. */
-const B = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1450, card: 64 };
-/* The safeguard's name stands beside the last card, so English sets it on two lines to keep clear of the card. */
-const SAFEGUARD = () => L(["该有的防护"], ["A needed", "safeguard"]);
+ * dashed, stands at the row's right, and the incident it must not wait for is refused under it. The stage never moves:
+ * it stands where each state it holds, the row alone, the row with its delays named at the left and the whole with the
+ * safeguard at the right, is off the centre by as little as possible. */
+const B = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1470, card: 64 };
+/* The safeguard's name, one line over its mark, clear of the last card. */
+const SAFEGUARD = () => L("该有的防护", "A needed safeguard");
 export function signsStage(s, t, c, g) {
-  const right = B.guard + Math.max(...SAFEGUARD().map((v) => measure(v))) / 2,
+  const right = B.guard + measure(SAFEGUARD()) / 2,
     left = B.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")),
+    rowStart = B.xs[0] - 108,
     rowEnd = B.xs[3] + 108,
-    shift = glide(t, centring(B.xs[0] - 108, rowEnd), [
-      [c.minutes, centring(left, rowEnd)],
-      [c.guard, centring(left, right)],
-    ]),
+    states = [
+      [rowStart, rowEnd],
+      [left, rowEnd],
+      [left, right],
+    ].map(([l, r]) => centring(l, r)),
+    shift = (Math.max(...states) + Math.min(...states)) / 2,
     xs = B.xs.map((x) => x + shift),
     cardTop = B.y - 34 - B.card,
     lateIn = g * named(t, c.minutes);

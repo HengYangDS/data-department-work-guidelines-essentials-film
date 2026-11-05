@@ -17,7 +17,7 @@ import { mix, ramp, soon } from "../../timing/easing.js";
 import { bar, flowOf } from "./kit.js";
 
 /* The backtest's height and how far it stands below the measure's name, and the room its marker's name takes under it:
- * the stage is centred with them from its first word, so nothing moves when they arrive. */
+ * the stage's place counts them from its first word, so nothing moves when they arrive. */
 const TEST = { gap: 30, h: 96 };
 const TEST_ROOM = TEST.gap + TEST.h + NAME_GAP + labelSize(LABEL);
 /* The curve's heights, one point per half hour from an hour before the due hour to an hour after the arrival. */
@@ -63,17 +63,15 @@ function backtest(t, c, g, m, top) {
   });
 }
 
-/* The timeline stands centred with its measure from the first word, and glides up to make room for the backtest
- * as the backtest is said, so each state stays centred on the content centre. */
+/* The timeline stands at one place from its first word, its measure and the backtest arriving under it: the stage
+ * grows downward from its card alone to the whole with the backtest, and stands at the midpoint of the anchors that
+ * centre those two states on the content centre, so neither stands far off and nothing moves. */
 export function nightStage(s, t, c, g) {
   const names = nightNames(t, c),
+    first = lastNightExtent(1, { card: 1, names: { card: names.card } }),
     e = lastNightExtent(1, { card: 1, due: 1, late: 1, names }),
     x = 960 - (e.left + e.right) / 2,
-    y = mix(
-      505 - (e.top + e.bottom) / 2,
-      505 - (e.top + e.bottom + TEST_ROOM) / 2,
-      soon(t, c.backtest - 0.15, 0.7),
-    );
+    y = 505 - (first.top + first.bottom + e.top + e.bottom + TEST_ROOM) / 4;
   const m = lastNight(x, y, 1, {
     alpha: g,
     card: soon(t, c.first3 - 0.15, 0.8),

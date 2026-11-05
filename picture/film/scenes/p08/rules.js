@@ -1,11 +1,11 @@
 /* Part 08, stages C, D, E1 and E2. C, the made-up case: the monitor on the schedule needs an owner and a later look at
- * whether it caught problems earlier. D: a rule and the four reasons to retire it; retired, it lifts away. E1, the
- * made-up case: the price data on its hour and its next user, with what that user needs. E2: conveying a judgment:
- * faithful first, then clear, then elegant. */
+ * whether it caught problems earlier. D: a rule and the four reasons to retire it; retired, it fades where it stands.
+ * E1, the made-up case: the price data on its hour and its next user, with what that user needs. E2: conveying a
+ * judgment: faithful first, then clear, then elegant. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, line, ring, stroke } from "../../drawing/strokes.js";
+import { dot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { documentIcon, person, seal } from "../../drawing/symbols.js";
 import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
@@ -15,7 +15,7 @@ import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { early, flowOf, glide, openMark } from "../p05/kit.js";
+import { centring, early, flowOf, openMark } from "../p05/kit.js";
 
 /* A rule: a page with its seal on the lower right. */
 function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
@@ -76,16 +76,14 @@ export function monitorStage(s, t, c, g) {
 /* D: a rule over the four reasons to retire it. The page stands on the frame's axis, named over itself and joined to a
  * rail under it, which stands whole from the first words, so the picture stays centred while the list builds; the
  * reasons take the rail's stations on their words, open marks named under them, one list. As the sentence closes the
- * page lifts and fades while its names and the reasons stay. */
+ * page fades where it stands while its names and the reasons stay. */
 const R = { x: 960, y: 420, rail: 640, half: 520, pitch: 300 };
 export function retireStage(s, t, c, g) {
-  const lift = soon(t, c.lift, 0.7),
-    page = g * mix(1, 0.45, lift),
-    y = R.y - 40 * lift,
+  const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch),
     ats = c.retire;
-  rulePage(R.x, y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
-  nameText(L("规矩", "A rule"), R.x, y - 78 - NAME_GAP, {
+  rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
+  nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3b, c.rule3),
   });
@@ -93,7 +91,7 @@ export function retireStage(s, t, c, g) {
     align: "left",
     alpha: g * named(t, c.retired),
   });
-  line(R.x, y + 78, R.x, R.rail, { color: P.line, alpha: page, width: 2 });
+  line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page, width: 2 });
   line(R.x - R.half, R.rail, R.x + R.half, R.rail, { color: P.line, alpha: g, width: 3.5 });
   [-1, 1].forEach((side) => dot(R.x + side * R.half, R.rail, 6, { color: P.line, alpha: g }));
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
@@ -108,13 +106,16 @@ export function retireStage(s, t, c, g) {
   );
 }
 
-/* E1: the full timeline as in the opening, the price data on its hour, and its next user at the rail's right end, the
- * data's way running on to them; what the user needs builds in a column between the card and the user, one list. The
- * stage stands centred alone and glides left as the user arrives. */
+/* E1: the full timeline as in the opening, the price data on its hour, and its next user beyond the rail's right end,
+ * the data's way running on to them; what the user needs builds in a column between the card and the user, one list.
+ * The stage stands once at the midpoint of the places that centre it before and after the user arrives. */
 export function nextUserStage(s, t, c, g) {
   const names = { card: { v: L("那份数据", "The price data"), alpha: early(t, c.first4, c.data) } },
     e = lastNightExtent(1, { card: 1, names }),
-    x = 960 - (e.left + e.right) / 2 + glide(t, 0, [[c.user, -110]]),
+    userName = L("下一位", "Next user"),
+    // The user stands 90 px beyond the rail's end, the name under the figure reaching furthest.
+    reach = e.right + 90 + Math.max(28, measure(userName) / 2),
+    x = (centring(e.left, e.right) + centring(e.left, reach)) / 2,
     y = 551;
   const m = lastNight(x, y, 1, {
     alpha: g,
@@ -126,11 +127,11 @@ export function nextUserStage(s, t, c, g) {
     ux = m.right + 90;
   link(m.right + 6, y, ux - 30, y, { alpha: user, upto: soon(t, c.user, 0.6) });
   person(ux, y + 4, { alpha: user, size: 1.2 });
-  nameText(L("下一位", "Next user"), ux, y + 64 + NAME_GAP, { valign: "top", alpha: user });
+  nameText(userName, ux, y + 64 + NAME_GAP, { valign: "top", alpha: user });
   const needs = c.needs,
     cx = (m.card.right + ux) / 2 + 20;
   L(
-    ["清楚的含义", "当时的事实", "对得上的证据", "获准、有边界的用途"],
+    ["清楚的含义", "当时能拿到的事实", "对得上的证据", "获准、有边界的用途"],
     ["Clear meaning", "Facts available then", "Matching evidence", "A permitted, bounded use"],
   ).forEach((v, i) =>
     nameText(v, cx, 262 + i * 48, { alpha: g * listIn(t, needs, i), set: "needs" }),

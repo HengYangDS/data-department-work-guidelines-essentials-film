@@ -10,18 +10,20 @@ import { box, dot, flowDot, line, measure, ring, stroke } from "../../drawing/st
 import { agent, check, documentIcon, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { bubble, recoverIcon, tagIcon } from "../../drawing/workspace.js";
-import { beats, building, listIn, named, speaking } from "../../naming/lists.js";
+import { beats, listIn, named, speaking } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, centring, early, flowOf, glide, openMark } from "../p05/kit.js";
+import { bar, centring, early, flowOf, openMark } from "../p05/kit.js";
 
 /* C: the chain of trust. The job's earlier start stands on the compact timeline in the top band, the start the decision
  * owner approves; below it seven stations at one pitch on one rail, each a small mark over the rail and its name under
- * it, one list. The rail grows to each station on its words, and the chain stands centred on what of it stands. */
-const C = { y: 690, pitch: 196, icon: 634 };
+ * it, one list. The whole rail stands in the line tone from the first station, centred, so no station moves when the
+ * next is said; the chain lights along it to each station on its words. The rail's own names stand beyond its end
+ * stations' names. */
+const C = { y: 690, pitch: 180, icon: 634 };
 function stationMark(i, x, y, a) {
   if (i === 0) person(x, y + 12, { alpha: a, color: P.authority, size: 0.8 });
   else if (i === 1) {
@@ -67,15 +69,20 @@ export function chainStage(s, t, c, g) {
   });
   const ats = c.stations,
     n = ats.length,
-    shift = building(t, ats, C.pitch / 2),
-    x0 = 960 - ((n - 1) * C.pitch) / 2 + shift,
+    x0 = 960 - ((n - 1) * C.pitch) / 2,
     xs = ats.map((_, i) => x0 + i * C.pitch),
     slim = soon(t, c.lighter + 0.05, 0.8);
-  // The rail grows to each station as it is said; lower risk slims it; a point runs along it once it is whole.
+  // The whole rail stands in the line tone from the first station; the chain lights along it to each station as it is
+  // said; lower risk slims it; a point runs along it once it is whole.
   const reach = ats.reduce(
     (v, at, i) => (i ? mix(v, xs[i], soon(t, at - 0.15, 0.5)) : xs[0]),
     xs[0],
   );
+  line(xs[0] - 30, C.y, xs[n - 1] + 30, C.y, {
+    color: P.line,
+    alpha: g * ramp(t, ats[0] - 0.15, 0.4),
+    width: 2.5,
+  });
   line(xs[0] - 30, C.y, reach + 30, C.y, {
     color: P.ink,
     alpha: g * 0.9,
@@ -92,20 +99,24 @@ export function chainStage(s, t, c, g) {
     stationMark(i, x, C.icon, a);
     if (lit > 0) ring(x, C.icon, 32, { color: P.ink, alpha: g * lit * 0.4, width: 2 });
   });
-  railNames(
-    L(
-      ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
-      ["Decision owner", "Limits", "Change", "Current runs", "The claim", "Acceptance", "Learning"],
-    ),
-    xs,
-    C.y,
-    { gap: NAME_GAP, alpha: (i) => g * listIn(t, ats, i), set: "chain" },
+  const stations = L(
+    ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
+    ["Decision owner", "Limits", "Change", "Current runs", "The claim", "Acceptance", "Learning"],
   );
-  nameText(L("信任链", "Chain of trust"), xs[0] - 30 - NAME_GAP, C.y, {
-    align: "right",
-    alpha: g * early(t, c.chainClause, c.chain),
+  railNames(stations, xs, C.y, {
+    gap: NAME_GAP,
+    alpha: (i) => g * listIn(t, ats, i),
+    set: "chain",
   });
-  nameText(L("手续变轻", "Less process"), xs[n - 1] + 30 + NAME_GAP, C.y, {
+  // The rail's own names stand at its ends, beyond the rail and the end stations' names alike.
+  const reachOut = (v) => Math.max(30, measure(v) / 2);
+  // Named on its own words, not from its clause: the far end's name follows within a breath, so the chain is never
+  // weighted to one end for long.
+  nameText(L("信任链", "Chain of trust"), xs[0] - reachOut(stations[0]) - NAME_GAP, C.y, {
+    align: "right",
+    alpha: g * named(t, c.chain),
+  });
+  nameText(L("手续变轻", "Less process"), xs[n - 1] + reachOut(stations[n - 1]) + NAME_GAP, C.y, {
     align: "left",
     alpha: g * named(t, c.lighter),
   });
@@ -175,15 +186,14 @@ export function stateStage(s, t, c, g) {
 
 /* E2: what each step establishes. Verified holds only within its stated bounds: its check stands inside a field of
  * four sides, drawn as one stroke from the first word, and each side lights with its name as that bound is said, one
- * list. The field stands on the content centre alone and glides up as its last bound is said; under it, the work at
- * its agreed destination and the work in use, two frames whose way stops at a bar, each named under it, and beside the
- * work in use an eye, what was actually observed, joined to it. */
+ * list. Under it, the work at its agreed destination and the work in use, two frames whose way stops at a bar, each
+ * named under it, and beside the work in use an eye, what was actually observed, joined to it. The field stands above
+ * the content centre by as much as the whole with the frames stands below it, so it never moves to make their room. */
 const V = {
   w: 560,
   h: 280,
-  y: 505,
-  up: 345,
-  fy: 655,
+  y: 456,
+  fy: 760,
   fw: 150,
   fh: 104,
   pubX: 680,
@@ -193,7 +203,7 @@ const V = {
 const BOUNDS = () =>
   L(["对象", "版本", "环境", "限度"], ["Subject", "Version", "Environment", "Limit"]);
 export function verifiedStage(s, t, c, g) {
-  const cy = mix(V.y, V.up, soon(t, c.bounds[3] + 0.1, 0.8)),
+  const cy = V.y,
     x0 = 960 - V.w / 2,
     x1 = 960 + V.w / 2,
     y0 = cy - V.h / 2,
@@ -287,32 +297,35 @@ export function verifiedStage(s, t, c, g) {
   nameText(L("实际看到的", "Actually observed"), eyeX, under, { valign: "top", alpha: seen });
 }
 
-/* F: the completion claim, a wide sheet of written lines at the centre, pinned at its right to its subject and version
- * and signed at its left by its verification, each named under its mark; under the sheet, what it covers, filled, and
- * what is unproved, dashed. Narrowed to its evidence, the sheet draws in to what is covered and leaves its larger extent
- * as a dashed trace, which a bar closes: the narrower claim is named under what is covered and the inflated wording,
- * refused, under what is unproved. The claim stands centred alone, glides left as its pin is said and back as its
- * signature is. */
+/* F: the completion claim, a wide sheet of written lines on a rail, pinned at the rail's right to its subject and
+ * version and signed at its left by its verification, each named under its mark; under the sheet, what it covers,
+ * filled, and what is unproved, dashed. Narrowed to its evidence, the sheet draws in to what is covered and leaves its
+ * larger extent as a dashed trace, which a bar closes: the narrower claim is named under what is covered and the
+ * inflated wording, refused, under what is unproved. The rail stands whole from the first, so the claim stands at one
+ * place, the midpoint of the centring shifts of its states: the rail alone, with the pin, and with both. */
 const F = { y: 450, w: 600, h: 200, narrow: 380 };
 const SUBJECT = () => L("哪个对象、哪个版本", "Subject and version"),
   SIGNED = () => L("谁、什么时候、什么方法", "When, by whom, how");
 export function claimStage(s, t, c, g) {
-  // The pin's tag and the signature stand far enough out that their names, centred under them, clear the sheet.
-  const tagX = F.w / 2 + 10 + Math.max(35, measure(SUBJECT()) / 2),
-    signX = F.w / 2 + 10 + Math.max(18, measure(SIGNED()) / 2),
-    right = 960 + tagX + Math.max(35, measure(SUBJECT()) / 2),
-    left = 960 - signX - Math.max(18, measure(SIGNED()) / 2),
-    x =
-      960 +
-      glide(t, 0, [
-        [c.subject, centring(960 - F.w / 2, right)],
-        [c.signed, centring(left, right)],
-      ]),
+  // The pin's tag and the signature stand far enough out that their names, centred under them, keep a name's gap from
+  // the sheet and its dashed trace; the rail runs between them, from the signature's ring to the tag's point.
+  const tagX = F.w / 2 + NAME_GAP + Math.max(35, measure(SUBJECT()) / 2),
+    signX = F.w / 2 + NAME_GAP + Math.max(18, measure(SIGNED()) / 2),
+    right = tagX + Math.max(35, measure(SUBJECT()) / 2),
+    left = -signX - Math.max(18, measure(SIGNED()) / 2),
+    shifts = [
+      [18 - signX, tagX - 35],
+      [18 - signX, right],
+      [left, right],
+    ].map(([l, r]) => centring(960 + l, 960 + r)),
+    x = 960 + (Math.max(...shifts) + Math.min(...shifts)) / 2,
     narrowed = soon(t, c.narrow + 0.05, 0.8),
     w = mix(F.w, F.narrow, narrowed),
     cl = x - F.w / 2,
     top = F.y - F.h / 2,
     under = F.y + 34 + NAME_GAP;
+  // The rail, under the sheet, which covers its middle.
+  line(x - signX + 18, F.y, x + tagX - 35, F.y, { color: P.line, alpha: g, width: 2 });
   if (narrowed > 0)
     box(cl, top, F.w, F.h, {
       stroke: P.line,
@@ -339,20 +352,18 @@ export function claimStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * early(t, c.first6, c.claim),
   });
-  // Pinned at its right to its subject and version; a point runs along the pin.
+  // Pinned at the rail's right to its subject and version; a point runs along the pin.
   const pin = g * named(t, c.subject),
     tx = x + tagX;
-  line(cl + w + 4, F.y, tx - 35, F.y, { color: P.line, alpha: pin, width: 2 });
   if (t > c.subject + 0.5) {
     const q = flowOf(t, 0.5);
     flowDot(mix(cl + w + 4, tx - 35, q), F.y, 4, q, { color: P.ink, alpha: pin });
   }
   tagIcon(tx - 35, F.y, 70, 34, { alpha: pin, color: P.ink });
   nameText(SUBJECT(), tx, under, { valign: "top", alpha: pin });
-  // Signed at its left by its verification.
+  // Signed at the rail's left by its verification.
   const sign = g * named(t, c.signed),
     sx = x - signX;
-  line(sx + 18, F.y, cl - 4, F.y, { color: P.line, alpha: sign, width: 2 });
   ring(sx, F.y, 18, { color: P.evidence, alpha: sign, width: 2.5 });
   check(sx, F.y + 1, 18, { alpha: sign });
   nameText(SIGNED(), sx, under, { valign: "top", alpha: sign });

@@ -1,11 +1,11 @@
 /* B and C (04.2-04.4). B, from 「说真话」/ "tell the truth": the field at the left, its sides in the line colour, each
  * lighting in the colour of authority as its boundary is said; at its right the four boundaries build one list, each a
  * small field with its own side lit, its name, and what it rules out or covers set under it in key words, whole from
- * its first words, so each row stands at its full width as the group centres on it. The group glides as one to stay
- * centred as wider rows arrive; the field closes as its fourth side lights. C, from 「在这四条底线之内」/ "Inside them": the
- * field large at the left, lit, named over itself, and the two cases in a column at its right, each with its point
- * inside the field, the case being said at full ink: a point moving freely inside, and a point halted short of a side,
- * ringed, its way rising to the field's top. */
+ * its first words. The field stands at one place for the whole list, so no row moves as wider rows arrive; the field
+ * closes as its fourth side lights. C, from 「在这四条底线之内」/ "Inside them": the field large on the frame's axis, lit,
+ * named over itself, and the two cases in a column under it, each with its point inside the field, the case being said
+ * at full ink: a point moving freely inside, and a point halted short of a side, ringed, its way rising to the field's
+ * top. */
 
 import { line, measure, ring } from "../../drawing/strokes.js";
 import { dot } from "../../drawing/strokes.js";
@@ -15,7 +15,6 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
-import { glide } from "../p01/failures.js";
 import { field, fieldIcon } from "./marks.js";
 
 /* The four boundaries, each its name and, in key words, what it rules out or covers, said in parts. */
@@ -44,9 +43,12 @@ const ROWS = () =>
     ],
   );
 const B = { y: 480, s: 360, rows: [300, 420, 540, 660], toRows: 90, icon: 34 };
-/* The field's x at t: the field and what stands of the rows are centred together, gliding as one just after the words
- * of each term or qualifier that widens them. */
-function lineX(t, c) {
+/* The field's x: it never moves, so no name moves once shown. The group, the field with the rows at its right, widens
+ * as each term or qualifier wider than those before it arrives, and each such state is centred by its own shift. The
+ * first term stands alone for about a second before its qualifier, a passing build-up; of the states after it, those
+ * the list still grows from may stand 90 px off the frame's centre and the whole list 50 px, so the field stands
+ * between the narrowest and the widest where their offsets, each as a share of its limit, are equal. */
+function lineX(c) {
   const textAt = B.s / 2 + B.toRows + B.icon / 2 + 26,
     parts = ROWS()
       .flatMap(([v, q], k) => [
@@ -55,14 +57,14 @@ function lineX(t, c) {
       ])
       .sort((p, q) => p[0] - q[0]);
   let widest = 0;
-  const steps = parts.map(([at, w]) => {
+  const shifts = parts.map(([, w]) => {
     widest = Math.max(widest, w);
-    return [at, 960 - (-B.s / 2 + textAt + widest) / 2];
+    return 960 - (-B.s / 2 + textAt + widest) / 2;
   });
-  return glide(t, steps[0][1], steps.slice(1));
+  return (50 * shifts[1] + 90 * shifts.at(-1)) / 140;
 }
 export function stageLines(t, a, c) {
-  const x = lineX(t, c),
+  const x = lineX(c),
     iconX = x + B.s / 2 + B.toRows,
     textX = iconX + B.icon / 2 + 26;
   field(x, B.y, B.s, B.s, { alpha: a, lit: c.rows.map((at) => ramp(t, at - 0.15, 0.4)) });
@@ -98,10 +100,11 @@ export function stageLines(t, a, c) {
   });
 }
 
-/* C: the field 400 across, lit; the cases' names in a column past its right side, their two rows about the field's
- * centre. The field stands alone centred and glides as each name that widens the group arrives. */
-const C = { y: 500, s: 400, column: 80 },
-  CASE_Y = [440, 560];
+/* C: the field 400 across, lit, on the frame's axis; the cases' names in a column under it on the same axis, `pitch`
+ * apart. The column grows downward, so every state stays centred across the frame and the field never moves: the field
+ * stands alone for nearly two seconds in Chinese, longer than a build-up may stand off centre, so the cases cannot take
+ * a column beside it. */
+const C = { y: 478, s: 400, pitch: 64 };
 const CASES = () =>
   L(
     ["自主、探索和创造", "停下来，讲出来，往上报"],
@@ -109,14 +112,10 @@ const CASES = () =>
   );
 export function stageCases(t, a, c) {
   const names = CASES(),
-    place = (k) => 960 - (C.column + Math.max(...names.slice(0, k).map((v) => measure(v)))) / 2,
-    x = glide(t, 960, [
-      [c.free, place(1)],
-      [c.halt, place(2)],
-    ]),
+    x = 960,
     right = x + C.s / 2,
     top = C.y - C.s / 2,
-    textX = right + C.column,
+    under = C.y + C.s / 2 + NAME_GAP,
     vt = voiceTime(t),
     ats = [c.free, c.halt],
     level = (i) => listLevel(t, ats, i);
@@ -127,12 +126,12 @@ export function stageCases(t, a, c) {
   });
   // Inside them: a point moving freely about the field's upper left.
   const free = a * ramp(t, c.inside - 0.15, 0.4);
-  dot(x - 70 + 60 * Math.sin(vt * 0.9), CASE_Y[0] + 45 * Math.sin(vt * 1.3), 8, {
+  dot(x - 70 + 60 * Math.sin(vt * 0.9), C.y - 60 + 45 * Math.sin(vt * 1.3), 8, {
     color: P.ink,
     alpha: free * level(0),
   });
-  nameText(names[0], textX, CASE_Y[0], {
-    align: "left",
+  nameText(names[0], x, under, {
+    valign: "top",
     alpha: a * listIn(t, ats, 0),
     set: "cases",
   });
@@ -150,8 +149,8 @@ export function stageCases(t, a, c) {
   const rise = soon(t, c.halt + 0.4, 0.6);
   if (rise > 0)
     line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
-  nameText(names[1], textX, CASE_Y[1], {
-    align: "left",
+  nameText(names[1], x, under + C.pitch, {
+    valign: "top",
     alpha: a * listIn(t, ats, 1),
     set: "cases",
   });

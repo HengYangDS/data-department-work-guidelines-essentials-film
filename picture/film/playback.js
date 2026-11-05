@@ -4,7 +4,7 @@ import { ctx, layout, measuring, resolution, sceneFade, setDrawing, wordFade } f
 import { contrastOf } from "./drawing/colour.js";
 import { push } from "./framing/camera.js";
 import { caption } from "./framing/captions.js";
-import { chapterCard, opensChapter, runningHead } from "./framing/chapters.js";
+import { chapterCard, opensChapter, partHead, runningHead } from "./framing/chapters.js";
 import { measuringContext } from "./framing/measuring.js";
 import { credits, titleSignature } from "./framing/titles.js";
 import { P } from "./palette.js";
@@ -111,6 +111,7 @@ function drawAt(t) {
   // A chapter card already shows while the previous chapter's last scene fades out.
   chapterCard(next && opensChapter(next) && t >= next.start - 0.15 ? next : s, t);
   runningHead(s, t);
+  partHead(v, t);
   caption(t);
   publish(t);
 }

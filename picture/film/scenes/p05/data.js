@@ -6,18 +6,17 @@
  * views hang from the data, and none may climb back to become the source of truth. */
 
 import { link } from "../../drawing/links.js";
-import { dot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, labelSize, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, person, seal, tableIcon } from "../../drawing/symbols.js";
 import { ctx } from "../../canvas.js";
-import { building, listIn, named, speaking } from "../../naming/lists.js";
+import { listIn, named, speaking } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
 import { radialName, railNames } from "../../naming/placement.js";
-import { P } from "../../palette.js";
+import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { clamp, mix, ramp, soon } from "../../timing/easing.js";
 import {
   bar,
-  centring,
   chartMark,
   early,
   fileMark,
@@ -33,8 +32,9 @@ import {
  * at the middle of the stage; the three things that establish nothing build in a row at the foot, their ways rising,
  * joining and stopping at a bar under the pair; and what none of them establishes stands over the pair as a row of
  * open marks. The pair holds the stage's centre while the rows above and below it arrive, so each state stays near the
- * content centre. The card stands alone on the frame's axis until the page arrives, then glides right as the page
- * takes its place at its left. */
+ * content centre. The card stands at its place from the stage's first frame with the dashed relation that reaches
+ * from it to the page's place, so the picture spans the pair before the page is named at the relation's far end and
+ * nothing moves when it is. */
 const A = { top: 388, card: [300, 170], page: [120, 170], pageX: 620, cardX: 1210 },
   UNKNOWN_Y = 241,
   BAR_Y = 568,
@@ -45,16 +45,17 @@ const A = { top: 388, card: [300, 170], page: [120, 170], pageX: 620, cardX: 121
   UNKNOWN_XS = () => L([630, 850, 1070, 1290], [600, 840, 1080, 1320]);
 export function evidenceStage(s, t, c, g) {
   const [cw, ch] = A.card,
-    cardX = mix(960, A.cardX, soon(t, c.evidence - 0.15, 0.6)),
+    cardX = A.cardX,
     page = g * named(t, c.evidence),
     mid = A.top + ch / 2;
   tableIcon(cardX - cw / 2, A.top, cw, ch, { alpha: g });
   missingPage(A.pageX - A.page[0] / 2, A.top, A.page[0], A.page[1], { alpha: page });
-  // The evidence the data's use takes: a dashed relation from the missing page to the data.
+  // The evidence the data's use takes: a dashed relation from the page's place to the data, whole with the card and
+  // wide enough to count in the picture's lit extent.
   link(A.pageX + A.page[0] / 2 + 12, mid, cardX - cw / 2 - 12, mid, {
-    alpha: page,
+    alpha: g,
     dash: [8, 8],
-    upto: soon(t, c.evidence + 0.1, 0.6),
+    width: 2.5,
   });
   nameText(L("数据", "Data"), cardX, A.top - NAME_GAP, {
     valign: "bottom",
@@ -109,29 +110,40 @@ export function evidenceStage(s, t, c, g) {
 
 /* A2: the data shown fit for a specific use. The data stands at the left and the use, a target, at the right, their
  * names on one baseline; the relation between them is named as the contract renders it, and the data's trust, a seal
- * on its corner, is stamped once the relation has reached the use. */
-/* The data stands nearer the axis with its seal until the relation is said, then glides left to make room for it. */
-const A2 = { y: 505, card: [220, 140], cardX: 640, aloneX: 880, useX: 1300, r: 56 };
+ * on its corner, is stamped once the use is named at the relation's far end. */
+/* The data and the relation that reaches from it to the use's place stand from the stage's first frame, so the
+ * picture spans the stage before the relation and the use are named, and nothing moves when they are; once the
+ * relation is said, a point runs along it toward the use. The places below are shifted as one by `fitShift`. */
+const A2 = { y: 505, card: [220, 140], cardX: 640, useX: 1300, r: 56 };
+const USE = () => L("具体用途", "A specific use");
+/* The stage's two states are the data with its relation, and the whole once the use is named at the relation's end;
+ * the stage stands at the midpoint of the shifts that centre each, so neither stands far off. */
+function fitShift() {
+  const left = A2.cardX - A2.card[0] / 2,
+    reach = A2.useX - A2.r - 12,
+    whole = A2.useX + Math.max(A2.r, measure(USE()) / 2);
+  return 960 - (2 * left + reach + whole) / 4;
+}
 export function fitStage(s, t, c, g) {
   const [cw, ch] = A2.card,
     top = A2.y - ch / 2,
     use = g * named(t, c.use),
-    reach = soon(t, c.fit - 0.1, 0.8),
-    cardX = mix(A2.aloneX, A2.cardX, soon(t, c.fit - 0.15, 0.7));
+    shift = fitShift(),
+    cardX = A2.cardX + shift,
+    useX = A2.useX + shift;
   tableIcon(cardX - cw / 2, top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), cardX, top - NAME_GAP, { valign: "bottom", alpha: g });
-  link(cardX + cw / 2 + 12, A2.y, A2.useX - A2.r - 12, A2.y, {
-    alpha: g * ramp(t, c.fit - 0.15, 0.3),
-    upto: reach,
+  link(cardX + cw / 2 + 12, A2.y, useX - A2.r - 12, A2.y, {
+    alpha: g,
     width: 3,
-    flow: reach >= 1 ? flowOf(t, 0.4) : null,
+    flow: t > c.fit ? flowOf(t, 0.4) : null,
   });
-  nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + A2.useX - A2.r) / 2, A2.y - NAME_GAP, {
+  nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + useX - A2.r) / 2, A2.y - NAME_GAP, {
     valign: "bottom",
     alpha: g * named(t, c.fit),
   });
-  targetMark(A2.useX, A2.y, A2.r, { alpha: use });
-  nameText(L("具体用途", "A specific use"), A2.useX, top - NAME_GAP, {
+  targetMark(useX, A2.y, A2.r, { alpha: use });
+  nameText(USE(), useX, top - NAME_GAP, {
     valign: "bottom",
     alpha: use,
   });
@@ -207,52 +219,68 @@ export function questionsStage(s, t, c, g) {
 }
 
 /* B2: data that cannot answer the questions. It is explored inside its authorized scope, a frame sized to it in
- * which it moves; the work it stays out of stands at the right, each kind on its words; and the way out of the scope
- * toward that work stops at a bar on the scope's edge, which stays shut until the data is shown fit. */
-/* The scope stands round the data from the cut, a thin solid frame that holds the data and its name, so it is never an
- * empty frame; it is named on its words. It stands centred alone and glides left as the work the data stays out of
- * arrives at its right, the two together centred by the width of the work's names. */
-const S = { top: 388, w: 500, h: 250, card: [280, 150], alone: 710, beside: 470 },
-  WORK = { toIcon: 700, toNames: 762, ys: [433, 513, 593] };
+ * which it moves; the work it stays out of stands in a row under the scope, each kind on its words; and the way out of
+ * the scope toward that work stops at a bar on the scope's lower edge, which stays shut until the data is shown fit. */
+/* The scope stands round the data from the cut on the frame's axis, a thin solid frame that holds the data and its
+ * name, so it is never an empty frame; it is named on its words. The work arrives in a row under the scope, so the
+ * stage grows downward on that axis and nothing moves: a row of work beside the scope would leave the scope alone off
+ * centre for more than three seconds before the work is said. */
+const S = { w: 500, h: 285, card: [320, 160], inset: 18 },
+  /* The row of work stands `below` the scope's lower edge, `half` its height either side: each kind is its mark, its
+   * name `toName` right of the mark's centre, the kinds `gap` apart and the row centred on the frame's axis. */
+  WORK = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
 const USES = () => L(["共享", "投产", "决策"], ["Shared", "Production", "Decision work"]);
+/* The scope's top: the stage grows from the scope with its name over it to the whole with the row under it, and the
+ * top stands at the midpoint of the tops that centre those two states, so neither stands far off. */
+function scopeTop() {
+  const head = labelSize(LABEL) + NAME_GAP,
+    first = S.h - head,
+    whole = S.h + WORK.below + WORK.half - head;
+  return 505 - (first + whole) / 4;
+}
+/* The x of each kind's mark: the row measured and centred on the frame's axis. */
+function workXs() {
+  const widths = USES().map((v) => WORK.icon / 2 + WORK.toName + measure(v)),
+    total = widths.reduce((a, b) => a + b, 0) + WORK.gap * (widths.length - 1);
+  let x = 960 - total / 2;
+  return widths.map((w) => {
+    const at = x + WORK.icon / 2;
+    x += w + WORK.gap;
+    return at;
+  });
+}
 export function scopeStage(s, t, c, g) {
-  const widest = Math.max(...USES().map((v) => measure(v))),
-    beside = S.beside + centring(S.beside, S.beside + WORK.toNames + NAME_GAP + widest),
-    left = mix(S.alone, beside, soon(t, c.uses[0] - 0.15, 0.7)),
-    cy = S.top + 100,
+  const left = 960 - S.w / 2,
+    top = scopeTop(),
+    bottom = top + S.h,
     roam = g * soon(t, c.explore - 0.15, 0.6),
     dx = 26 * Math.sin(Math.PI * 2 * flowOf(t, 0.22)) * roam,
-    cx = left + S.w / 2 + dx,
     [cw, ch] = S.card,
     scope = g * early(t, c.scopeClause, c.scope);
-  tableIcon(cx - cw / 2, cy - ch / 2, cw, ch, { alpha: g, stroke: P.muted });
-  nameText(
-    L("说不清这些的数据", "Data that cannot answer"),
-    left + S.w / 2,
-    cy + ch / 2 + NAME_GAP,
-    {
+  // The data at the scope's top, moving about as it is explored, and its name under it.
+  tableIcon(960 + dx - cw / 2, top + S.inset, cw, ch, { alpha: g, stroke: P.muted });
+  const under = top + S.inset + ch + NAME_GAP,
+    data = nameText(L("说不清这些的数据", "Data that cannot answer"), 960, under, {
       valign: "top",
       color: P.ink,
       alpha: g * named(t, c.first2b),
-    },
-  );
+    });
   // The scope, a thin solid frame round the data.
-  stroke(() => ctx.roundRect(left, S.top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
-  nameText(L("授权范围", "Authorized scope"), left, S.top - NAME_GAP, {
+  stroke(() => ctx.roundRect(left, top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
+  nameText(L("授权范围", "Authorized scope"), left, top - NAME_GAP, {
     align: "left",
     valign: "bottom",
     alpha: scope,
   });
-  // The way out runs from the data to the scope's edge and stops at a bar there.
-  const out = g * ramp(t, c.staysOut - 0.15, 0.3),
-    edge = left + S.w;
-  link(cx + cw / 2 + 10, cy, edge - 4, cy, {
+  // The way out runs down from the data to the scope's lower edge and stops at a bar there.
+  const out = g * ramp(t, c.staysOut - 0.15, 0.3);
+  link(960, data.bottom + 10, 960, bottom - 4, {
     alpha: out,
     upto: soon(t, c.staysOut - 0.1, 0.6),
     end: false,
   });
-  bar(edge, cy, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), vertical: true, length: 60 });
-  nameText(L("证明适合", "Shown fit"), edge + NAME_GAP + 8, cy + 30 + NAME_GAP, {
+  bar(960, bottom, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), length: 60 });
+  nameText(L("证明适合", "Shown fit"), 960 + 30 + NAME_GAP, bottom + 10, {
     align: "left",
     valign: "top",
     alpha: g * named(t, c.fit2),
@@ -260,15 +288,15 @@ export function scopeStage(s, t, c, g) {
   // The work it stays out of: shared use (two people), production (a running table) and decisions (a decision's
   // ring and point), one list.
   const uq = (i) => g * ramp(t, c.uses[i] - 0.15, 0.4),
-    wx = beside + WORK.toIcon,
-    [y0, y1, y2] = WORK.ys;
-  person(wx - 12, y0 + 10, { alpha: uq(0), size: 0.62 });
-  person(wx + 14, y0 + 10, { alpha: uq(0), size: 0.62, color: P.muted });
-  tableIcon(wx - 28, y1 - 20, 56, 40, { alpha: uq(1), rows: 3, cols: 2 });
-  ring(wx, y2, 16, { color: P.authority, alpha: uq(2), width: 3 });
-  dot(wx, y2, 5, { color: P.authority, alpha: uq(2) });
+    xs = workXs(),
+    y = bottom + WORK.below;
+  person(xs[0] - 12, y + 10, { alpha: uq(0), size: 0.62 });
+  person(xs[0] + 14, y + 10, { alpha: uq(0), size: 0.62, color: P.muted });
+  tableIcon(xs[1] - 28, y - 20, 56, 40, { alpha: uq(1), rows: 3, cols: 2 });
+  ring(xs[2], y, 16, { color: P.authority, alpha: uq(2), width: 3 });
+  dot(xs[2], y, 5, { color: P.authority, alpha: uq(2) });
   USES().forEach((v, i) =>
-    nameText(v, beside + WORK.toNames, WORK.ys[i], {
+    nameText(v, xs[i] + WORK.toName, y, {
       align: "left",
       alpha: g * listIn(t, c.uses, i),
       set: "work",
@@ -313,23 +341,20 @@ export function viewsStage(s, t, c, g) {
     bottom = E.top + ch,
     barY = bottom + 26,
     views = c.views,
-    // The row builds centred on the trunk: it stands half a pitch right for each view still to come.
-    shift = building(t, views, (E.xs[1] - E.xs[0]) / 2),
-    xs = E.xs.map((x) => x + shift),
+    xs = E.xs,
     reach = views.map((at) => soon(t, at - 0.15, 0.6)),
     shown = views.map((at) => g * ramp(t, at - 0.15, 0.4));
   tableIcon(960 - cw / 2, E.top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), 960, E.top - NAME_GAP, { valign: "bottom", alpha: g });
-  // The trunk, the crossing row and the drops are one stroke, the one structure the views hang from: the row grows
-  // out to each view as it is named and its drop reaches down to the view's icon.
-  const left = Math.min(960, ...xs.map((x, i) => mix(960, x, reach[i]))),
-    right = Math.max(960, ...xs.map((x, i) => mix(960, x, reach[i])));
+  // The trunk, the crossing row and the drops are one stroke, the one structure the views hang from. The trunk and
+  // the whole row stand from the stage's first frame, as a rail does, so the picture spans the row from the first
+  // view and no view moves; each view's drop reaches down to its icon as it is named.
   stroke(
     () => {
       ctx.moveTo(960, bottom + 8);
       ctx.lineTo(960, E.bus);
-      ctx.moveTo(left, E.bus);
-      ctx.lineTo(right, E.bus);
+      ctx.moveTo(xs[0], E.bus);
+      ctx.lineTo(xs.at(-1), E.bus);
       xs.forEach((x, i) => {
         const q = clamp((reach[i] - 0.5) * 2);
         if (q <= 0) return;

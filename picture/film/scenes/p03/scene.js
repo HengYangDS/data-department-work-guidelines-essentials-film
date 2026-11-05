@@ -3,14 +3,14 @@
  * about facts, a record with its check, at the right; a divider rises between them; the left kind is named with what
  * it answers. B (03.3, from 「最先是法律」/ "Law"): authority to act's order of sources (order.js). C (03.4): the
  * two kinds again, the right one now named with what it answers; from 「要看原始记录」/ "primary records" what can
- * establish a fact, and the leads that cannot (facts.js). D1-D2 (03.5-03.6): last night's case (case.js). E-F
+ * establish a fact, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
  * (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for each other (close.js). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom } from "../../timing/cues.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { stageCase, stageChoice } from "./case.js";
+import { stageCase } from "./case.js";
 import { stageApart, stageMeeting } from "./close.js";
 import { stageFacts } from "./facts.js";
 import { twoKinds } from "./kinds.js";
@@ -103,17 +103,15 @@ scenes["03"] = function (s, t) {
     B = stageIn(t, c.order) * stageOut(t, c.another),
     C1 = stageIn(t, c.another) * stageOut(t, c.primary),
     C2 = stageIn(t, c.primary) * stageOut(t, c.night),
-    D1 = stageIn(t, c.night) * stageOut(t, c.choice),
-    D2 = stageIn(t, c.choice) * stageOut(t, c.meeting),
+    D = stageIn(t, c.night) * stageOut(t, c.meeting),
     E = stageIn(t, c.meeting) * stageOut(t, c.neither),
     F = stageIn(t, c.neither);
   if (A > 0) twoKinds(s, t, A, c);
   if (B > 0) stageOrder(t, B, c);
   if (C1 > 0) twoKinds(s, t, C1, c, { facts: true });
   if (C2 > 0) stageFacts(t, C2, c);
-  if (D1 > 0) stageCase(t, D1, c);
-  if (D2 > 0) stageChoice(t, D2, c);
+  if (D > 0) stageCase(t, D, c);
   if (E > 0) stageMeeting(t, E, c);
   if (F > 0) stageApart(s, t, F, c);
-  illustrative(Math.max(D1, D2, E));
+  illustrative(Math.max(D, E));
 };

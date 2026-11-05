@@ -1,6 +1,6 @@
 /* Part 06, stages A and B, the made-up case on its timeline. A: back to last night, the publication on the due hour
- * and the job log over the hour the job started, the publication on time and the job late. B: the timeline moves to
- * the top band and the fix's three layers stack below it, each acting on the timeline as it is said: the missing data
+ * and the job log over the hour the job started, the publication on time and the job late. B: the timeline cuts to the
+ * top band and the fix's three layers stack below it, each acting on the timeline as it is said: the missing data
  * patched, the job's start moved before the due hour, and the lightest safeguard on the due hour; doing only the first
  * two is refused as a systemic fix. */
 
@@ -13,7 +13,7 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, flowOf, glide, missingPage, openMark, patchMark } from "../p05/kit.js";
+import { centring, early, flowOf, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
 export function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
@@ -34,7 +34,8 @@ export function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 }
 
 /* A: the full timeline. The publication, a page, stands over the due hour and the job log, a page, over the hour the
  * job started, their names on one baseline over them; the publication is stamped on time, and the job's late start is
- * measured below the rail. The figure stands centred with all its parts from the first word. */
+ * measured below the rail, the measure drawing on as its name arrives under it, so the name never stands under the
+ * bare rail first. The figure stands centred with all its parts from the first word. */
 function nightNames(t, c) {
   return {
     axis: { v: L("昨晚", "Last night"), alpha: early(t, c.first1, c.night) },
@@ -49,7 +50,7 @@ export function backStage(s, t, c, g) {
     y = 505 - (Math.min(e.top, pageTop - 551) + e.bottom) / 2;
   const m = lastNight(x, y, 1, {
     alpha: g,
-    late: soon(t, c.lateJob + 0.05, 0.7),
+    late: soon(t, c.lateJob - 0.15, 0.7),
     arrival: { upto: ramp(t, c.log + 0.35, 0.2), alpha: 1 },
     flow: flowOf(t, 0.25),
     names,
@@ -89,10 +90,12 @@ export function backStage(s, t, c, g) {
 /* B: the compact timeline in the top band and the three layers below it. The layers hang from a spine named on their
  * count, each a slab named at its right on its words, one list; the slab being said lights. On the timeline, the
  * missing data's place (dashed, the missing thing the narration names) stands over the due hour and its patch fills
- * it; the job's start moves from its late hour to before the due hour and the late measure withdraws; the safeguard
- * stands on the due hour. Doing only the first two: they take their checks, the third its open mark, and a bracket
- * gathering the first two is refused as the systemic fix. The timeline stands centred with its name, and the layers
- * stand centred with theirs and glide left as the refusal comes at their right. */
+ * it; once the late measure's name has faded, the job's start moves from its late hour to before the due hour and the
+ * late measure withdraws, so the name never slides with it; the safeguard stands on the due hour. Doing only the
+ * first two: they take their checks, the third its open mark, and a bracket gathering the first two is refused as the
+ * systemic fix. The timeline stands centred with its name, and the layers stand where they are centred with the
+ * refusal at their right, so nothing moves as it comes; until then the timeline above, which reaches as far right as
+ * the layers' names, keeps the picture near the centre. */
 const B = {
   scale: 0.75,
   x: 960,
@@ -106,7 +109,8 @@ const THREE = () => L("三层", "Three layers"),
   LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
   REFUSED = () => L("从根上修好", "A systemic fix");
 export function layersStage(s, t, c, g) {
-  const move = soon(t, c.earlier + 0.05, 0.9),
+  // The late measure's name fades on the earlier start's words; the start moves once it has gone.
+  const move = soon(t, c.earlier + 0.45, 0.9),
     names = {
       axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
       late: { v: L("任务启动晚了", "Late start"), alpha: 1 - ramp(t, c.earlier + 0.05, 0.4) },
@@ -161,13 +165,12 @@ export function layersStage(s, t, c, g) {
     valign: "top",
     alpha: guard,
   });
-  // The three layers, whose extent with the refusal's sets their glide.
+  // The three layers, placed once by their extent with the refusal's.
   const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35),
     toBracket = B.slab[1] + NAME_GAP + L(170, 190),
     left = B.spine - NAME_GAP - measure(THREE()),
-    right = B.slab[1] + NAME_GAP + Math.max(...LAYERS().map((v) => measure(v))),
     reach = toBracket + NAME_GAP + measure(REFUSED()) + 42,
-    shift = glide(t, centring(left, right), [[refusedAt - 0.4, centring(left, reach)]]),
+    shift = centring(left, reach),
     spine = B.spine + shift,
     [x0, x1] = B.slab.map((x) => x + shift),
     ats = c.layers,
