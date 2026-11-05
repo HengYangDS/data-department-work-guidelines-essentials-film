@@ -26,7 +26,7 @@
 
 - [x] 4.1 Plan each thought's picture from the accepted narration; verify the plan against the gates for names, placement, whole lists and balance. On 2026-11-05 the plan drops the marks of the cut thoughts and follows the ten-minute timings; `check-picture` passes both editions with no gated finding, and the reviewers' balance measure finds no run over 90 px of 1.5 s or more.
 - [ ] 4.2 Compose the picture as the ES modules under `picture/film/`, with the primitives copied from `ethos-film` at `v1.0.1`, and bundle them into `picture/film.js`; cut the font subsets again from the scripts and the composition, and paint both covers; verify the composition tests and their coverage, the font test, the concept check on picture labels, the geometry, still, motion and sync audits with no gated finding, and the cover check. On 2026-11-05, after the ten-minute cut, 21 part modules drop the marks of the cut thoughts and re-lay what that leaves sparse; the 36 composition tests and the font test pass, the concept check finds no counterexample in the picture, and `check-picture` passes both editions with no gated finding (recorded: a 1.94 s hold over 04.4 and three caption echoes). The covers keep the titles the owner confirmed in 3.5. The coverage remains, measured by the portable proof.
-- [ ] 4.3 Render a 10 fps draft and scan its stills; verify that no frame shows a collision, clipping or a blank picture under speech.
+- [x] 4.3 Render a 10 fps draft and scan its stills; verify that no frame shows a collision, clipping or a blank picture under speech. On 2026-11-05 both ten-minute drafts scan clean: the longest speech over a still picture lasts 3.46 s in Chinese and 3.18 s in English, under 3.5 s.
 
 ## 5. Render, review and delivery
 
