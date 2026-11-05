@@ -74,10 +74,12 @@ THE NARRATOR
 The narrator is a synthetic voice, not a clone of any person's voice, and the same
 narrator speaks the DDWG and ETHOS introduction films. Its identity recording,
 assets/audio/narration-reference.wav, was generated from a text description of a voice
-with Qwen3-TTS VoiceDesign through mlx-audio and selected by the author; the Chinese
-cast speaks from that recording itself. The English reference that the English cast
-names, assets/audio/en/narration-reference.wav, was spoken in that voice by the
-Qwen3-TTS Base model, which also narrates both editions.
+with Qwen3-TTS VoiceDesign through mlx-audio and selected by the author. The Chinese
+cast speaks from assets/audio/narration-reference-natural.wav, which was derived from
+that recording in the two recorded steps that content/voice-reference.json lists, with
+only its edges trimmed. The English reference that the English cast names,
+assets/audio/en/narration-reference.wav, was spoken in that voice by the Qwen3-TTS Base
+model, which also narrates both editions.
 
 The pronunciation contract records, as listening targets, English stress from CMUdict at
 commit 74790861, Copyright (C) 1993-2015 Carnegie Mellon University, under its

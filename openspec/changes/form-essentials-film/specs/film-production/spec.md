@@ -68,7 +68,7 @@ The film SHALL keep the DDWG films' concept contract, which binds each guideline
 
 ### Requirement: Each edition meets the media contract
 
-Each edition SHALL be exactly 660 seconds at native progressive 60 fps, in four chapters, with a UHD master and a captioned 1080p viewing edition, 48 kHz stereo narration only, no music and purposeful 2D motion. Each film SHALL carry the release metadata its script declares, small single-line captions, a designed cover with the author Yang HENG, a transcript, chapters and a player.
+Each edition SHALL be exactly 600 seconds at native progressive 60 fps, in four chapters, with a UHD master and a captioned 1080p viewing edition, 48 kHz stereo narration only, no music and purposeful 2D motion. Each film SHALL carry the release metadata its script declares, small single-line captions, a designed cover with the author Yang HENG, a transcript, chapters and a player.
 
 #### Scenario: A packaged edition reads back its contract
 
@@ -82,7 +82,7 @@ Each edition SHALL be spoken at the narrator's native articulation, keeping the 
 
 #### Scenario: Speech that does not fit refuses
 
-- **WHEN** an edition's recorded speech and its designed pauses cannot fill exactly 660 seconds within the bounds of its pace
+- **WHEN** an edition's recorded speech and its designed pauses cannot fill exactly 600 seconds within the bounds of its pace
 - **THEN** the assembly refuses before output, and the text or, by the user's decision, the runtime changes before the next assembly
 
 ### Requirement: The pauses keep the approved samples' pace
@@ -97,13 +97,13 @@ The pauses between thoughts SHALL lie between four fifths and four thirds of the
 
 ### Requirement: Both editions speak with one narrator
 
-Both editions SHALL use the narrator that the DDWG and ETHOS films share, set as it was for the samples the user approved: the Chinese cast speaks from the unchanged identity root with the transcript those samples used, and the English cast from the unmodified English reference, each with the qualified model revision, temperature 0.46 and an in-context repetition penalty of 1.05.
+Both editions SHALL use the narrator that the DDWG and ETHOS films share: the Chinese cast speaks from a reference derived from the identity root in recorded steps, and the English cast from the unmodified English reference, each with the qualified model revision, temperature 0.46 and an in-context repetition penalty of 1.05.
 
 #### Scenario: The narrator's identity is bound
 
 - **WHEN** a cast is checked
 - **THEN** each reference recording has its recorded SHA-256
-- **AND** its reference, transcript and sampling settings are those the approved samples were narrated with, so a thought the samples hold is narrated again as the same take
+- **AND** a derived reference records its derivation from the identity root, with every step's mode, text, seed and settings
 
 ### Requirement: Each take is complete and read in context
 

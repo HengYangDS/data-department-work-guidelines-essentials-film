@@ -41,9 +41,6 @@ caption_terms = [
   "human acceptance",
   "collection job",
   "chain of trust",
-  "authorization boundary",
-  "department rule",
-  "net benefit",
 ]
 
 # The fonts the picture stages below fonts/, in this order: Noto Sans CJK SC, subset to the

@@ -1,6 +1,6 @@
 {
-  "reference_text": "Ethos以证据连接人的判断与agent的行动。OpenSpec保存正式接受的意图，证据记录实际发生的事，看清关系，决定下一步，条件改变就重新判断。",
-  "reference_text_sha256": "8c12aad945d90f05a32a0ab327e9bacc54caeeb572ca0f4e77c92a86577f1d5e",
+  "reference_text": "我们以证据连接人的判断与智能体的行动。规范保存正式接受的意图，证据记录实际发生的事。看清关系，决定下一步；条件改变，就重新判断。",
+  "reference_text_sha256": "56bb01f22625ec420f058a31c72813b0507f659a969eb8f7ee2183bb501143f3",
   "reference_mode": "icl",
   "narration_language": "Chinese",
   "full_narration_seed": 4677,
@@ -9,254 +9,51 @@
   "model": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16",
   "revision": "a6eb4f68e4b056f1215157bb696209bc82a6db48",
   "reference_language": "Chinese",
-  "reference_audio": "assets/audio/narration-reference.wav",
-  "reference_sha256": "a355801a8b16ca11925457678516329c04c4f2b2a66e76ef60457eea4872aa25",
-  "scope": "Approved synthetic narrator identity root used unmodified, with the transcript, temperature and in-context repetition penalty that the revision-7 samples the user approved on 2026-11-02 were narrated with: no time-stretch, pitch shift or recast. Pronunciation and listening quality are qualified separately from this input binding.",
+  "reference_audio": "assets/audio/narration-reference-natural.wav",
+  "reference_sha256": "8b50cf9ad3064fb51c304a27a64f805e679f3cf05099ca7657623965491cdf42",
+  "scope": "Synthetic narrator derived from the approved identity root through the two recorded official steps of its derivation, with only the edges trimmed so that the root's pauses stay; clearer voicing and no codebook-0 zero frame; no time-stretch, pitch shift or recast. Pronunciation and listening quality are qualified separately from this input binding.",
   "icl_repetition_penalty": 1.05,
   "performance_recording": {
     "receipt": "build/evidence/editions/zh/ear-first/narration-receipt.json",
     "alignment": "build/evidence/editions/zh/ear-first/alignment.json"
   },
-  "retakes": {
-    "01": {
-      "groups": {
-        "2": {
-          "seed": 91787,
-          "text_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def",
-          "spoken_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def"
-        },
-        "5": {
-          "seed": 99706,
-          "text_sha256": "fdab62042cd6d64b3b1ebad3ce03035cfaa4f5bce9b26381878da585ea685412",
-          "spoken_sha256": "fdab62042cd6d64b3b1ebad3ce03035cfaa4f5bce9b26381878da585ea685412",
-          "run_on": {
-            "spoken_text": "这份指南，是部门关于工作质量的契约，管部门成员，也管成员委托的智能体。",
-            "cut_sample": 85200
-          }
-        }
-      }
+  "derivation": {
+    "identity_root": {
+      "path": "assets/audio/narration-reference.wav",
+      "sha256": "a355801a8b16ca11925457678516329c04c4f2b2a66e76ef60457eea4872aa25"
     },
-    "02": {
-      "groups": {
-        "4": {
-          "seed": 99707,
-          "text_sha256": "de032dff0afbb686340c38505d1fe584160030546129f567fb425a8a3d1f8800",
-          "spoken_sha256": "de032dff0afbb686340c38505d1fe584160030546129f567fb425a8a3d1f8800"
-        },
-        "5": {
-          "seed": 147221,
-          "text_sha256": "35e34930cb24b5295d36e95f530528c70a73b4252de9f7249176cbab93f0aed0",
-          "spoken_sha256": "35e34930cb24b5295d36e95f530528c70a73b4252de9f7249176cbab93f0aed0"
-        },
-        "2": {
-          "seed": 91788,
-          "text_sha256": "16dc3db02b5a8fe244066f0fb33c89fe5d37c3bcdf8e8fc702e503f47face898",
-          "spoken_sha256": "16dc3db02b5a8fe244066f0fb33c89fe5d37c3bcdf8e8fc702e503f47face898",
-          "run_on": {
-            "spoken_text": "所以一项任务，要做成三件事：把问题解决掉；把判断检验过，说清它在什么情况下成立；让系统下次再碰到这类事，能更早认出来，或者处理得更好。这是三种结果，不是三份报告。",
-            "cut_sample": 373200
-          }
-        },
-        "3": {
-          "seed": 115545,
-          "text_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419",
-          "spoken_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419",
-          "run_on": {
-            "spoken_text": "连夜补数据的那位同事，只做到了第一件。",
-            "cut_sample": 354000
-          }
-        }
+    "steps": [
+      {
+        "mode": "speaker-embedding",
+        "text": "一份数据做完了，可下一位用它的人，能靠它做判断吗？他们需要知道每个数字是什么意思，对应哪个时间，依据从哪里来，能用在什么地方。",
+        "seed": 86770,
+        "temperature": 0.46,
+        "top_k": 50,
+        "top_p": 0.9,
+        "repetition_penalty": 1.05,
+        "max_tokens": 1900
+      },
+      {
+        "mode": "icl",
+        "text": "我们以证据连接人的判断与智能体的行动。规范保存正式接受的意图，证据记录实际发生的事。看清关系，决定下一步；条件改变，就重新判断。",
+        "prompt_text": "一份数据做完了，可下一位用它的人，能靠它做判断吗？他们需要知道每个数字是什么意思，对应哪个时间，依据从哪里来，能用在什么地方。",
+        "seed": 55849,
+        "temperature": 0.46,
+        "top_k": 50,
+        "top_p": 0.9,
+        "icl_repetition_penalty": 1.05,
+        "max_tokens": 1900
       }
+    ],
+    "silence_treatment": "After each step, only the edges are trimmed to 0.1 s around the first and last 10 ms frame above -45 dBFS; inner quiet is kept, so the narration copies the root's thought pauses.",
+    "selection": "Of the second step's seeds 55847-55861, the takes with no codebook-0 zero frame (55849, 55852, 55853, 55856, 55858, 55861) were compared; 55849 was narrated in full.",
+    "objective_comparison": {
+      "clarity": "Median cepstral peak prominence over frames within 18 dB of the 95th-percentile energy: identity root 16.9 dB, DDWG clear reference 7ff6347e 20.0 dB, this reference 18.6 dB; narrations: current Chinese 15.9 dB, this voice 19.1 dB on segment 01, DDWG Chinese 20.3 dB.",
+      "pauses": "In-take pauses at least 0.12 s and 30 dB below the take's level: 36 per minute in the current narration, 15 with the DDWG clear reference, 39 with this reference.",
+      "speaker_embedding_cosine_to_root": 0.9914,
+      "endings": "54 of 54 first takes of the nine Chinese segments end naturally by filmkit's ending check; the current reference's first takes left 35 of 54 inside their last syllable (2026-11-03).",
+      "pace": "At a 0.6 s inner cap the nine segments take 781.1 s against the current 751.0 s (x1.040)."
     },
-    "03": {
-      "groups": {
-        "2": {
-          "seed": 123465,
-          "text_sha256": "75a104080da48a966bc7c1b7de8b04ff33c22fe24ab261a72a799552254da279",
-          "spoken_sha256": "75a104080da48a966bc7c1b7de8b04ff33c22fe24ab261a72a799552254da279"
-        },
-        "3": {
-          "seed": 115546,
-          "text_sha256": "fa067441fc16453960ef133bef42404fc784c3576b6256a9f52a828ab2676065",
-          "spoken_sha256": "fa067441fc16453960ef133bef42404fc784c3576b6256a9f52a828ab2676065"
-        },
-        "4": {
-          "seed": 99708,
-          "text_sha256": "9792d76b8bbefa7d24ece0b7f2cb87f2b26f2d8533343158198c91ec9ba5ca9e",
-          "spoken_sha256": "9792d76b8bbefa7d24ece0b7f2cb87f2b26f2d8533343158198c91ec9ba5ca9e"
-        },
-        "7": {
-          "seed": 99708,
-          "text_sha256": "0652d08166bcabbe6929eb60960c348467768546070def16fd2e003dd72ef801",
-          "spoken_sha256": "0652d08166bcabbe6929eb60960c348467768546070def16fd2e003dd72ef801"
-        },
-        "8": {
-          "seed": 123465,
-          "text_sha256": "91963e867df7cff14e31c05ba87ab2486bf2996aaeb5856dd11eb3c546a59e15",
-          "spoken_sha256": "91963e867df7cff14e31c05ba87ab2486bf2996aaeb5856dd11eb3c546a59e15"
-        }
-      }
-    },
-    "04": {
-      "groups": {
-        "1": {
-          "seed": 107628,
-          "text_sha256": "bd56efb36d0abc651c1c63b3689d1fffec30aeff346f517bcf29f2b38e4691ab",
-          "spoken_sha256": "bd56efb36d0abc651c1c63b3689d1fffec30aeff346f517bcf29f2b38e4691ab"
-        },
-        "2": {
-          "seed": 99709,
-          "text_sha256": "8d4da453acc6eb43c8c0234cb40ca71cfc01accae6316fd34b9575506c67c4ee",
-          "spoken_sha256": "8d4da453acc6eb43c8c0234cb40ca71cfc01accae6316fd34b9575506c67c4ee"
-        },
-        "4": {
-          "seed": 147223,
-          "text_sha256": "61fcb04f7022e60a20b9d638c62b879ed3ec0812644a4d0aa1ad8438f6e4be47",
-          "spoken_sha256": "61fcb04f7022e60a20b9d638c62b879ed3ec0812644a4d0aa1ad8438f6e4be47"
-        },
-        "6": {
-          "seed": 91790,
-          "text_sha256": "5620e59eb915d99239218c62c1943930277a62623eb3dcf5e2db1363633628e7",
-          "spoken_sha256": "5620e59eb915d99239218c62c1943930277a62623eb3dcf5e2db1363633628e7"
-        },
-        "9": {
-          "seed": 147223,
-          "text_sha256": "16e884fab5c33e7a55d3e4fadd033ff0a69d96c4c79b8c0a4a47ceb500393f0b",
-          "spoken_sha256": "16e884fab5c33e7a55d3e4fadd033ff0a69d96c4c79b8c0a4a47ceb500393f0b"
-        },
-        "8": {
-          "seed": 91790,
-          "text_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d",
-          "spoken_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d",
-          "run_on": {
-            "spoken_text": "不管风险高低，该尽的义务一样不能少。",
-            "cut_sample": 317520
-          }
-        }
-      }
-    },
-    "06": {
-      "groups": {
-        "4": {
-          "seed": 123468,
-          "text_sha256": "071762e4c806ea4bed33819518d1a99024f09d1557430a4801bb0c24508663de",
-          "spoken_sha256": "071762e4c806ea4bed33819518d1a99024f09d1557430a4801bb0c24508663de"
-        },
-        "6": {
-          "seed": 131387,
-          "text_sha256": "07e4bff17a6daddd69ac5b2ecd5802b0b39852e2fe3e6265333cd1b264b121c7",
-          "spoken_sha256": "07e4bff17a6daddd69ac5b2ecd5802b0b39852e2fe3e6265333cd1b264b121c7"
-        },
-        "7": {
-          "seed": 107630,
-          "text_sha256": "a63ee3551076b1d0652ea4025a396012286d8dbd56e813c7036cb0f60cedae05",
-          "spoken_sha256": "a63ee3551076b1d0652ea4025a396012286d8dbd56e813c7036cb0f60cedae05"
-        },
-        "2": {
-          "seed": 91792,
-          "text_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8",
-          "spoken_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8",
-          "run_on": {
-            "spoken_text": "决策负责人批准把任务提前启动，也划定了范围；改动只在这个范围里做；当前的运行拿出了证据；话只说到证据撑得住的地方；最后验收，从中学习。这是一条信任链：手续可以随风险变轻，但一环都不能少。",
-            "cut_sample": 436560
-          }
-        },
-        "3": {
-          "seed": 99711,
-          "text_sha256": "ddf5bd5c54ac99aeeebb9f1caf147d0a493c1ec2419f3dc6c85efbd0e6d441e1",
-          "spoken_sha256": "ddf5bd5c54ac99aeeebb9f1caf147d0a493c1ec2419f3dc6c85efbd0e6d441e1",
-          "run_on": {
-            "spoken_text": "昨晚延迟的那次记录要留着；后面几次都按时了，也抹不掉它。",
-            "cut_sample": 402000
-          }
-        },
-        "5": {
-          "seed": 91792,
-          "text_sha256": "5f61fdcfdb29d1daf7227c07e940058e642e79b088d029f9c0322b5cf3c53c70",
-          "spoken_sha256": "5f61fdcfdb29d1daf7227c07e940058e642e79b088d029f9c0322b5cf3c53c70",
-          "run_on": {
-            "spoken_text": "每次说完成，都要答得上来：说的是什么，针对哪个对象、哪个版本？谁在什么时候、用什么方法核验的？覆盖了什么，还有什么没证明？证据不够，就收窄说法，别把话说大。",
-            "cut_sample": 423120
-          }
-        }
-      }
-    },
-    "07": {
-      "groups": {
-        "1": {
-          "seed": 131388,
-          "text_sha256": "5bd07806f9c2580995b7ea54a255e0f5bc0d7304381278e0a15726daa86a8db9",
-          "spoken_sha256": "5bd07806f9c2580995b7ea54a255e0f5bc0d7304381278e0a15726daa86a8db9"
-        },
-        "2": {
-          "seed": 147226,
-          "text_sha256": "8ee7a965e6b6b60948581d1e4ab7c8f81754d2fd0ae5ae1a6af59f7d37adaff0",
-          "spoken_sha256": "8ee7a965e6b6b60948581d1e4ab7c8f81754d2fd0ae5ae1a6af59f7d37adaff0"
-        },
-        "3": {
-          "seed": 91793,
-          "text_sha256": "8b726d8d984c2f90790d4b34524f8458fe03722ed273416257b79f8a5a09fb1c",
-          "spoken_sha256": "a1362842567c0cf465603d82fd5112dd4cd2ee9d1d00c3b83b0633873f0f8817",
-          "run_on": {
-            "spoken_text": "比如这样委托：“为了决定要不要换供应商，只查不改：昨晚的发布时间和任务启动时间各是几点，每个时间从哪里查到的，哪些没法核实；要改调度，先停下来问我。”",
-            "cut_sample": 311760
-          }
-        },
-        "5": {
-          "seed": 139307,
-          "text_sha256": "9838a0a0883dbd3d1e0e16b0e43627750408541ec027626fdbd6cee4c0936695",
-          "spoken_sha256": "0cd98018f9d6ef4c89510afbc24e9f4c81c27fd3c374759e5c695fa7ea6052a6",
-          "run_on": {
-            "spoken_text": "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次故障更早被发现、更容易判断、更少靠人工抢救，不是让文件变多。",
-            "cut_sample": 315600
-          }
-        }
-      }
-    },
-    "08": {
-      "groups": {
-        "1": {
-          "seed": 91794,
-          "text_sha256": "a3ff92968ab4871777be685a4e676fc4bdae1721a2f00f44a01dda35ba125f31",
-          "spoken_sha256": "a3ff92968ab4871777be685a4e676fc4bdae1721a2f00f44a01dda35ba125f31"
-        },
-        "5": {
-          "seed": 289769,
-          "text_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862",
-          "spoken_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862"
-        },
-        "4": {
-          "seed": 91794,
-          "text_sha256": "18e108d9c36bf35aa67d5a77c222c66ec029089b386c3fed18b41d9494e2aee1",
-          "spoken_sha256": "18e108d9c36bf35aa67d5a77c222c66ec029089b386c3fed18b41d9494e2aee1",
-          "run_on": {
-            "spoken_text": "回到开头那份数据。下一位用它的人，需要清楚的含义、当时能拿到的事实、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。",
-            "cut_sample": 294480
-          }
-        }
-      }
-    },
-    "05": {
-      "groups": {
-        "3": {
-          "seed": 91791,
-          "text_sha256": "67b5d83711390e87eaa1987f4733335334931df4c8e588d6029c38f3baaa3100",
-          "spoken_sha256": "67b5d83711390e87eaa1987f4733335334931df4c8e588d6029c38f3baaa3100",
-          "run_on": {
-            "spoken_text": "做历史研究，还要分清当时能知道什么，和今天事后看到了什么。假如供应商后来修正过价格，今天这份修正后的数据，就证明不了当时能知道什么。",
-            "cut_sample": 307920
-          }
-        },
-        "4": {
-          "seed": 99710,
-          "text_sha256": "3e46eaf09b44df77134947613e6154c49f3a5dc747022c1732da330462f464da",
-          "spoken_sha256": "3e46eaf09b44df77134947613e6154c49f3a5dc747022c1732da330462f464da",
-          "run_on": {
-            "spoken_text": "报告、数据目录、缓存和智能体的摘要，都是派生出来的，不能悄悄变成权威来源。",
-            "cut_sample": 267600
-          }
-        }
-      }
-    }
+    "reason": "The approved root is breathy, and its two codebook-0 zero frames cut every take's end under mlx-audio 0.6.4; this reference keeps the narrator's identity and pauses, is clearer and has no zero frame."
   }
 }
