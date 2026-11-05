@@ -74,7 +74,7 @@
           "spoken_sha256": "5cf6c17f20dfd4d580ed4b4de9faae9ed905728bde01835fdb0bc89b2f41a6c2"
         },
         "8": {
-          "seed": 123466,
+          "seed": 266008,
           "text_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d",
           "spoken_sha256": "8b4bab415d65892611bc0fb45427b058b7255a7b98a7badb9464213a5e05fd2d"
         }
@@ -92,7 +92,7 @@
     "07": {
       "groups": {
         "4": {
-          "seed": 107631,
+          "seed": 218497,
           "text_sha256": "36776656fc813f64eb2f411ec8ce424636f6f7812c7f0dad050db064310c8daa",
           "spoken_sha256": "36776656fc813f64eb2f411ec8ce424636f6f7812c7f0dad050db064310c8daa"
         },
@@ -100,6 +100,11 @@
           "seed": 115550,
           "text_sha256": "971da2963e8473a6272dfecb407ead4c50438164f0a40f4c50506dc848a48abd",
           "spoken_sha256": "971da2963e8473a6272dfecb407ead4c50438164f0a40f4c50506dc848a48abd"
+        },
+        "3": {
+          "seed": 218497,
+          "text_sha256": "fd34b4b980a5a8a3d865daf8d91e87b8c22d1dbabf89adfb3f2e402260de0425",
+          "spoken_sha256": "fd34b4b980a5a8a3d865daf8d91e87b8c22d1dbabf89adfb3f2e402260de0425"
         }
       }
     },
@@ -118,6 +123,29 @@
           "seed": 107625,
           "text_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1",
           "spoken_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1"
+        },
+        "2": {
+          "seed": 242248,
+          "text_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def",
+          "spoken_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def"
+        }
+      }
+    },
+    "03": {
+      "groups": {
+        "5": {
+          "seed": 258088,
+          "text_sha256": "954f0c78e2dcedb26571462378edc4f4fbda350b618c6e6a9e991d7e9f11078d",
+          "spoken_sha256": "954f0c78e2dcedb26571462378edc4f4fbda350b618c6e6a9e991d7e9f11078d"
+        }
+      }
+    },
+    "06": {
+      "groups": {
+        "2": {
+          "seed": 218496,
+          "text_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8",
+          "spoken_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8"
         }
       }
     }
