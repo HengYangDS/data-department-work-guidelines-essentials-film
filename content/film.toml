@@ -13,13 +13,15 @@ source_manifest = "content/source-manifest.json"
 # What each concept the films name means in those documents, and each edition's words for it.
 concepts = "content/concepts.toml"
 
-# Each edition's folder of script, cast and player, and its 16:9 cover.
+# Each edition's folder of script and cast, its 16:9 cover, and the summary its player shows.
 [editions.zh]
 sources = "content"
+summary = "这部 10 分钟的影片讲数据部门工作指南的精华：从一次价格数据晚到的虚构例子和它引出的四种失败讲起，先说指南是什么、工作的价值在哪里，再讲两种依据、四条底线、让数据名副其实、证据决定结论能说到哪和人与人工智能的协作，最后讲怎样让下一次做得更好。片中情境用于解释工作机制，未据此声称实际部署或团队采用。"
 cover = "assets/cover/ddwg-essentials-cover.png"
 
 [editions.en]
 sources = "content/en"
+summary = "A 10-minute film on the essentials of the Data Department Work Guidelines. It starts from a made-up case of price data that arrived late and the four failures it invites, says what the guidelines are and what the work is worth, then covers the two kinds of authority, the four boundaries, data that means what it says, evidence that sets the limit of a claim and human–AI collaboration, and ends with making the next attempt better. The scenarios explain how the work is done; they do not claim actual deployment or team adoption."
 cover = "assets/cover/ddwg-essentials-cover-en.png"
 # A term that reads as one name stays on one caption line, as do a verb and the object it
 # takes, and a modifier and the noun it qualifies.
@@ -53,6 +55,13 @@ fonts = [
   "assets/fonts/ibm-plex-sans-regular.ttf",
   "assets/fonts/ibm-plex-sans-bold.ttf",
 ]
+
+[player]
+background = "#0F1519"
+text = "#ECE8DF"
+muted = "#9BA8B1"
+line = "#34424E"
+accent = "#7DB7D8"
 
 [review]
 # The reviewer prompt: a str.format template that each round fills for each edition.

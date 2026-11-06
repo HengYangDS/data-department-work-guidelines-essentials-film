@@ -5,6 +5,7 @@ characters this film draws, and Latin-only text in the unmodified IBM Plex Sans.
 cut from the scripts and the composition.
 """
 
+import re
 from collections.abc import Iterator
 
 import filmkit.picture.rendering as picture_rendering
@@ -14,6 +15,12 @@ from filmkit.captions.timing import typeset
 from filmkit.film import FILM
 from filmkit.production import CODES, Edition
 from fontTools.ttLib import TTFont
+
+# A JavaScript string, kept as its first group, or a comment, which holds no group.
+COMMENT_OR_STRING = re.compile(
+    r"""("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|//[^\n]*|/\*.*?\*/""",
+    re.DOTALL,
+)
 
 
 def strings(value: object) -> Iterator[str]:
@@ -47,10 +54,15 @@ def declared(family: str) -> list[str]:
     return fonts
 
 
+def composed() -> set[str]:
+    """Every character of the composition's code; its comments are never drawn."""
+    script = (repository.ROOT / picture_rendering.COMPOSITION_SCRIPT).read_text()
+    return set(COMMENT_OR_STRING.sub(lambda match: match[1] or "", script))
+
+
 @pytest.mark.parametrize("font", declared("noto-sans-cjk-sc-subset"))
 def test_each_chinese_subset_maps_every_character_of_the_scripts_and_the_composition(font):
-    composition = repository.ROOT / picture_rendering.COMPOSITION_SCRIPT
-    drawn = set(composition.read_text()).union(*(written(code) for code in CODES)) - {"\n"}
+    drawn = composed().union(*(written(code) for code in CODES)) - {"\n"}
     assert sorted(drawn - mapped(font)) == []
 
 
