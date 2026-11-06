@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Explain the essentials of the Data Department Work Guidelines, as their documents state them at one pinned release, through two independently understandable eleven-minute films in Chinese and English, built on `filmkit` with verified media, explicit review limits and governed delivery.
+Explain the essentials of the Data Department Work Guidelines, as their documents state them at one pinned release, through two independently understandable ten-minute films in Chinese and English, built on `filmkit` with verified media, explicit review limits and governed delivery.
 
 ## ADDED Requirements
 

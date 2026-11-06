@@ -2,7 +2,7 @@
 
 ## Why
 
-The 25-minute DDWG films explain the Data Department Work Guidelines in full. On 2026-11-01 the user asked for a ten-minute essentials film beside them that puts what the guidelines are for and why they hold before how to follow them, carried by one incident: price data that arrived two hours late. The user approved its outline that day and its bilingual text on 2026-11-02, revision 4 and then revision 7 with its samples and runtime; on 2026-11-02 the user also allowed a runtime to change in whole minutes, and the film runs eleven minutes because its samples' pace does not fit ten. `filmkit` builds one film per repository, with two editions of equal length, so the essentials film cannot be extra editions of `ddwg-film`; it needs a repository of its own.
+The 25-minute DDWG films explain the Data Department Work Guidelines in full. On 2026-11-01 the user asked for a ten-minute essentials film beside them that puts what the guidelines are for and why they hold before how to follow them, carried by one incident: price data that arrived two hours late. The user approved its outline that day and its bilingual text on 2026-11-02, revision 4 and then revision 7 with its samples and runtime; on 2026-11-02 the user allowed a runtime to change in whole minutes, and on 2026-11-04 set every film's length to a whole multiple of five minutes, so the film runs ten minutes. `filmkit` builds one film per repository, with two editions of equal length, so the essentials film cannot be extra editions of `ddwg-film`; it needs a repository of its own.
 
 ## What Changes
 
