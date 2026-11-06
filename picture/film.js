@@ -175,20 +175,41 @@ var thoughtEnd = (at2) => {
   for (const [end] of thoughtJoins) if (end >= at2) return end;
   return Infinity;
 };
-var quietBefore = thoughtJoins.reduce(
-  (sums, [end, next]) => [...sums, sums.at(-1) + Math.max(0, next - end)],
-  [0]
-);
+var HOLD = 0.05;
+var SETTLE = 0.45;
+var covered = (x) => x ** 3 - x ** 4 / 2;
+var easings = (() => {
+  const joins = thoughtJoins.map(([end, next]) => {
+    const middle = (end + next) / 2;
+    return { rest: Math.min(end + HOLD, middle), resume: Math.max(next - HOLD, middle) };
+  });
+  joins.forEach((j, k) => {
+    j.down = Math.min(SETTLE, k ? (j.rest - joins[k - 1].resume) / 2 : j.rest);
+    j.up = Math.min(SETTLE, k + 1 < joins.length ? (joins[k + 1].rest - j.resume) / 2 : SETTLE);
+  });
+  let taken = 0;
+  for (const j of joins) {
+    j.before = taken;
+    taken += j.down / 2 + (j.resume - j.rest) + j.up / 2;
+  }
+  return joins;
+})();
 var voiceTime = (t) => {
-  let lo = 0, hi = thoughtJoins.length;
+  let lo = 0, hi = easings.length;
   while (lo < hi) {
     const mid = lo + hi >> 1;
-    if (thoughtJoins[mid][0] < t) lo = mid + 1;
+    if (easings[mid].rest - easings[mid].down <= t) lo = mid + 1;
     else hi = mid;
   }
   if (!lo) return t;
-  const [end, next] = thoughtJoins[lo - 1];
-  return t - quietBefore[lo - 1] - Math.max(0, Math.min(t, next) - end);
+  const { rest, resume, down, up, before } = easings[lo - 1];
+  if (t < rest) return t - before - down * covered((t - rest + down) / down);
+  if (t < resume) return t - before - down / 2 - (t - rest);
+  if (t < resume + up) {
+    const x = (t - resume) / up;
+    return t - before - down / 2 - (resume - rest) - up * (x - covered(x));
+  }
+  return t - before - down / 2 - (resume - rest) - up / 2;
 };
 
 // picture/film/framing/camera.js
@@ -4563,8 +4584,8 @@ function claimStage(s, t, c, g) {
   ring(sx, F2.y, 18, { color: P.evidence, alpha: sign, width: 2.5 });
   check(sx, F2.y + 1, 18, { alpha: sign });
   nameText(SIGNED(), sx, under, { valign: "top", alpha: sign });
-  const cy = top + F2.h + 40, split = cl + F2.narrow, covered = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
-  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered * 0.85, radius: 4 });
+  const cy = top + F2.h + 40, split = cl + F2.narrow, covered2 = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
+  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered2 * 0.85, radius: 4 });
   box(split + 6, cy - 12, cl + F2.w - split - 6, 24, {
     stroke: P.unknown,
     alpha: unproved,
@@ -4572,7 +4593,7 @@ function claimStage(s, t, c, g) {
     width: 2.5,
     dash: [6, 6]
   });
-  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered });
+  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered2 });
   nameText(L("没证明", "Unproved"), two, row1, { valign: "top", alpha: unproved });
   nameText(L("收窄说法", "A narrower claim"), one, row2, {
     valign: "top",
