@@ -22,7 +22,7 @@ function cuesOf(s) {
       ["好看的图", "a chart that looks good"],
       ["看起来有效的模型信号", "a promising model signal"],
     ]),
-    refuse: cue(s, "本身都证明不了", "none of them alone"),
+    refuse: cue(s, "本身都说明不了", "none of them alone"),
     unknowns: cues(s, [
       ["含义", "meaning"],
       ["质量", "quality"],
@@ -39,7 +39,7 @@ function cuesOf(s) {
     asks: cues(s, [
       ["它从哪里来", "Where did it come from"],
       ["最早什么时候能拿到", "When did it become available"],
-      ["是什么意思", "What does it mean"],
+      ["含义是什么", "What does it mean"],
       ["被什么改过", "What changed it"],
       ["质量怎么样", "How good is it"],
       ["能用在哪里", "And how may it be used"],
@@ -50,11 +50,14 @@ function cuesOf(s) {
     scope: cue(s, "授权范围", "authorized scope"),
     staysOut: cue(s, "可要拿去", "but stays out"),
     uses: cues(s, [
-      ["共享", "shared"],
+      ["共享", "sharing"],
       ["投产", "production"],
-      ["做决策", "decision work"],
+      ["做决策", "decisions"],
     ]),
     first3: cue(s, "昨晚那份价格", "Last night's prices"),
+    // The Chinese names the arrival on the words that say when the prices could first be had; the English names it
+    // with the measure, on "two hours later".
+    arrival: cue(s, "最早能拿到", "two hours later"),
     measure: cue(s, "比平时", "two hours later"),
     usual: cue(s, "平时", "usual"),
     backtest: cue(s, "回测", "backtest"),

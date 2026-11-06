@@ -13,9 +13,12 @@ export const named = (t, at) => ramp(t, at - 0.15, 0.4);
 /* A spoken list builds: each item arrives on its own words and stays, so the whole set forms on the screen. While the
  * list is spoken, the item being named stands at full ink and the items already named share one second level; once
  * the last item has been said the whole set returns to full ink, and it leaves as a whole when the argument moves on
- * at `until`. None of these changes falls in a pause. */
-const SECOND = 0.58;
-export const listLevel = (t, ats, i, until = Infinity) => {
+ * at `until`. None of these changes falls in a pause. The second level keeps the muted tone at 5.3:1 over the ground
+ * and the ink at 6.7:1, so a stepped-back qualifier still reads with a margin over 5:1 once antialiased. A list whose
+ * stage leaves soon after its last item passes `whole`, the time from which the set returns to full ink, so the whole
+ * set is seen at full ink before the stage leaves. */
+export const SECOND = 0.64;
+export const listLevel = (t, ats, i, until = Infinity, { whole = null } = {}) => {
   // The set has been said once the last item's clause has ended. It is whole again within that item's own thought, so
   // the return never waits through the pause for a next thought that may already show another stage: when the clause
   // ends too close to the pause, the set returns as its last item arrives, quickly enough to settle before the pause.
@@ -26,7 +29,7 @@ export const listLevel = (t, ats, i, until = Infinity) => {
     ...[...(stageCuts.get(layout.scene) ?? [])].filter((c) => c > last && c < thoughtEnd(last)),
   );
   const end = Math.min(thoughtEnd(last), cut);
-  const done = Math.min(said, Math.max(last - 0.1, end - 0.45)),
+  const done = whole ?? Math.min(said, Math.max(last - 0.1, end - 0.45)),
     back = Math.min(0.4, Math.max(0.15, end - 0.05 - done));
   // An item dims when the next one arrives, unless the set is whole again before that dim could settle.
   const dims = i + 1 < ats.length && done - ats[i + 1] > 0.6;
@@ -42,8 +45,8 @@ export const listLevel = (t, ats, i, until = Infinity) => {
 };
 /* An item's ink: its entrance on its own words times its level in the list. A name whose parts arrive on their own
  * words takes the level alone, since each part brings its own entrance. */
-export const listIn = (t, ats, i, until = Infinity) =>
-  ramp(t, ats[i] - 0.15, 0.4) * listLevel(t, ats, i, until);
+export const listIn = (t, ats, i, until = Infinity, o = {}) =>
+  ramp(t, ats[i] - 0.15, 0.4) * listLevel(t, ats, i, until, o);
 /* The item being spoken, from its words until the next item's (the last until its clause has been said): its own mark
  * lights for that time, while every name keeps one ink. */
 export const speaking = (t, ats, i) => {

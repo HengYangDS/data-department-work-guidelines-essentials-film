@@ -12,16 +12,16 @@ import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
 import { cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
-import { listIn, named } from "../../naming/lists.js";
+import { SECOND, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, growName, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { travel } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { agents, guidePage, handedMark, outputMark, people, toAndFro, wave } from "./marks.js";
+import { agents, guidePage, handedMark, outputMark, people, wave } from "./marks.js";
 import { stageOutcomes, taskCues } from "./tasks.js";
 
 /* The spoken cues of 02.1 and 02.2. The seal's rim stands with its name on the words that begin to say what the
@@ -53,7 +53,7 @@ function cuesOf(s) {
     qualities: [
       cue(s, "讲得清", "explained"),
       cue(s, "经得起查", "checked"),
-      cue(s, "能用到哪里", "clear limits"),
+      cue(s, "能用到哪里", "within clear limits"),
     ],
     ...taskCues(s),
   };
@@ -138,38 +138,45 @@ function stageGuide(s, t, a, c) {
  * on the way (the signal at its left, the others beyond its end) are named over or under themselves; the things below
  * it stand in two rows, each named under itself on its row's one baseline: the refused things under the way, and what
  * the signal becomes under them, each hanging from the way by a stem that passes between the refused things. The
- * others stand beyond the way's end, named under themselves, with the qualities they rely on under their name. */
-const WAY_Y = 450,
-  WAY = [360, 1560],
-  WAVE_END = 470,
+ * others stand beyond the way's end, named under themselves, with the qualities they rely on under their name. The
+ * stage stands SHIFT px left of the frame's axis in Chinese, whose qualities take a line as wide as their first two
+ * and whose signal's name is short, so the settled stage keeps within the reviewers' 50 px of the centre. */
+const SHIFT = L(-20, 0),
+  WAY_Y = 450,
+  WAY = [360 + SHIFT, 1560 + SHIFT],
+  WAVE_END = 470 + SHIFT,
   HANG_Y = 530,
   HANG_NAMES = HANG_Y + 32 + NAME_GAP,
   OUT_Y = 680,
   OUT_NAMES = OUT_Y + 32 + NAME_GAP,
-  HANDED_X = [600, 840, 1080, 1320],
-  OUTPUT_X = [720, 960, 1200],
-  OTHERS = [1594, 1640],
-  OTHERS_X = 1617,
+  HANDED_X = [600, 840, 1080, 1320].map((x) => x + SHIFT),
+  OUTPUT_X = [720, 960, 1200].map((x) => x + SHIFT),
+  OTHERS = [1594 + SHIFT, 1640 + SHIFT],
+  OTHERS_X = 1617 + SHIFT,
   OVER = WAY_Y - 7 - NAME_GAP;
-/* The list's second level (naming/lists.js), at which the refused things stand from 「变成」/ "into judgments" on,
- * and the size of a refusal's cross (rejectedName). */
-const SECOND = 0.58,
-  REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
+/* The size of a refusal's cross (rejectedName). The refused things recede to the list's second level, SECOND
+ * (naming/lists.js), from 「变成」/ "into judgments" on. */
+const REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
 const HANDED = () =>
   L(["一个文件", "一张表", "一份报告", "一个流程"], ["A file", "A table", "A report", "A process"]);
 const OUTPUTS = () => L(["判断", "数据资产", "行动"], ["Judgments", "Data assets", "Actions"]);
 const QUALITIES = () =>
-  L(["讲得清", "经得起查", "能用到哪里"], ["Explained", "Checked", "Clear limits"]);
+  L(["讲得清、", "经得起查", "能用到哪里"], ["Explained,", " checked,", " within clear limits"]);
 /* The way, its name, and the signal at its left from the signal's words: the wave takes the way's first stretch, which
- * fades out with the way's starting point as the wave fades in, so the way never loses its start in a frame. */
+ * fades out with the way's starting point as the wave fades in, so the way never loses its start in a frame. The wave
+ * moves on by one period as the signal is named, easing in and out over WAVE_SECONDS of voice time, and then rests, so
+ * it does not keep pulling the eye back to a mark already named. */
+const WAVE_SECONDS = 1.4;
 function theWay(t, a, c, end) {
   const signal = ramp(t, c.signal - 0.15, 0.4);
   line(WAVE_END, WAY_Y, end, WAY_Y, { color: P.line, alpha: a, width: 3.5 });
   line(WAY[0], WAY_Y, WAVE_END, WAY_Y, { color: P.line, alpha: a * (1 - signal), width: 3.5 });
   dot(WAY[1], WAY_Y, 6, { color: P.line, alpha: a });
   dot(WAY[0], WAY_Y, 6, { color: P.line, alpha: a * (1 - signal) });
-  wave(WAY[0], WAVE_END, WAY_Y, voiceTime(t) * 5, { alpha: a * signal });
-  nameText(L("工作的价值", "The value of data work"), 960, OVER, {
+  wave(WAY[0], WAVE_END, WAY_Y, 2 * Math.PI * travel(t, c.signal - 0.15, WAVE_SECONDS), {
+    alpha: a * signal,
+  });
+  nameText(L("工作的价值", "The value of data work"), (WAY[0] + WAY[1]) / 2, OVER, {
     valign: "bottom",
     alpha: a * named(t, c.value),
   });
@@ -179,8 +186,7 @@ function theWay(t, a, c, end) {
   });
 }
 function stageWay(t, a, c) {
-  const vt = voiceTime(t),
-    end = WAY[1];
+  const end = WAY[1];
   theWay(t, a, c, end);
   // The refused things, each on its words, a cross beside each name. On 「变成」/ "into judgments" they recede to the
   // list's second level while their crosses keep full ink, and they stand so where they are until the stage leaves.
@@ -202,13 +208,15 @@ function stageWay(t, a, c) {
       width: 3,
     });
   });
-  // Points travel the way from the signal to the others once they stand at its end, the first from the way's start.
-  const carried = flowAt(t, end - WAVE_END, { from: c.others });
+  // A point travels the way once, from the signal to the others, once they stand at its end; the work item of the
+  // actions makes its one run along its lane on its words. Each then rests.
+  const carried = flowAt(t, end - WAVE_END, { from: c.others, passes: 1 });
   flowDot(mix(WAVE_END, end, carried?.q ?? 0), WAY_Y, 6, carried, { color: P.evidence, alpha: a });
+  const run = travel(t, c.outputs[2] + 0.1, 1.2);
   OUTPUTS().forEach((v, k) => {
     const on = a * ramp(t, c.outputs[k] - 0.15, 0.4);
     line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], OUT_Y - 32, { color: P.line, alpha: on, width: 2 });
-    outputMark(k, OUTPUT_X[k], OUT_Y, { alpha: on, run: toAndFro(vt) });
+    outputMark(k, OUTPUT_X[k], OUT_Y, { alpha: on, run });
     nameText(v, OUTPUT_X[k], OUT_NAMES, {
       valign: "top",
       alpha: a * listIn(t, c.outputs, k),
@@ -221,10 +229,11 @@ function stageWay(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.others),
   });
-  // The qualities the others rely on, under their name: one name of parts, each joining it on its words, one to a
-  // line, so the way's twelve-name limit holds with the refused things standing.
+  // The qualities the others rely on, under their name: one name of parts, each joining it on its words, so the way's
+  // twelve-name limit holds with the refused things standing. The first two share a line and the third takes the next,
+  // so each line spans enough of the other's width to read as one block at rest.
   growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
-    width: Math.max(...QUALITIES().map((v) => measure(v, NOTE))),
+    width: measure(QUALITIES().slice(0, 2).join(""), NOTE),
     size: NOTE,
     color: P.muted,
     align: "center",

@@ -120,3 +120,40 @@ credits_and_deliverable_craft = """\
   the film opens on its title card and closes on its signature; covers match the title card; \
   Yang HENG metadata; subtitles and transcript match the speech; chapters; player; a runtime that \
   is a whole multiple of five minutes; opening, ending, covers and entry form one edition."""
+
+# The review's three levels, the owner's 信、达、雅, by which a first-time viewer judges the whole film: each asks one
+# thing of the film and holds some of the dimensions, every dimension in one level. A review passes only when each
+# level does, with every dimension it holds at the floor and no material finding in it.
+[review.levels."信"]
+asks = """\\
+  faithful: every statement says what its cited source says, with its conditions, modality and scope; each concept \\
+  keeps its contract rendering and one name, and the Chinese carries a Latin term's number in the noun's own clause; \\
+  names and readings are said as declared; both editions say the same things in the same order, and the picture names \\
+  what the voice says, in its words."""
+dimensions = ["subject_and_faithfulness", "concept_fidelity", "pronunciation"]
+
+[review.levels."达"]
+asks = """\\
+  conveyed: a newcomer understands each sentence the first time it is heard, with a clear subject, familiar \\
+  collocations and every term explained where it first appears; the argument moves step by step and the ending \\
+  returns to the opening; the voice speaks in thought groups, with no pause inside a phrase and no swallowed ending; \\
+  the picture shows what is said as it is said; the player, transcript and files work as a viewer expects."""
+dimensions = [
+  "narrative_and_clarity",
+  "narration_performance",
+  "sound_picture_continuity",
+  "credits_and_deliverable_craft",
+]
+
+[review.levels."雅"]
+asks = """\\
+  graceful: plain spoken words a fluent speaker would say, Chinese that is not a translation of the English, and no \\
+  machine tells; a clear, warm voice; every movement eases in and out, and nothing halts, sets off, pops, jumps or \\
+  races outside a stage cut; text aligned, even and tidy, frames balanced, one palette."""
+dimensions = [
+  "language_quality",
+  "voice_quality",
+  "visual_explanation_and_motion",
+  "composition_and_typography",
+  "visual_aesthetics_and_color",
+]

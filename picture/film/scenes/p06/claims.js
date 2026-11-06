@@ -59,13 +59,13 @@ function stationMark(i, x, y, a) {
   } else recoverIcon(x, y, 15, { alpha: a, color: P.evidence });
 }
 export function chainStage(s, t, c, g) {
-  // The earlier start the decision owner approves, on the compact timeline, standing where B left it with B's flow, so
-  // it does not jump at the cut.
+  // The earlier start the decision owner approves, on the compact timeline, standing where B left it, so it does not
+  // jump at the cut; its point runs the way once as the approved start is said.
   lastNight(nightPlace(), 250, 0.75, {
     alpha: g,
     lateBy: -0.6,
     arrival: 1,
-    flow: { t, length: nightWay(c) },
+    flow: { t, length: nightWay(c), from: c.approved, passes: 1 },
     names: {
       arrival: { v: L("任务提前启动", "An earlier start"), alpha: early(t, c.first3, c.approved) },
     },
@@ -245,7 +245,7 @@ export function verifiedStage(s, t, c, g) {
       set: "bounds",
     }),
   );
-  // Published at the agreed destination, and in use: two frames whose way stops at a bar.
+  // Publication at the agreed destination, and use: two frames whose way stops at a bar.
   const pub = g * named(t, c.published),
     inUse = g * named(t, c.inUse),
     { fy, fw, fh, pubX, useX, eyeX } = V,

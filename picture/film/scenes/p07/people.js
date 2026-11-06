@@ -1,18 +1,18 @@
 /* Part 07, stages A, B and C: human-AI collaboration. A: people and an Agent joined by one relationship, named as the
- * whole; the Agent works inside a delegated boundary that grows with what it holds, extends what people can do, gives
- * no organizational authorization and makes no commitments; what stays with people builds under them. B: the ten pages
- * return, and the decision they should have served comes before them. C: a clear boundary, not a pile of context; the
- * five things a consequential delegation states build inside it. */
+ * whole over both; the Agent works inside a delegated boundary that grows with what it holds, extends what people can
+ * do, gives no organizational authorization and makes no commitments; what stays with people builds under them. B: the
+ * ten pages return, and the decision they should have served comes before them. C: a clear boundary, not a pile of
+ * context; the five things a consequential delegation states build inside it. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, fill, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, fill, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { agent, documentIcon } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 import { centring, early } from "../p05/kit.js";
 
@@ -47,12 +47,12 @@ export function boundary(x0, y0, x1, y1, { alpha = 1, color = P.line, width = 2.
 }
 
 /* A: the relationship. A group of people at the left and the Agent at the right on one line, joined by a link that
- * carries the delegation and is named over its middle as the whole relationship. The Agent's boundary closes round it,
- * the link running in through its side, and grows just before each thing it holds is said: what it extends, then what
- * it cannot give, each growth a structural glide over 0.6 s of voice time ending on the words. It grows about the Agent
- * from a top edge that stays, so its name, centred over that edge, and the link's name, over the part of the link the
- * grown boundary leaves outside, never move. Under the people, what stays with them builds as one list, and a tinted
- * field gathers it when it is said to stay. */
+ * carries the delegation. The whole relationship is named over both: a bracket spans the people and the Agent's grown
+ * boundary, its ticks turned down to them, and the name stands over its middle, so no single link or Agent stands for
+ * the collaboration. The Agent's boundary closes round it, the link running in through its side, and grows just before
+ * each thing it holds is said: what it extends, then what it cannot give, each growth a structural glide over 0.6 s of
+ * voice time ending on the words. It grows about the Agent from a top edge that stays, so its name, centred over that
+ * edge, never moves. Under the people, what stays with them builds as one list, a plain stack under their name. */
 const A = { y: 410, px: 560, ax: 1260 };
 const GROUP = [
   [-62, -34],
@@ -61,6 +61,9 @@ const GROUP = [
   [-31, 34],
   [31, 34],
 ];
+/* The bracket over both groups stands this far over the boundary's name, its ticks this long. */
+const OVER_BOUNDARY = 14,
+  BRACKET_TICK = 8;
 export function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"),
     wide = Math.max(measure(term) / 2 + 34, L(150, 230)),
@@ -69,10 +72,11 @@ export function collaborationStage(s, t, c, g) {
     halfW = mix(110, wide, grow),
     y = A.y,
     ax = A.ax,
-    px = A.px;
+    px = A.px,
+    size = 1.05;
   people(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
-    { alpha: g, size: 1.05 },
+    { alpha: g, size },
   );
   nameText(L("人", "Humans"), px, y + 96 + NAME_GAP, {
     valign: "top",
@@ -82,25 +86,41 @@ export function collaborationStage(s, t, c, g) {
   const agentIn = g * (en ? early(t, c.first1, c.agent) : named(t, c.agent));
   agent(ax, y, { alpha: g, size: 2 });
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
-  // The relationship, named over its middle: the English waits for its caption line to pass, so the name does not
-  // repeat the line that says it. The link reaches the Agent across the boundary's side; its name centres on the part
-  // that stays outside the grown boundary, two gaps clear of the side.
-  const left = px + 110,
-    outEnd = ax - wide - 2 * NAME_GAP,
-    collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab));
-  link(left, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
-  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + outEnd) / 2, y - NAME_GAP, {
-    valign: "bottom",
-    alpha: collab,
-  });
+  // The link between them carries the delegation and reaches the Agent across the boundary's side.
+  link(px + 110, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
   // The delegated boundary round the Agent, growing as it holds more.
   const top = y - 76,
     bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow),
     inBoundary = g * early(t, c.boundaryClause, c.boundary);
   boundary(ax - halfW, top, ax + halfW, bottom, { alpha: inBoundary });
-  nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
+  const boundaryName = nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
     valign: "bottom",
     alpha: inBoundary,
+  });
+  // The relationship, named over both groups: the English waits for its caption line to pass, so the name does not
+  // repeat the line that says it. The bracket spans from the people's outer edge to the grown boundary's and draws out
+  // from its middle with the name.
+  const collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab)),
+    from = px + GROUP[0][0] - 15 * size * 1.55,
+    to = ax + wide,
+    by = boundaryName.top - OVER_BOUNDARY,
+    middle = (from + to) / 2,
+    spread = (collab * (to - from)) / 2,
+    tick = BRACKET_TICK * ease(clamp((collab - 0.85) / 0.15));
+  if (collab > 0.01) {
+    line(middle - spread, by, middle + spread, by, {
+      color: P.line,
+      alpha: Math.min(1, collab * 3),
+      width: 2,
+    });
+    if (tick > 0.5)
+      [from, to].forEach((x) =>
+        line(x, by, x, by + tick, { color: P.line, alpha: collab, width: 2 }),
+      );
+  }
+  nameText(L("人与人工智能的协作", "Human–AI collaboration"), middle, by - NAME_GAP, {
+    valign: "bottom",
+    alpha: collab,
   });
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach((v, i) =>
@@ -110,22 +130,9 @@ export function collaborationStage(s, t, c, g) {
       set: "refusals",
     }),
   );
-  // What stays with people: a column under them, gathered in a tinted field that opens as they are said to stay.
-  // The field opens from just round the names to its full margin over 0.8 s of voice time, so its edges never cross
-  // them and it settles with the voice rather than in the quiet after the thought.
+  // What stays with people: a plain stack under their name, one list.
   const ats = c.stays,
-    open = travel(t, c.stay - 0.1, 0.8),
-    ys = [0, 1, 2, 3].map((k) => y + 196 + k * 44),
-    m = mix(8, 30, open);
-  if (open > 0.01)
-    fill(
-      () =>
-        ctx.roundRect(px - 100 - m, ys[0] - 15 - m, 200 + 2 * m, ys[3] - ys[0] + 30 + 2 * m, 14),
-      {
-        color: P.row,
-        alpha: g * Math.min(1, open * 3),
-      },
-    );
+    ys = [0, 1, 2, 3].map((k) => y + 196 + k * 44);
   L(
     ["方向", "授权", "决定", "后果的责任"],
     ["Direction", "Authorization", "Decisions", "Responsibility"],

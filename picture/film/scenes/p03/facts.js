@@ -1,14 +1,15 @@
-/* C2 (03.4, from 「要看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has
- * named authority about facts and what it answers under its record (C1, kinds.js), so this one names them nowhere
- * else: a primary record and a repeatable observation arrive on their words at its top, over the outer columns of the
- * leads' row and at the size of C1's record, so the pair covers a tenth of the band on its own until the first lead
- * comes; under them what each must state builds part by part as one name. The leads build one row at the foot under
- * their common way, at one pitch wide enough for the widest neighbouring names, the middle lead on the frame's axis:
- * the way stands whole with the first lead, on its words, and each lead joins it on its words, with its own way down
- * from it, in its edition's order, at its place in the whole row. The stage stands where its first state, the pair
- * named, and its last, the leads named, stand equally far off the content centre, so nothing moves as it builds. On
- * 「都不是原始记录」/ "are not primary records" their way rises on that axis toward the records and stops at a bar under
- * them; on 「线索」/ "leads" a bracket centred on the axis and clearing every name names the row. */
+/* C2 (03.4, from 「能重复的观察」/ "repeatable observations"): what can establish a fact, centred. The stage it cuts
+ * into has named authority about facts and what it answers under its record (C1, kinds.js), and holds while the primary
+ * records are said, so this one names them nowhere else: a primary record and a repeatable observation stand together
+ * from the cut at its top, over the outer columns of the leads' row and at the size of C1's record, so the stage opens
+ * balanced and the pair covers a tenth of the band on its own until the first lead comes; under them what each must
+ * state builds part by part as one name. The leads build one row at the foot under their common way, at one pitch wide
+ * enough for the widest neighbouring names, the middle lead on the frame's axis: the way stands whole with the first
+ * lead, on its words, and each lead joins it on its words, with its own way down from it, in its edition's order, at
+ * its place in the whole row. The stage stands where its first state, the pair named, and its last, the leads named,
+ * stand equally far off the content centre, so nothing moves as it builds. On 「都不是原始记录」/ "are not primary
+ * records" their way rises on that axis toward the records and stops at a bar under them; on 「线索」/ "leads" a bracket
+ * that ends the same distance past each outer name's ink names the row. */
 
 import { ctx } from "../../canvas.js";
 import { flowAt, flowDot, line, measure, stroke } from "../../drawing/strokes.js";
@@ -32,9 +33,8 @@ const ROW_Y = 410,
   LEADS_Y = JOIN_Y + 56,
   LEAD_HALF = 22,
   LEAD_GAP = 44,
-  /* The bracket's ends reach this far past the widest name's advance, so their ink stands at least 12 px clear of its
-   * glyphs. */
-  BRACKET_CLEAR = 16;
+  /* The bracket's ends reach this far past each outer name's advance, so they overshoot the row's two ends alike. */
+  BRACKET_CLEAR = 32;
 /* What each record or observation must state, its parts said in turn. */
 const STATE = () =>
   L(["来源、", "时间、", "对象、", "范围"], ["Source, ", "time, ", "subject, ", "scope"]);
@@ -60,7 +60,7 @@ export function stageFacts(t, a, c) {
     alpha: a * named(t, c.primary),
   });
   eye(xs.at(-1), ROW_Y, { alpha: observed, repeat: 1, r: EYE_R });
-  nameText(L("能重复的观察", "Observations"), xs.at(-1), NAMES_Y, {
+  nameText(L("能重复的观察", "Repeatable observations"), xs.at(-1), NAMES_Y, {
     valign: "top",
     alpha: a * named(t, c.observe),
   });
@@ -104,23 +104,22 @@ export function stageFacts(t, a, c) {
   // A point rises from the leads toward the records in voice time and stops at the bar, once their way stands.
   const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.notPrimary + 0.75 });
   flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
-  // 「线索」/ "leads": a bracket 16 px under the row's names, centred on the axis and reaching past every name, its ends
-  // clear of the widest by BRACKET_CLEAR, drawn on with the name that hangs under its middle.
+  // 「线索」/ "leads": a bracket 16 px under the row's names whose ends stand BRACKET_CLEAR past the outer names, drawn
+  // on with the name that hangs under its middle.
   const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16,
-    on = a * soon(t, c.onlyLeads - 0.1, 0.5);
-  if (on > 0.01) {
-    const half = Math.max(...xs.map((x, i) => Math.abs(x - 960) + widths[i] / 2)) + BRACKET_CLEAR;
+    on = a * soon(t, c.onlyLeads - 0.1, 0.5),
+    ends = [xs[0] - widths[0] / 2 - BRACKET_CLEAR, xs.at(-1) + widths.at(-1) / 2 + BRACKET_CLEAR];
+  if (on > 0.01)
     stroke(
       () => {
-        ctx.moveTo(960 - half, under - 8);
-        ctx.lineTo(960 - half, under);
-        ctx.lineTo(960 + half, under);
-        ctx.lineTo(960 + half, under - 8);
+        ctx.moveTo(ends[0], under - 8);
+        ctx.lineTo(ends[0], under);
+        ctx.lineTo(ends[1], under);
+        ctx.lineTo(ends[1], under - 8);
       },
       { color: P.line, alpha: on, width: 2 },
     );
-  }
-  nameText(L("线索", "Leads"), 960, under + NAME_GAP - 6, {
+  nameText(L("线索", "Leads"), (ends[0] + ends[1]) / 2, under + NAME_GAP - 6, {
     valign: "top",
     alpha: a * named(t, c.onlyLeads),
   });

@@ -1,9 +1,9 @@
 /* The opening's four failures (the picture plan's section 3), drawn once here and returned to where the film answers
- * them: a fork taken ahead of the facts (换供应商 / a new vendor), a pipe whose break a hand-made patch catches (手工补上
- * 的数据 / data patched by hand), a meeting whose two seats stay empty (一场会 / a meeting), and an Agent beside a growing
- * stack of pages and two flat bars (十页分析 / ten pages of analysis). Each figure is one connected mark about its centre
- * (cx, cy), at most 260 px wide and 170 px tall, and fades with `alpha`; its later parts take their own shares, so a
- * part arrives on the words that name it. */
+ * them: a fork taken ahead of the facts (换供应商 / changing the vendor), a pipe whose break a hand-made patch catches
+ * (手工补上的数据 / data patched by hand), a meeting whose two seats stay empty (一场会 / a meeting), and an Agent beside a
+ * growing stack of pages and two flat bars (十页分析 / ten pages of analysis). Each figure is one connected mark about
+ * its centre (cx, cy), at most 260 px wide and 170 px tall, and fades with `alpha`; its later parts take their own
+ * shares, so a part arrives on the words that name it. */
 
 import { ctx } from "../../canvas.js";
 import {

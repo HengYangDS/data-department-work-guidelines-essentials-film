@@ -104,8 +104,8 @@ export function stageMeeting(t, a, c) {
   });
   growName(
     t,
-    L(["谁去做、", "什么时候做完"], ["Who does what"]),
-    L([c.whoDoes, c.byWhen], [c.whoDoes]),
+    L(["谁去做、", "什么时候做完"], ["Who does what", " by when"]),
+    [c.whoDoes, c.byWhen],
     px + 14 * k + NAME_GAP,
     dy,
     { valign: "middle", build: true, alpha: a },
@@ -206,7 +206,7 @@ export function stageApart(t, a, c) {
     alpha: falseOn,
     width: 2.5,
   });
-  bar(SIDES[0], stop, { alpha: falseOn * ramp(t, c.falseTrue + 0.45, 0.2) });
+  bar(SIDES[0], stop, { alpha: falseOn * ramp(t, c.falseTrue + 0.45, 0.3) });
   dashedPage(SIDES[0], MID, 84, 104, { alpha: falseOn });
   nameText(L("假的事实", "A false fact"), SIDES[0], MID_NAMES, {
     valign: "top",
@@ -219,7 +219,7 @@ export function stageApart(t, a, c) {
     alpha: actOn,
     width: 2.5,
   });
-  bar(SIDES[1], stop2, { alpha: actOn * ramp(t, c.permission + 0.45, 0.2), length: 34 });
+  bar(SIDES[1], stop2, { alpha: actOn * ramp(t, c.permission + 0.45, 0.3), length: 34 });
   // Once refused, a point runs down each way in voice time and stops at its bar, its first from the way's top.
   [
     [SIDES[0], TOP + 50, c.falseTrue],

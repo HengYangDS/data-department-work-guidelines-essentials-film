@@ -5,9 +5,9 @@
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
 import { documentIcon, person, seal } from "../../drawing/symbols.js";
-import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
+import { HOUR, lastNight } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
@@ -15,7 +15,7 @@ import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, openMark } from "../p05/kit.js";
+import { early, openMark } from "../p05/kit.js";
 
 /* A rule: a page with its seal on the lower right. */
 function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
@@ -73,15 +73,16 @@ export function monitorStage(s, t, c, g) {
   });
 }
 
-/* D: a rule over the four reasons to retire it. The page stands on the frame's axis, named over itself and joined to a
- * rail under it, which stands whole from the first words, so the picture stays centred while the list builds; the
- * reasons take the rail's stations on their words, open marks named under them, one list. As the sentence closes the
- * page fades where it stands while its names and the reasons stay. */
+/* D: a rule over the four reasons to retire it. The page stands on the frame's axis, named over itself; the rail
+ * under it, joined to it, stands whole with the first reason, on its words, and the reasons take the rail's stations
+ * on their words, open marks named under them, one list. As the sentence closes the page fades where it stands while
+ * its names and the reasons stay. */
 const R = { x: 960, y: 420, rail: 640, half: 520, pitch: 300 };
 export function retireStage(s, t, c, g) {
   const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch),
-    ats = c.retire;
+    ats = c.retire,
+    carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
   nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
@@ -91,50 +92,66 @@ export function retireStage(s, t, c, g) {
     align: "left",
     alpha: g * named(t, c.retired),
   });
-  line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page, width: 2 });
-  line(R.x - R.half, R.rail, R.x + R.half, R.rail, { color: P.line, alpha: g, width: 3.5 });
-  [-1, 1].forEach((side) => dot(R.x + side * R.half, R.rail, 6, { color: P.line, alpha: g }));
+  line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
+  line(R.x - R.half, R.rail, R.x + R.half, R.rail, {
+    color: P.line,
+    alpha: g * carried,
+    width: 3.5,
+  });
+  [-1, 1].forEach((side) =>
+    dot(R.x + side * R.half, R.rail, 6, { color: P.line, alpha: g * carried }),
+  );
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
+  // Each reason stands on one line: the rail's pitch leaves the longest, "Duplicates a source of truth", room beside
+  // its neighbours, and a break there would leave its first line ending on "a".
   railNames(
     L(
       ["对象没了", "没人用", "与权威来源重复", "得不偿失"],
-      ["No subject", "No user", "Duplicate", "Net cost"],
+      ["No subject", "No user", "Duplicates a source of truth", "Net cost"],
     ),
     xs,
     R.rail,
-    { gap: 16 + NAME_GAP, alpha: (i) => g * listIn(t, ats, i), set: "retire" },
+    { gap: 16 + NAME_GAP, wrap: 400, alpha: (i) => g * listIn(t, ats, i), set: "retire" },
   );
 }
 
-/* E1: the full timeline as in the opening, the price data on its hour, and its next user beyond the rail's right end,
- * the data's way running on to them; what the user needs builds in a column between the card and the user, one list.
- * The stage stands once at the midpoint of the places that centre it before and after the user arrives. */
+/* E1: the full timeline as in the opening, six hours of the night from the hour the data was due, the price data on
+ * the hour it arrived and its next user standing over a later hour, the night running on under them once from the
+ * user's words; what the user needs builds under the rail between them, one list. The data and the user stand at equal
+ * distances either side of the frame's axis, on which the rail and the needs centre, so the stage's ink centres on the
+ * frame rather than at its right. */
+const E1 = { y: 551, hours: [0, 6], user: 4, needs: 52, pitch: 48 };
 export function nextUserStage(s, t, c, g) {
   const names = { card: { v: L("那份数据", "The price data"), alpha: early(t, c.first4, c.data) } },
-    e = lastNightExtent(1, { card: 1, names }),
-    userName = L("下一位", "Next user"),
-    // The user stands 90 px beyond the rail's end, the name under the figure reaching furthest.
-    reach = e.right + 90 + Math.max(28, measure(userName) / 2),
-    x = (centring(e.left, e.right) + centring(e.left, reach)) / 2,
-    y = 551;
+    y = E1.y,
+    // The motif's hour h stands at x + (h - 1) HOUR, so this anchor sets the data's hour, 2, and the user's either side
+    // of the axis.
+    x = 960 - ((2 + E1.user) / 2 - 1) * HOUR;
   const m = lastNight(x, y, 1, {
     alpha: g,
     card: 1,
-    flow: { t, from: c.user + 0.6 },
+    hours: E1.hours,
+    flow: { t, from: c.user + 0.6, passes: 1 },
     names,
   });
+  // The next user stands over a later hour, its shoulders clear of the rail's ticks, named over its head.
   const user = g * named(t, c.user),
-    ux = m.right + 90;
-  link(m.right + 6, y, ux - 30, y, { alpha: user, upto: soon(t, c.user, 0.6) });
-  person(ux, y + 4, { alpha: user, size: 1.2 });
-  nameText(userName, ux, y + 64 + NAME_GAP, { valign: "top", alpha: user });
-  const needs = c.needs,
-    cx = (m.card.right + ux) / 2 + 20;
+    ux = m.at(E1.user),
+    size = 1.2,
+    head = 15 * size * 2.15;
+  person(ux, y - 40, { alpha: user, size });
+  nameText(L("下一位", "Next user"), ux, y - 40 - head - NAME_GAP, {
+    valign: "bottom",
+    alpha: user,
+  });
   L(
     ["清楚的含义", "当时能拿到的事实", "对得上的证据", "获准、有边界的用途"],
     ["Clear meaning", "Facts available then", "Matching evidence", "A permitted, bounded use"],
   ).forEach((v, i) =>
-    nameText(v, cx, 262 + i * 48, { alpha: g * listIn(t, needs, i), set: "needs" }),
+    nameText(v, 960, y + E1.needs + i * E1.pitch, {
+      alpha: g * listIn(t, c.needs, i),
+      set: "needs",
+    }),
   );
 }
 

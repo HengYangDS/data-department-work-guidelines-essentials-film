@@ -58,7 +58,7 @@ const STAGES = {
   "04": [
     ["四条底线", "Four boundaries"],
     ["第一", "First"],
-    ["在这四条底线之内", "Inside them"],
+    ["在这四条底线之内", "Inside these boundaries"],
     ["要留多少记录", "Risk sets the process"],
     ["昨晚的事", "Last night's case"],
     ["风险高低", "Whatever the risk"],
@@ -176,7 +176,7 @@ const KEY_WORDS = [
     "Plans",
   ],
   ["03", "假的事实", "A false fact", "假的变成真的", "false fact"],
-  ["04", "停下来，讲出来，往上报", "Halt, disclosure, escalation", "停下来", "stop"],
+  ["04", "停下来", "Stop", "停下来", "stop"],
   ["04", "局部、可逆", "Local, reversible work", "局部", "Local"],
 ];
 test(`${CODE} key-word labels arrive on their words`, () => {

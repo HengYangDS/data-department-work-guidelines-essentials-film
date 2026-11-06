@@ -1,18 +1,20 @@
 /* B (03.3, from its first words, 「它有先后」/ "Law"): authority to act's order of sources, centred. The seal heads it,
  * with its name and what it answers; on 「有先后」, the order announced (in English, which announces it in 03.2, with
- * the first rank), a spine runs down from the seal the whole length of the order, and a point runs down it in voice
- * time. The four ranks join it one by one, each a station on the spine with its name, whole from its first words, the
- * rank being said at full ink and those before it at the list's second level. The explicit decision's owner stands as
- * a small figure in the colour of authority beside its station: the rank is the decision, never the person alone. The
- * column stands at one place while the ranks arrive, so no name moves once shown. */
+ * the first rank), a spine runs down from the seal the whole length of the order, and a point descends it once over
+ * the thought. The four ranks join it one by one, each a station on the spine with its name, whole from its first
+ * words, the rank being said at full ink and those before it at the list's second level. The decision owner of the
+ * second rank stands as a small figure in the colour of authority beside its station: the rank is what the owner
+ * decides, never the person alone. The column stands at one place while the ranks arrive, so no name moves once
+ * shown. */
 
-import { dot, flowAt, flowDot, line, measure } from "../../drawing/strokes.js";
+import { EDGE, dot, line, measure } from "../../drawing/strokes.js";
 import { person, seal } from "../../drawing/symbols.js";
 import { listIn } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { ease, mix, ramp, soon } from "../../timing/easing.js";
+import { thoughtEnd, voiceTime } from "../../timing/pauses.js";
 
 const HEAD_Y = 300,
   SEAL_R = 46,
@@ -29,9 +31,9 @@ const RANKS = () =>
       "工作计划、临时约定、个人偏好",
     ],
     [
-      "Law, regulation, security, mandatory policy",
-      "The explicit decision of the decision owner",
-      "Contracts, policies, specifications, decision records",
+      "Law, regulation, security requirements, mandatory policy",
+      "What the decision owner for the matter explicitly decides",
+      "Contracts, policies, specifications, decision records in force",
       "Plans, provisional agreements, personal preferences",
     ],
   );
@@ -59,9 +61,22 @@ export function stageOrder(t, a, c) {
     alpha: a,
   });
   line(x, top, x, top + (ROWS[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
-  // A point runs down the order in voice time, from the seal through the ranks standing, once the spine has grown.
-  const runs = flowAt(t, ROWS[3] - top, { from: c.order + 0.55 });
-  flowDot(x, mix(top, ROWS[3], runs?.q ?? 0), 5, runs, { color: P.authority, alpha: a });
+  // A point descends the order once, from the seal once the spine has grown to the last rank as the thought ends,
+  // easing in and out in voice time, so it reads the ranks with the voice rather than looping past ranks already
+  // named, and keeps the picture moving between them; it enters and leaves by its size.
+  const from = c.order + 0.55,
+    span = voiceTime(thoughtEnd(c.ranks.at(-1))) - voiceTime(from),
+    q = (voiceTime(t) - voiceTime(from)) / span;
+  if (q > 0 && q < 1)
+    dot(
+      x,
+      mix(top, ROWS[3], ease(q)),
+      5 * ease(Math.min(1, (q * span) / EDGE, ((1 - q) * span) / EDGE)),
+      {
+        color: P.authority,
+        alpha: a,
+      },
+    );
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
     dot(x, ROWS[k], 7, { color: P.ink, alpha: on });

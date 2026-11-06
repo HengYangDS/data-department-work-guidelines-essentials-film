@@ -2,7 +2,7 @@
  * late (06.1); the fix's three layers on the timeline (06.2); the chain of trust (06.3); report the state, and what
  * verification, publication and use each establish (06.4); a completion claim and its questions (06.5); and two states
  * that do not make the next (06.6). Each thought's stage cuts in on its first words. The Illustrative chip stands while
- * the made-up case shows (06.1, 06.2). */
+ * the made-up case shows (06.1-06.3). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
@@ -23,8 +23,11 @@ function cuesOf(s) {
     lateJob: cue(s, "任务启动晚了", "job started late"),
     first2: cue(s, "这件事要分三层处理", "The fix has three layers"),
     three: cue(s, "三层", "three layers"),
+    // Each layer stands with its name from the first words of its clause, except the Chinese first layer: its name,
+    // 止住影响, is spoken after its action, 先把缺的数据补上, which the timeline above shows as it is said, so the layer
+    // stands on its name's words rather than before them.
     layers: cues(s, [
-      ["先把缺的数据补上", "First, fill in"],
+      ["止住影响", "First, fill in"],
       ["再把任务提前启动", "Then start the job earlier"],
       ["最后是防止它再发生", "Last, stop it happening again"],
     ]),
@@ -65,13 +68,13 @@ function cuesOf(s) {
       ["环境", "environment"],
       ["限度", "limit"],
     ]),
-    published: cue(s, "发布到了约定的地方", "Published at the agreed destination"),
+    published: cue(s, "发布到了约定的地方", "Publication at the agreed destination"),
     notMean: cue(s, "不代表有人在用", "does not mean anyone uses it"),
     inUse: cue(s, "有人在用", "anyone uses it"),
     observed: cue(s, "实际看到了什么", "actually observed"),
     first6: cue(s, "每次说完成", "Every completion claim"),
     claim: cue(s, "说完成", "completion claim"),
-    answers: cue(s, "都要答得上来", "answers the same questions"),
+    answers: cue(s, "都要答得上来", "must answer the same questions"),
     what: cue(s, "说的是什么", "What is claimed"),
     subject: cue(s, "针对哪个对象", "which subject and version"),
     signed: cue(s, "谁在什么时候", "Verified when"),
@@ -108,5 +111,6 @@ scenes["06"] = function (s, t) {
   if (E2 > 0) verifiedStage(s, t, c, E2);
   if (F > 0) claimStage(s, t, c, F);
   if (G > 0) pairsStage(s, t, c, G);
-  illustrative(A + B);
+  // The made-up case shows on the timeline through 06.1-06.3, whose chain stands under the story's earlier start.
+  illustrative(A + B + C);
 };

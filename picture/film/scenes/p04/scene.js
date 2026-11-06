@@ -83,10 +83,15 @@ function cuesOf(s) {
     ],
     // The fourth boundary's last words, on which the list of the four counts as said.
     listEnd: cue(s, "证据", "adopted"),
-    inside: cue(s, "在这四条底线之内", "Inside them"),
+    inside: cue(s, "在这四条底线之内", "Inside these boundaries"),
     free: cue(s, "自主", "autonomy"),
     near: cue(s, "快要越线时", "When an action would cross one"),
-    halt: cue(s, "停下来", "stop"),
+    // What is done at the edge, each on its words: stop, make it visible, escalate.
+    edge: [
+      cue(s, "停下来", "stop"),
+      cue(s, "讲出来", "make it visible"),
+      cue(s, "往上报", "escalate"),
+    ],
     ladder: cue(s, "要留多少记录", "Risk sets the process"),
     risk: cue(s, "多少记录", "Risk sets the process"),
     riskWord: cue(s, "看风险", "Risk sets the process"),
@@ -107,9 +112,8 @@ function cuesOf(s) {
       () => ({
         term: [cueFrom(s, "", "security", tiers[2])],
         qual: [
-          cue(s, "", "overwrite"),
-          cueFrom(s, "", "external commitment", tiers[2]),
-          cue(s, "", "irreversible"),
+          cueFrom(s, "", "an external commitment", tiers[2]),
+          cue(s, "", "or anything irreversible"),
         ],
       }),
     ),
@@ -122,7 +126,7 @@ function cuesOf(s) {
     recordParts: [
       cueFrom(s, "方案", "options", recordQual),
       cueFrom(s, "做法", "execution path", recordQual),
-      cueFrom(s, "验收", "acceptance", recordQual),
+      cueFrom(s, "验收", "and acceptance", recordQual),
     ],
     written: [
       cue(s, "书面决定", "a written decision"),

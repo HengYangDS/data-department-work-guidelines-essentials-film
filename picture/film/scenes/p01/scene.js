@@ -73,7 +73,7 @@ const XS = [450, 790, 1130, 1470],
   ];
 /* Each failure's name: its term on the words that bring it, and what went wrong set under it as its qualifier. */
 const TERMS = () => [
-  L("换供应商", "A new vendor"),
+  L("换供应商", "Changing the vendor"),
   L("手工补上的数据", "Data patched by hand"),
   L("一场会", "A meeting"),
   L("十页分析", "Ten pages of analysis"),
@@ -163,13 +163,14 @@ function figure(k, x, t, a, c, busy = false) {
 
 /* B, from 01.2's first words: the compact timeline over the row of failures. Its two hours lead down to a rail across
  * the row's whole width, whose two ends reach down to the line of the bracket that holds the row's names in C and D;
- * the rail stands with the timeline from the cut, so the picture has its final extent, top to bottom, before the
- * failures fill it and stays balanced while they build. The row builds left to right, each failure at its own place
- * from its words and joined to the rail by its own link, and what went wrong joins its name on its own words. */
+ * the rail stands with the first failure, on its words, so it never waits empty for its members, and from then on the
+ * picture has its final extent, top to bottom, and stays balanced while the failures fill it. The row builds left to
+ * right, each failure at its own place from its words and joined to the rail by its own link, and what went wrong joins
+ * its name on its own words. */
 function stageFailures(t, a, c) {
   compactNight(a, t);
   // The rail is a bracket over the row, the one that holds the row's names in C and D turned to face it.
-  const rail = { color: P.line, alpha: a, width: 2.5 };
+  const rail = { color: P.line, alpha: a * ramp(t, c.vendor - 0.15, 0.4), width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
   // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names.
   path(

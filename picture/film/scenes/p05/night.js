@@ -36,7 +36,7 @@ function nightNames(t, c) {
   return {
     card: { v: L("昨晚那份价格", "Last night's prices"), alpha: named(t, c.first3) },
     due: { v: L("平时", "Usual"), side: "left", alpha: named(t, c.usual) },
-    arrival: { v: L("拿到的时间", "Arrival"), side: "right", alpha: named(t, c.measure) },
+    arrival: { v: L("最早能拿到", "Arrival"), side: "right", alpha: named(t, c.arrival) },
     late: { v: L("晚了两个小时", "Two hours later"), alpha: named(t, c.measure) },
   };
 }

@@ -2,7 +2,7 @@
  * that opens, a chart that looks good and a model signal build below, their way up stops at a bar, and what none of
  * them establishes stands between as open marks. A2: shown fit for a specific use, the data earns its seal. B: six
  * questions ring the data, each station filling as it is asked. B2: data that cannot answer them is explored inside
- * its authorized scope, and its way out to shared, production and decision work stops at the scope's edge. E: the
+ * an authorized scope, and its way out to sharing, production and decisions stops at the scope's edge. E: the
  * views hang from the data, and none may climb back to become the source of truth. */
 
 import { link } from "../../drawing/links.js";
@@ -202,7 +202,7 @@ export function questionsStage(s, t, c, g) {
   ringArcs(soon(t, c.sixClause - 0.2, 1.1), six);
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   const names = L(
-    ["来源", "可用时间", "含义", "改动", "质量", "用途"],
+    ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
     ["Origin", "Availability", "Meaning", "Changes", "Quality", "Use"],
   );
   c.asks.forEach((at, i) => {
@@ -218,9 +218,11 @@ export function questionsStage(s, t, c, g) {
       line(x, y, x + 6, y + 3, { color: P.evidence, alpha: asked, width: 2.5 });
     } else dot(x, y, 12, { color: P.evidence, alpha: asked });
     if (lit > 0) ring(x, y, 22, { color: P.evidence, alpha: lit * 0.5 * g, width: 2 });
+    // The ring returns to full ink as its last question is asked, so the six stand whole for more than a moment before
+    // the stage leaves on the next clause.
     radialName(names[i], B.x, B.y, B.rx + 12, a, {
       ry: B.ry + 12,
-      alpha: g * listIn(t, c.asks, i),
+      alpha: g * listIn(t, c.asks, i, Infinity, { whole: c.asks.at(-1) - 0.1 }),
       set: "questions",
     });
   });
@@ -237,7 +239,7 @@ const S = { w: 500, h: 285, card: [320, 160], inset: 18 },
   /* The row of work stands `below` the scope's lower edge, `half` its height either side: each kind is its mark, its
    * name `toName` right of the mark's centre, the kinds `gap` apart and the row centred on the frame's axis. */
   WORK = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
-const USES = () => L(["共享", "投产", "决策"], ["Shared", "Production", "Decision work"]);
+const USES = () => L(["共享", "投产", "决策"], ["Sharing", "Production", "Decisions"]);
 /* The scope's top: the stage grows from the scope with its name over it to the whole with the row under it, and the
  * top stands at the midpoint of the tops that centre those two states, so neither stands far off. */
 function scopeTop() {

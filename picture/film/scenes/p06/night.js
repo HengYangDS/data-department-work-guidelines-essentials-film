@@ -5,7 +5,7 @@
  * two is refused as a systemic fix. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
+import { EDGE, box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { check, documentIcon } from "../../drawing/symbols.js";
 import { HOUR, lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { listIn, named, speaking } from "../../naming/lists.js";
@@ -13,7 +13,7 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
-import { travel, voiceTime } from "../../timing/pauses.js";
+import { thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
 import { centring, early, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
@@ -108,9 +108,10 @@ const B = {
   h: 84,
 };
 /* B's compact timeline and C's (claims.js) stand in one place, B's, which leaves room for the night's name at its left,
- * and run one flow on one way, so the timeline stands still across their cut and its point runs on. The job's start
- * moves from two hours late to before the due hour over MOVE s of voice time (about 350 px, at most about 405 px/s);
- * the way beyond it grows with it, and each pass of the flow keeps the length the way had when the pass began. */
+ * so the timeline stands still across their cut. The job's start moves from two hours late to before the due hour over
+ * MOVE s of voice time (about 350 px, at most about 405 px/s); the way beyond it grows with it. Each stage's point
+ * crosses that way once and rests: B's slowly, from the moved start to the rail's end as the thought ends, so the
+ * picture keeps moving while the rest of the fix is told; C's as a flow, on the approved earlier start. */
 const MOVE = 1.3;
 const moves = (c) => c.earlier + 0.45;
 export const nightPlace = () => B.x + (measure(L("昨晚", "Last night")) + NAME_GAP) / 2;
@@ -120,7 +121,7 @@ export function nightWay(c) {
   return (v) => (4 - mix(2, -0.6, ease((v - from) / MOVE))) * HOUR * B.scale;
 }
 const THREE = () => L("三层", "Three layers"),
-  LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
+  LAYERS = () => L(["止住影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
   REFUSED = () => L("从根上修好", "A systemic fix");
 export function layersStage(s, t, c, g) {
   // The late measure's name fades on the earlier start's words; the start moves once it has gone.
@@ -134,9 +135,21 @@ export function layersStage(s, t, c, g) {
     late: { upto: 1, alpha: 1 - move },
     lateBy: mix(2, -0.6, move),
     arrival: 1,
-    flow: { t, length: nightWay(c) },
     names,
   });
+  // The night goes on: one point, the size of the timeline's own, leaves the moved start once it has moved and crosses
+  // the rest of the night, easing in and out in voice time, to reach the rail's end as the thought ends; it enters and
+  // leaves by its size.
+  const from = moves(c) + MOVE,
+    span = voiceTime(thoughtEnd(c.firstTwo)) - voiceTime(from),
+    q = (voiceTime(t) - voiceTime(from)) / span;
+  if (q > 0 && q < 1)
+    dot(
+      mix(m.arrival, m.right, ease(q)),
+      m.y,
+      3 * ease(Math.min(1, (q * span) / EDGE, ((1 - q) * span) / EDGE)),
+      { color: P.ink, alpha: g },
+    );
   // The missing data's place over the due hour, named at its right, and the patch that fills it.
   const place = m.above(0),
     missing = g * named(t, Math.min(c.missing, c.fill)),

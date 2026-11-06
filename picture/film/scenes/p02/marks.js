@@ -45,9 +45,6 @@ export function guidePage(x, y, w, h, { alpha = 1, seal: rim = 0, stamp = 0 } = 
   return at;
 }
 
-/* A point that glides to and fro along a lane in voice time, easing at both ends, so it never jumps back. */
-export const toAndFro = (vt, speed = 1.2) => 0.5 - 0.5 * Math.cos(vt * speed);
-
 /* Figures drawn as one mark (heads one fill, shoulders one stroke), as symbols.js draws a person at `size`. */
 export function people(xs, y, { size = 0.9, alpha = 1, color = P.ink } = {}) {
   if (alpha < 0.01) return;
@@ -143,7 +140,7 @@ export function wave(x0, x1, y, phase, { alpha = 1, amp = 13 } = {}) {
 }
 
 /* What the signal becomes, each about 64 px about (x, y), hanging from the way: 0 judgments, a ring with its point; 1
- * data assets, a table; 2 actions, a work item carried along a short lane by `run`, a phase in [0, 1). */
+ * data assets, a table; 2 actions, a work item carried along a short lane by `run`, its share of the lane. */
 export function outputMark(k, x, y, { alpha = 1, run = 0 } = {}) {
   if (alpha < 0.01) return;
   if (k === 0) {

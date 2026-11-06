@@ -10,12 +10,21 @@
 
 import { link } from "../../drawing/links.js";
 import { blend } from "../../drawing/colour.js";
-import { dot, line, measure } from "../../drawing/strokes.js";
+import { dot, labelSize, line, measure } from "../../drawing/strokes.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, growTexts, nameText, rejectedName, termRow } from "../../naming/names.js";
+import {
+  LEADING,
+  NAME_GAP,
+  NOTE,
+  TERM_STACK,
+  growTexts,
+  nameText,
+  rejectedName,
+  termRow,
+} from "../../naming/names.js";
 import { rowNameTop } from "../../naming/placement.js";
-import { P } from "../../palette.js";
+import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
@@ -23,11 +32,17 @@ import { bar } from "../p03/marks.js";
 import { lens, speaker, tierDoc } from "./marks.js";
 
 /* Each tier's two sides are term rows: at the spine's left the work (a term and its qualifier), at its right the
- * record it needs (its name and what it holds or takes). Each edition sets its own lines: English sets its longer tiers
- * on more lines, and a tier's two sides always keep the same lines, so their rows share baselines. `width` wraps a term
- * and `noteWidth` its qualifier; English sets the highest tier's qualifiers on three lines a side, so the record side,
- * which begins after its document, reaches no further than the full ladder's balance allows. A side that lists several
- * things the narration names one by one holds each as a part of its own, which joins it on its words. */
+ * record it needs (its name and what it holds or takes). Each edition sets its own lines, and every wrapped name keeps
+ * the engine's wrapping rules at rest: within one size, each line but the last spans at least four fifths of the
+ * widest and the last at least three fifths, no English line ends on a word that leads the next, and no last line
+ * holds one word alone. A tier's two sides begin on one baseline, and lines of one size that stand side by side share
+ * theirs, as the engine's ragged-row rule asks of names within 300 px. `width` wraps a term and `noteWidth` its
+ * qualifier. English sets its second tier's work on one line over two and its record's contents on three lines, and
+ * its highest tier's work in the narration's words, two lines over three, beside a record whose written decision and
+ * explicit authorization take two lines over its other requirements, `items`, one name to a line in the qualifier's
+ * place, as no break of that list keeps the rules. The ladder stays within the reviewers' balance as it builds. A side
+ * that lists several things the narration names one by one holds each as a part or item of its own, which joins it on
+ * its words. */
 const WORK = () =>
   L(
     [
@@ -41,22 +56,21 @@ const WORK = () =>
     [
       { term: ["Local, reversible work"], qual: ["no external commitment"] },
       {
-        term: ["Cross-role ", "or extended work"],
-        qual: ["competing options, material uncertainty"],
-        width: 260,
-        noteWidth: Infinity,
+        term: ["Cross-role or extended work"],
+        qual: ["competing options, ", "material uncertainty"],
+        noteWidth: 230,
       },
       {
         term: ["Production, funds, sensitive data, ", "security or compliance"],
-        qual: ["deletion, ", "overwrite, ", "external commitment, ", "irreversibility"],
+        qual: ["deletion or overwrite, ", "an external commitment ", "or anything irreversible"],
         width: 490,
         noteWidth: 300,
       },
     ],
   );
 /* The records: one clear exchange, the existing work record and, for the highest tier, a written decision with its
- * explicit authorization, its other requirements as the qualifier, each part on its own words. English says the second
- * tier's contents before the record, so it names the contents as the term and the record as its qualifier. */
+ * explicit authorization and its other requirements, each part on its own words. English says the second tier's
+ * contents before the record, so it names the contents as the term and the record as its qualifier. */
 const RECORD = () =>
   L(
     [
@@ -67,16 +81,16 @@ const RECORD = () =>
     [
       { term: ["One clear exchange"], qual: ["conclusion, ", "basis, ", "action"] },
       {
-        term: ["Problem, ", "options, ", "execution path, ", "acceptance"],
+        term: ["Problem, ", "options, ", "execution path ", "and acceptance"],
         qual: ["existing work record"],
-        width: 370,
+        width: 240,
         noteWidth: Infinity,
       },
       {
         term: ["A written decision, ", "explicit authorization"],
-        qual: ["a rollback or degradation path, ", "independent review, ", "human acceptance"],
+        qual: [],
+        items: ["a rollback or degradation path", "independent review", "human acceptance"],
         width: 310,
-        noteWidth: 360,
       },
     ],
   );
@@ -86,8 +100,8 @@ const workTimes = (c) => [
   { term: [c.tiers[1]], qual: [c.tierQuals[1]] },
   { term: [c.tiers[2], ...c.tierParts.term], qual: [c.tierQuals[2], ...c.tierParts.qual] },
 ];
-/* When each record's term and qualifier arrive, part by part: the second tier's on their words in each edition's
- * order, the contents with their parts. */
+/* When each record's term and qualifier (or its items) arrive, part by part: the second tier's on their words in each
+ * edition's order, the contents with their parts. */
 const recordTimes = (c) => [
   { term: [c.oneClear], qual: [c.clearQual, ...c.clearParts] },
   {
@@ -103,7 +117,8 @@ const HEAD = () =>
     { top: "风险", left: "多少记录", right: "多少手续" },
     { top: "Risk", left: null, right: "Process" },
   );
-const TIER_Y = [330, 520, 720],
+/* The tiers stand at one pitch down the spine, so the gaps between them read alike. */
+const TIER_Y = [330, 525, 720],
   DOCS = [
     [52, 66],
     [80, 102],
@@ -116,13 +131,14 @@ const TIER_Y = [330, 520, 720],
   TO_DOC = 64,
   /* The documents stand with their right edges on one line, so the three records begin at one left edge. */
   DOC_RIGHT = TO_DOC + DOCS[2][0];
-/* The widest line of a term row's block, as termRow sets it. */
-const blockWidth = ({ term, qual, width = Infinity, noteWidth = width }) =>
+/* The widest line of a term row's block, as termRow sets it, with its items, one to a line. */
+const blockWidth = ({ term, qual, items = [], width = Infinity, noteWidth = width }) =>
   Math.max(
     ...growTexts(term, width).map((line) => line.reduce((w, [, v]) => w + measure(v), 0)),
-    ...growTexts(qual, noteWidth, NOTE).map((line) =>
+    ...(qual.length ? growTexts(qual, noteWidth, NOTE) : []).map((line) =>
       line.reduce((w, [, v]) => w + measure(v, NOTE), 0),
     ),
+    ...items.map((v) => measure(v, NOTE)),
   );
 /* The spine's x: it never moves, so no name moves once shown. The ladder builds side by side, and each state it holds
  * stands off the frame's centre by half the difference of its two sides; the spine stands where the most off-centre
@@ -191,20 +207,31 @@ export function stageLadder(t, a, c) {
   // The records, each a document at the spine's right, their right edges on one line, named beside it.
   const docRight = x + DOC_RIGHT,
     times = recordTimes(c);
-  RECORD().forEach(({ term, qual, width = Infinity, noteWidth = width }, k) => {
+  RECORD().forEach(({ term, qual, items = [], width = Infinity, noteWidth = width }, k) => {
     const [w, h] = DOCS[k],
       at = times[k].term[0],
       on = a * ramp(t, at - 0.15, 0.4);
     tierDoc(docRight - w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
-    termRow(t, term, times[k].term, qual, times[k].qual, docRight + NAME_GAP, TIER_Y[k] - 32, {
-      align: "left",
-      inline: false,
-      width,
-      noteWidth,
-      build: true,
-      buildTerm: true,
-      alpha: a,
-    });
+    const head = termRow(
+      t,
+      term,
+      times[k].term,
+      qual,
+      times[k].qual,
+      docRight + NAME_GAP,
+      TIER_Y[k] - 32,
+      { align: "left", inline: false, width, noteWidth, build: true, buildTerm: true, alpha: a },
+    );
+    // Items stand where a qualifier's lines would, one to a line in the qualifier's size and tone, each on its words.
+    items.forEach((v, i) =>
+      nameText(v, docRight + NAME_GAP, head.bottom + TERM_STACK + i * labelSize(NOTE) * LEADING, {
+        valign: "top",
+        align: "left",
+        size: NOTE,
+        color: P.muted,
+        alpha: a * named(t, times[k].qual[i]),
+      }),
+    );
   });
 }
 
@@ -241,7 +268,7 @@ const E = {
 const EXAMINED = () =>
   L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]);
 const FIXES = () =>
-  L(["换供应商", "改生产环境里的采集任务"], ["A new vendor", "Collection job in production"]);
+  L(["换供应商", "改生产环境里的采集任务"], ["A new vendor", "A change to the collection job"]);
 export function stageReview(t, a, c) {
   const [w3, h3] = DOCS[2],
     lit = ramp(t, c.belongs - 0.15, 0.4),
@@ -332,7 +359,7 @@ export function stageReview(t, a, c) {
   link(authorX + 24, y, agentX - 26, y, { alpha: own, upto: way, width: 2.5, end: false });
   link(agentX + 26, y, stopX - 8, y, { alpha: own, upto: way, width: 2.5, end: false });
   link(lensX - r - 6, y, stopX + 8, y, { alpha: own, upto: way, width: 2.5, end: false });
-  bar(stopX, y, { alpha: own * ramp(t, c.own + 0.5, 0.2), vertical: true, length: 36 });
+  bar(stopX, y, { alpha: own * ramp(t, c.own + 0.5, 0.3), vertical: true, length: 36 });
   rejectedName(account, stopX, names, {
     valign: "top",
     alpha: own,

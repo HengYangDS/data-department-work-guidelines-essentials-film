@@ -26,7 +26,6 @@ function cuesOf(s) {
       ["组织的授权", "organizational authorization"],
       ["承诺", "commitments"],
     ]),
-    stay: cue(s, "始终留在人手里", "stay with people"),
     first2: cue(s, "开头那十页分析", "Before the ten pages"),
     pages: cue(s, "十页分析", "the ten pages"),
     decision: cue(s, "哪个决定", "which decision"),

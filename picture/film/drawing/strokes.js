@@ -202,30 +202,39 @@ export function ring(
  * along; one switched off at `until` lets its dot shrink away as it runs on, and begins no further pass. `length` is
  * the way's length in px, or a function of voice time for a way that grows or shrinks: each pass then keeps the length
  * its way had when it began, so the dot's share of the way never jumps. `offset` (voice seconds) delays the passes, to
- * stagger two flows of one figure. Returns the dot's share of the way, `q`, and its size, `size`, or null while no dot
- * shows. */
+ * stagger two flows of one figure. `passes` caps how many passes run: a cursor that runs once on its words and then
+ * rests passes 1, so it never pulls the eye back to a way already named. Returns the dot's share of the way, `q`, and
+ * its size, `size`, or null while no dot shows. */
 export const PACE = 160,
   SPAN = 0.8,
   BLANK = 0.06,
   EDGE = 0.15;
-export function flowAt(t, length, { from = null, until = null, pace = PACE, offset = 0 } = {}) {
+export function flowAt(
+  t,
+  length,
+  { from = null, until = null, pace = PACE, offset = 0, passes = Infinity } = {},
+) {
   if (from !== null && t < from) return null;
   const v = voiceTime(t),
     origin = (from === null ? 0 : voiceTime(from)) + offset,
     spanOf = (l) => Math.max(l / pace, SPAN);
   if (v < origin) return null;
   let begin = origin,
-    span;
+    span,
+    pass = 0;
   if (typeof length === "function") {
     span = spanOf(length(begin));
     while (begin + span + BLANK <= v) {
       begin += span + BLANK;
       span = spanOf(length(begin));
+      pass++;
     }
   } else {
     span = spanOf(length);
-    begin = origin + Math.floor((v - origin) / (span + BLANK)) * (span + BLANK);
+    pass = Math.floor((v - origin) / (span + BLANK));
+    begin = origin + pass * (span + BLANK);
   }
+  if (pass >= passes) return null;
   const into = v - begin;
   if (!(length > 0 || typeof length === "function") || into > span) return null;
   const edge = Math.min(EDGE, span / 2);

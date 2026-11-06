@@ -5,10 +5,10 @@
  * once shown. From 「日志」/ "the log" the kinds of statement build over the rail, one column each, named under it: the
  * log, a fact, with its check; the vendor's publication, dashed, a hypothesis, with its open question and, once someone
  * checks, the publication time on its clock; beside the hypothesis, the observation that would refute it, an eye named
- * over itself, which on 「推翻」/ "refute" is joined to the hypothesis while a dashed cross stands on it: a condition,
- * not a finding. From 「要不要换供应商」/ "Whether to change vendors" the choice joins in the third column, failure 1's
- * fork, with the decision owner who makes it under its name. Nothing shown leaves before the stage does, and no new
- * mark takes a place another has left. */
+ * over itself, which on 「推翻」/ "refute" is joined to the hypothesis: a condition, not a finding, so the hypothesis
+ * keeps only its dashed outline, and the story refutes it in 06.1. From 「要不要换供应商」/ "Whether to change vendors"
+ * the choice joins in the third column, failure 1's fork, with the decision owner who makes it under its name. Nothing
+ * shown leaves before the stage does, and no new mark takes a place another has left. */
 
 import { link } from "../../drawing/links.js";
 import { line } from "../../drawing/strokes.js";
@@ -120,7 +120,7 @@ export function stageCase(t, a, c) {
   theFact(t, a, c);
   theHypothesis(t, a, c);
   // The observation that would refute it: an eye not yet opened beside the hypothesis, named over itself on its words;
-  // on 「推翻」/ "refute" it is joined to the hypothesis and a dashed cross stands on the hypothesis.
+  // on 「推翻」/ "refute" it is joined to the hypothesis, which stays a hypothesis: nothing marks it refuted.
   const { x, r } = OBSERVATION,
     seen = a * ramp(t, c.observation - 0.15, 0.4);
   eye(x, ROW_Y, { alpha: seen, hollow: true, r });
@@ -138,18 +138,6 @@ export function stageCase(t, a, c) {
     upto: soon(t, c.refute + 0.05, 0.6),
     width: 2.5,
   });
-  if (refuted > 0.01)
-    [
-      [-1, -1, 1, 1],
-      [1, -1, -1, 1],
-    ].forEach(([x0, y0, x1, y1]) =>
-      line(COLUMNS[1] + 13 * x0, ROW_Y + 13 * y0, COLUMNS[1] + 13 * x1, ROW_Y + 13 * y1, {
-        color: P.unknown,
-        alpha: refuted,
-        width: 3.5,
-        dash: [5, 4],
-      }),
-    );
   // From 「要不要换供应商」/ "Whether to change vendors": the choice in the third column, failure 1's fork, and under it,
   // in its column, the decision owner who makes it.
   const cx = COLUMNS[2];
@@ -159,7 +147,7 @@ export function stageCase(t, a, c) {
   });
   termRow(
     t,
-    [L("换供应商", "A new vendor")],
+    [L("换供应商", "Changing vendors")],
     [c.choice],
     [L("选择", "a choice")],
     [c.isChoice],

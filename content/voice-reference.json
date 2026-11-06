@@ -63,6 +63,11 @@
           "seed": 131383,
           "text_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419",
           "spoken_sha256": "27a0d195a52719bc4abd58be0df0bd1ab2cb1f8ae5823400b6e1858ebd0f4419"
+        },
+        "2": {
+          "seed": 907445,
+          "text_sha256": "ad6d0da83c10df6d7c57609bd70e2b06989a122cd36bff57137be1828cfa9d50",
+          "spoken_sha256": "ad6d0da83c10df6d7c57609bd70e2b06989a122cd36bff57137be1828cfa9d50"
         }
       }
     },
@@ -83,9 +88,14 @@
     "05": {
       "groups": {
         "1": {
-          "seed": 115548,
-          "text_sha256": "28fbcf01783253e62dd50549a82594894d7df619db72c065cdc433130b43fb50",
-          "spoken_sha256": "28fbcf01783253e62dd50549a82594894d7df619db72c065cdc433130b43fb50"
+          "seed": 812420,
+          "text_sha256": "002783a357b9f4724c8af9904913f4ad7411ac8bf1fc1363b28411fb18affcc5",
+          "spoken_sha256": "002783a357b9f4724c8af9904913f4ad7411ac8bf1fc1363b28411fb18affcc5"
+        },
+        "2": {
+          "seed": 812420,
+          "text_sha256": "6409b04c9cb99e282a63948b1e1d8d8121fa4d3d34c61bd9c86e6adf197d71c1",
+          "spoken_sha256": "6409b04c9cb99e282a63948b1e1d8d8121fa4d3d34c61bd9c86e6adf197d71c1"
         }
       }
     },
@@ -119,15 +129,15 @@
     },
     "01": {
       "groups": {
-        "1": {
-          "seed": 107625,
-          "text_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1",
-          "spoken_sha256": "e776d78d56327be47cc710acb63112a10e0417fc73fb68967ee21c73d12fe6c1"
-        },
         "2": {
           "seed": 242248,
           "text_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def",
           "spoken_sha256": "a244cf19dbe776315e3531dfd20243e8a14e2990cc9bd2610f914be1145a7def"
+        },
+        "1": {
+          "seed": 828254,
+          "text_sha256": "4f301a6dee115d5637d2b98fa1012f5a0d592332fa885fd1ccfa756c96972fa6",
+          "spoken_sha256": "4f301a6dee115d5637d2b98fa1012f5a0d592332fa885fd1ccfa756c96972fa6"
         }
       }
     },
@@ -146,6 +156,11 @@
           "seed": 218496,
           "text_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8",
           "spoken_sha256": "254c41c34a024377983f0e6635b30cc57060e67cfc050ca0e15e28bc901e5da8"
+        },
+        "3": {
+          "seed": 828259,
+          "text_sha256": "a53ea128295404f65b3e7d4f7f700fcb3c598a12c60d9221ac7fcc73de119f74",
+          "spoken_sha256": "a53ea128295404f65b3e7d4f7f700fcb3c598a12c60d9221ac7fcc73de119f74"
         }
       }
     }

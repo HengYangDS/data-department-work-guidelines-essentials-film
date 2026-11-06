@@ -2,8 +2,9 @@
  * title, the two kinds stand apart, joined under their one name: authority to act, a seal, at the left, and authority
  * about facts, a record with its check, at the right; a divider rises between them; the left kind is named with what
  * it answers. B (03.3, from its first words, 「它有先后」/ "Law"): authority to act's order of sources (order.js). C
- * (03.4): the two kinds again, the right one now named with what it answers; from 「要看原始记录」/ "primary records"
- * what can establish a fact, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
+ * (03.4): the two kinds again, the right one now named with what it answers; from 「能重复的观察」/ "repeatable
+ * observations" what can establish a fact, the primary record and the repeatable observation arriving together so the
+ * stage opens balanced, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
  * (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for each other (close.js).
  * Each stage cuts in on the first words of a thought, except C's second, whose stage names nothing the first named. */
 
@@ -35,7 +36,7 @@ function cuesOf(s) {
     order: cue(s, "有先后", "Law"),
     ranks: [
       cue(s, "最先是法律", "Law"),
-      cue(s, "才是这件事", "the explicit decision"),
+      cue(s, "才是这件事", "what the decision owner"),
       cue(s, "有效的契约", "contracts"),
       cue(s, "工作计划", "Plans"),
     ],
@@ -104,8 +105,8 @@ scenes["03"] = function (s, t) {
   const c = cuesOf(s);
   const A = stageOut(t, c.opens),
     B = stageIn(t, c.opens) * stageOut(t, c.another),
-    C1 = stageIn(t, c.another) * stageOut(t, c.primary),
-    C2 = stageIn(t, c.primary) * stageOut(t, c.night),
+    C1 = stageIn(t, c.another) * stageOut(t, c.observe),
+    C2 = stageIn(t, c.observe) * stageOut(t, c.night),
     D = stageIn(t, c.night) * stageOut(t, c.meeting),
     E = stageIn(t, c.meeting) * stageOut(t, c.neither),
     F = stageIn(t, c.neither);

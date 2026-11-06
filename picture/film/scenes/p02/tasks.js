@@ -71,8 +71,10 @@ const TASK_NAME = () => L("一项任务", "A task"),
   REPORTS = () => L("三份报告", "Three reports"),
   COLLEAGUE = () => L("那位同事", "The colleague"),
   ONLY_FIRST = () => L("只做到了第一件", "only the first");
-/* Each outcome's term and the qualifier set under it, its parts said in turn. A qualifier wraps between its parts at
- * the width of the widest term, so each outcome's name keeps to its column. */
+/* Each outcome's term and the qualifier set under it, its parts said in turn. An English qualifier wraps between its
+ * parts at the width of the widest term, so each outcome's name keeps to its column; a Chinese one stands on one line,
+ * since its parts are one clause, 更早认出来，或者处理得更好, whose break after its comma would leave the first line
+ * short of the engine's wrapping rule, and the columns leave it room. */
 const OUTCOMES = () => [
   [[L("问题解决掉", "Problem resolved")], []],
   [[L("判断检验过", "Judgment tested")], [L("成立的条件", "its conditions stated")]],
@@ -81,7 +83,8 @@ const OUTCOMES = () => [
     L(["更早认出来", "，或者处理得更好"], ["sooner recognition,", " better handling"]),
   ],
 ];
-const noteWidth = () => Math.max(...OUTCOMES().map(([term]) => measure(term.join(""))));
+const noteWidth = () =>
+  L(Infinity, Math.max(...OUTCOMES().map(([term]) => measure(term.join("")))));
 /* Half the width of an outcome's name: its term or its widest qualifier line. */
 function nameHalf([term, qual]) {
   const lineWidth = (line) => measure(line.map(([, v]) => v).join(""), NOTE);

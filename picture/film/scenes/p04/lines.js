@@ -4,10 +4,9 @@
  * boundaries build one list, each a small field with its own side lit, its name, and what it rules out or covers set
  * under it in key words, each part on its own words. The field holds the whole list from the cut, so every state of
  * the list stands on the frame's axis and no row moves as wider rows arrive; the field closes as its fourth side
- * lights. C, from 「在这四条底线之内」/ "Inside them": the field large on the frame's axis, lit, named over itself at the
- * same place, and the two cases in a column under it, each with its point inside the field, the case being said at
- * full ink: a point moving freely inside, and a point halted short of a side, ringed, its way rising to the field's
- * top. */
+ * lights. C, from 「在这四条底线之内」/ "Inside these boundaries": the field large on the frame's axis, lit, named over
+ * itself at the same place, and the two cases inside it, each named at its point: a point moving freely, named 自主 /
+ * "Autonomy", and a point halted short of a side, the three things done at that edge named under it on their words. */
 
 import { line, measure, ring } from "../../drawing/strokes.js";
 import { dot } from "../../drawing/strokes.js";
@@ -96,58 +95,65 @@ export function stageLines(t, a, c) {
   });
 }
 
-/* C: the field 400 across, lit, on the frame's axis, its top where A's and B's stood; the cases' names in a column
- * under it on the same axis, `pitch` apart. The column grows downward, so every state stays centred across the frame
- * and the field never moves: the field stands alone for nearly two seconds in Chinese, longer than a build-up may stand
- * off centre, so the cases cannot take a column beside it. */
-const C = { y: TOP + 200, s: 400, pitch: 64 };
-const CASES = () =>
-  L(
-    ["自主、探索和创造", "停下来，讲出来，往上报"],
-    ["Autonomy, exploration, creative work", "Halt, disclosure, escalation"],
-  );
+/* C: the field 400 across, lit, on the frame's axis, its top where A's and B's stood, and the two cases inside it, each
+ * named at its own point rather than in a clause the caption already says, so every name keeps to the field. A point
+ * moves freely about the field's upper left, named 自主 / "Autonomy" just under where it moves. A second point comes to
+ * a halt short of the right side, the edge point, and the three things done there hang under it as one list, each on
+ * its own words, as its mark acts: it stops, its ring lights as it is made visible, and its way rises to the field's
+ * top as it is escalated. The case being said stands at full ink. The edge list keeps the right side's gap, so it never
+ * stands on or past the boundary it names the stop at. */
+const C = { y: TOP + 200, s: 400, pitch: 44, roam: [70, 60], reach: [60, 45], approach: 0.55 };
+const FREE = () => L("自主", "Autonomy");
+/* The English names begin alike in case, as the names of one list do. */
+const EDGE = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
 export function stageCases(t, a, c) {
-  const names = CASES(),
-    x = 960,
+  const x = 960,
     right = x + C.s / 2,
     top = C.y - C.s / 2,
-    under = C.y + C.s / 2 + NAME_GAP,
     vt = voiceTime(t),
-    ats = [c.free, c.halt],
-    level = (i) => listLevel(t, ats, i);
+    edge = c.edge,
+    // The second point sets off toward the side as the edge case is said, but no sooner than `C.approach` s before
+    // the stop is named under it, so it never stands waiting for its name.
+    approach = Math.max(c.near, edge[0] - C.approach),
+    cases = [c.free, approach],
+    level = (i) => listLevel(t, cases, i);
   field(x, C.y, C.s, C.s, { alpha: a, lit: [1, 1, 1, 1] });
   nameText(L("四条底线", "Four boundaries"), x, top - NAME_GAP, {
     valign: "bottom",
     alpha: a * named(t, c.inside),
   });
-  // Inside them: a point moving freely about the field's upper left.
-  const free = a * ramp(t, c.inside - 0.15, 0.4);
-  dot(x - 70 + 60 * Math.sin(vt * 0.9), C.y - 60 + 45 * Math.sin(vt * 1.3), 8, {
+  // Inside these boundaries: a point moving freely about the field's upper left, named under where it moves.
+  const free = a * ramp(t, c.inside - 0.15, 0.4),
+    [rx, ry] = [x - C.roam[0], C.y - C.roam[1]];
+  dot(rx + C.reach[0] * Math.sin(vt * 0.9), ry + C.reach[1] * Math.sin(vt * 1.3), 8, {
     color: P.ink,
     alpha: free * level(0),
   });
-  nameText(names[0], x, under, {
+  nameText(FREE(), rx, ry + C.reach[1] + 8 + NAME_GAP, {
     valign: "top",
-    alpha: a * listIn(t, ats, 0),
-    set: "cases",
+    alpha: a * listIn(t, cases, 0),
   });
-  // Near a side: a point halts short of the right side, is ringed, and its way rises to the field's top.
-  const near = a * ramp(t, c.near - 0.15, 0.4),
-    halted = travel(t, c.near + 0.05, 0.9),
+  // Near a side: a point comes to a halt short of the right side; it is ringed as it is made visible, and its way
+  // rises to the field's top as it is escalated.
+  const near = a * ramp(t, approach - 0.15, 0.4),
+    halted = travel(t, approach + 0.05, 0.9),
     hx = mix(x + 40, right - 34, halted),
     hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
   ring(hx, hy, 17, {
     color: P.authority,
-    alpha: near * level(1) * ramp(t, c.halt - 0.1, 0.4),
+    alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3,
   });
-  const rise = soon(t, c.halt + 0.4, 0.6);
+  const rise = soon(t, edge[2] + 0.05, 0.6);
   if (rise > 0)
     line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
-  nameText(names[1], x, under + C.pitch, {
-    valign: "top",
-    alpha: a * listIn(t, ats, 1),
-    set: "cases",
-  });
+  EDGE().forEach((v, i) =>
+    nameText(v, right - NAME_GAP, hy + 17 + NAME_GAP + i * C.pitch, {
+      valign: "top",
+      align: "right",
+      alpha: a * level(1) * listIn(t, edge, i),
+      set: "edge",
+    }),
+  );
 }
