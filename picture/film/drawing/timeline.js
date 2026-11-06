@@ -88,9 +88,10 @@ function geometry(x, y, scale, hours, lateBy) {
  * the card, or beside it at its right, which keeps the compact form of the top band below the head band; it moves with
  * the card as the card lands. The two hours read as a measure: their name hangs one gap below their end ticks, and the
  * due hour and the arrival may be named at its two ends, on the measure's line, where the card leaves no room over
- * the arrival. Without the measure, the delay's name hangs under the rail. */
+ * the arrival. The delay's name takes the measure's place from its first frame, whether or not the measure has begun
+ * to draw on, so a name said just before its measure never steps down to it. */
 const SIDES = { axis: "top", due: "top", arrival: "top", card: "top", late: "bottom" };
-function anchor(g, slot, side, { measured = true, lift = 0 } = {}) {
+function anchor(g, slot, side, { lift = 0 } = {}) {
   const over = g.y - g.tick - NAME_GAP,
     card = { ...g.card, top: g.card.top - lift, bottom: g.card.bottom - lift },
     s = g.span,
@@ -105,9 +106,7 @@ function anchor(g, slot, side, { measured = true, lift = 0 } = {}) {
     "card:top": [(card.left + card.right) / 2, card.top - NAME_GAP, "center", "bottom"],
     "card:right": [card.right + NAME_GAP, (card.top + card.bottom) / 2, "left", "middle"],
     "late:top": [middle, over, "center", "bottom"],
-    "late:bottom": measured
-      ? [middle, s.y + s.tick + NAME_GAP, "center", "top"]
-      : [middle, g.y + g.rail + NAME_GAP, "center", "top"],
+    "late:bottom": [middle, s.y + s.tick + NAME_GAP, "center", "top"],
   };
   const place = places[`${slot}:${side}`];
   if (!place) throw Error(`The timeline has no place for its ${slot} name at the ${side}`);
@@ -258,7 +257,7 @@ export function lastNight(
     const n = nameOf(names[slot]);
     if (!n?.v) continue;
     const { v, alpha: shown = 1, side = SIDES[slot], ...o } = n,
-      place = anchor(g, slot, side, { measured: S.upto > 0, lift });
+      place = anchor(g, slot, side, { lift });
     placed[slot] = nameBox(v, place, o);
     nameText(v, place[0], place[1], {
       ...o,
@@ -318,7 +317,7 @@ export function lastNightExtent(
     const n = nameOf(names[slot]);
     if (!n?.v) continue;
     const { v, side = SIDES[slot], ...o } = n;
-    boxes.push(nameBox(v, anchor(g, slot, side, { measured: on(late) }), o));
+    boxes.push(nameBox(v, anchor(g, slot, side), o));
   }
   return union(boxes);
 }

@@ -13,7 +13,9 @@ import { beats, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
+import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
+import { voiceTime } from "../../timing/pauses.js";
 import { centring, early, flowOf, openMark } from "../p05/kit.js";
 
 /* A: two lanes at 0.8 sharing the agreed time. The upper lane is last night, its two hours lit and named over them;
@@ -86,35 +88,56 @@ export function lanesStage(s, t, c, g0) {
   nameText(L("修好了", "Fixed"), A.stamp, sy + 40 + NAME_GAP, { valign: "top", alpha: fixed });
 }
 
-/* A2: the aim of learning, named over the lane of the next attempt, three strands drawn as one stroke from the first
- * words; each gain then acts on its strand, one list named under it: the next failure found earlier (its detection
- * moves back along the strand, its old place a muted trace), judged more easily (a decision's doubt clears), and less
- * manual rescue (a long band shrinks). A pile of files is refused under them. A point runs the first strand. */
-const G = { x0: 700, x1: 1220, ys: [360, 480, 600] };
+/* A2: the aim of learning and the gains it aims at, which hang from one spine at their left: the spine stands from the
+ * aim's words, its two ends quiet points, named over its top by the aim's name set from its edge, and each gain draws
+ * its own strand from it on its own words, the spine and the strands drawn so far one stroke, so the aims are one mark
+ * under one name. Each gain then acts on its strand, one list named under it: the next failure found earlier (its
+ * detection moves back along the strand, its old place a muted trace), judged more easily (a decision's doubt clears),
+ * and less manual rescue (a long band shrinks). A pile of files is refused under them. A point runs the first strand
+ * once it is drawn whole. The first strand and the next failure on it come where the first gain's words begin: on
+ * "find the next failure earlier", and on 「下一次故障」 in Chinese, which names the failure before it is found
+ * earlier. */
+const G = { x0: 700, x1: 1220, ys: [360, 480, 600], reach: 24 };
 export function aimStage(s, t, c, g) {
   const ats = c.gains,
+    starts = [cue(s, "下一次故障", "find the next failure earlier"), ats[1], ats[2]],
     [y0, y1, y2] = G.ys,
-    mid = (G.x0 + G.x1) / 2;
-  nameText(L("学习的目的", "The aim of learning"), mid, y0 - 34 - NAME_GAP, {
+    mid = (G.x0 + G.x1) / 2,
+    top = y0 - G.reach,
+    bottom = y2 + G.reach,
+    grown = starts.map((at) => soon(t, at - 0.15, 0.8));
+  nameText(L("学习的目的", "The aim of learning"), G.x0, y0 - 34 - NAME_GAP, {
+    align: "left",
     valign: "bottom",
     alpha: g * early(t, c.first1b, c.aim),
   });
   stroke(
-    () =>
-      G.ys.forEach((y) => {
+    () => {
+      ctx.moveTo(G.x0, top);
+      ctx.lineTo(G.x0, bottom);
+      G.ys.forEach((y, i) => {
+        if (grown[i] <= 0) return;
         ctx.moveTo(G.x0, y);
-        ctx.lineTo(G.x1, y);
-      }),
+        ctx.lineTo(mix(G.x0, G.x1, grown[i]), y);
+      });
+    },
     { color: P.line, alpha: g, width: 3.5 },
   );
-  const q = flowOf(t, 0.3);
-  dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
-  // Found earlier: the failure stands; its detection moves earlier, leaving a muted trace where it was.
-  const f = g * ramp(t, ats[0] - 0.15, 0.4),
+  [top, bottom].forEach((y) => dot(G.x0, y, 4.5, { color: P.line, alpha: g }));
+  // The point's first pass starts at the spine as the first strand is drawn whole, so it enters at its start.
+  const drawn = starts[0] - 0.15 + 0.8;
+  if (t >= drawn) {
+    const q = ((voiceTime(t) - voiceTime(drawn)) * 0.3) % 1;
+    dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
+  }
+  // Found earlier: the next failure stands on its words; on the gain's words its detection moves earlier, leaving a
+  // muted trace where it was.
+  const f = g * ramp(t, starts[0] - 0.15, 0.4),
+    d = g * ramp(t, ats[0] - 0.15, 0.4),
     early0 = soon(t, ats[0] + 0.2, 0.9);
   dot(1020, y0, 8, { color: P.unknown, alpha: f });
-  ring(1110, y0, 14, { color: P.muted, alpha: f * early0 * 0.6, width: 2 });
-  ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: f, width: 3 });
+  ring(1110, y0, 14, { color: P.muted, alpha: d * early0 * 0.6, width: 2 });
+  ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: d, width: 3 });
   // Judged more easily: an open decision whose doubt clears.
   const j = g * ramp(t, ats[1] - 0.15, 0.4),
     clear = soon(t, ats[1] + 0.2, 0.6);

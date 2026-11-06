@@ -1176,7 +1176,7 @@ function geometry(x, y, scale, hours, lateBy) {
   };
 }
 var SIDES = { axis: "top", due: "top", arrival: "top", card: "top", late: "bottom" };
-function anchor(g, slot, side, { measured = true, lift = 0 } = {}) {
+function anchor(g, slot, side, { lift = 0 } = {}) {
   const over = g.y - g.tick - NAME_GAP, card = { ...g.card, top: g.card.top - lift, bottom: g.card.bottom - lift }, s = g.span, middle = (s.left + s.right) / 2;
   const places = {
     "axis:top": [g.left, over, "left", "bottom"],
@@ -1188,7 +1188,7 @@ function anchor(g, slot, side, { measured = true, lift = 0 } = {}) {
     "card:top": [(card.left + card.right) / 2, card.top - NAME_GAP, "center", "bottom"],
     "card:right": [card.right + NAME_GAP, (card.top + card.bottom) / 2, "left", "middle"],
     "late:top": [middle, over, "center", "bottom"],
-    "late:bottom": measured ? [middle, s.y + s.tick + NAME_GAP, "center", "top"] : [middle, g.y + g.rail + NAME_GAP, "center", "top"]
+    "late:bottom": [middle, s.y + s.tick + NAME_GAP, "center", "top"]
   };
   const place = places[`${slot}:${side}`];
   if (!place) throw Error(`The timeline has no place for its ${slot} name at the ${side}`);
@@ -1287,7 +1287,7 @@ function lastNight(x, y, scale = 1, {
   for (const slot of Object.keys(SIDES)) {
     const n = nameOf(names[slot]);
     if (!n?.v) continue;
-    const { v, alpha: shown = 1, side = SIDES[slot], ...o } = n, place = anchor(g, slot, side, { measured: S2.upto > 0, lift });
+    const { v, alpha: shown = 1, side = SIDES[slot], ...o } = n, place = anchor(g, slot, side, { lift });
     placed[slot] = nameBox(v, place, o);
     nameText(v, place[0], place[1], {
       ...o,
@@ -1335,7 +1335,7 @@ function lastNightExtent(scale = 1, {
     const n = nameOf(names[slot]);
     if (!n?.v) continue;
     const { v, side = SIDES[slot], ...o } = n;
-    boxes.push(nameBox(v, anchor(g, slot, side, { measured: on(late) }), o));
+    boxes.push(nameBox(v, anchor(g, slot, side), o));
   }
   return union(boxes);
 }
@@ -2707,16 +2707,21 @@ function station(x, y, alpha) {
   dot(x, y, STATION_R, { color: P.ground, alpha });
   ring(x, y, STATION_R, { color: P.ink, alpha, width: 3 });
 }
-var TOP = 300;
+var TOP = 418;
 var DIVIDER = [TOP - 56, TOP + 56];
 var CONFLICT_Y = DIVIDER[1] + 56;
-var MID = 590;
+var STOPS = [TOP + 114, TOP + 90];
+var MID = STOPS[0] + 30 + 52;
 var RAIL3 = MID + 60;
 var MID_NAMES = RAIL3 + NAME_GAP;
 var SIDES2 = [600, 1320];
 var BARS = [944, 976];
 function stageApart(t, a, c) {
-  line(SIDES2[0] - 60, RAIL3, SIDES2[1] + 60, RAIL3, { color: P.line, alpha: a, width: 2.5 });
+  line(SIDES2[0] - 60, RAIL3, SIDES2[1] + 60, RAIL3, {
+    color: P.line,
+    alpha: a * ramp(t, c.falseTrue - 0.15, 0.4),
+    width: 2.5
+  });
   seal(SIDES2[0], TOP, 46, { alpha: a });
   recordMark(SIDES2[1], TOP, 88, 112, { alpha: a });
   [
@@ -2756,7 +2761,7 @@ function stageApart(t, a, c) {
     alpha: a * named(t, c.substitute),
     mark: ramp(t, c.substitute + 0.05, 0.3)
   });
-  const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4), stop = TOP + 150;
+  const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4), [stop, stop2] = STOPS;
   line(SIDES2[0], TOP + 50, SIDES2[0], mix(TOP + 50, stop - 6, soon(t, c.falseTrue + 0.05, 0.5)), {
     alpha: falseOn,
     width: 2.5
@@ -2768,7 +2773,6 @@ function stageApart(t, a, c) {
     alpha: a * named(t, c.falseTrue)
   });
   const actOn = a * ramp(t, c.permission - 0.15, 0.4);
-  const stop2 = stop - 36;
   line(SIDES2[1], TOP + 60, SIDES2[1], mix(TOP + 60, stop2 - 6, soon(t, c.permission + 0.05, 0.5)), {
     alpha: actOn,
     width: 2.5
@@ -2809,7 +2813,7 @@ function stageApart(t, a, c) {
   });
   const refused = [c.alter, c.oneSide];
   L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach(
-    (v, i) => rejectedName(v, 960, MID_NAMES + 58 + i * 44, {
+    (v, i) => rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
       valign: "top",
       alpha: a * listIn(t, refused, i),
       mark: ramp(t, refused[i] + 0.05, 0.3),
@@ -2819,28 +2823,32 @@ function stageApart(t, a, c) {
 }
 
 // picture/film/scenes/p03/facts.js
-var ROW_Y3 = 395;
-var RECORDS_X = [840, 1080];
-var STATE_Y = 518;
-var BAR_Y = 604;
-var JOIN_Y = 640;
-var LEADS_Y = 700;
+var ROW_Y3 = 410;
+var RECORD = [110, 140];
+var EYE_R = 46;
+var NAMES_Y = ROW_Y3 + RECORD[1] / 2 + NAME_GAP;
+var STATE_Y = NAMES_Y + 49;
+var BAR_Y = STATE_Y + 66;
+var JOIN_Y = STATE_Y + 100;
+var LEADS_Y = JOIN_Y + 56;
 var LEAD_HALF = 22;
 var LEAD_GAP = 44;
+var BRACKET_CLEAR = 16;
 var STATE = () => L(["来源、", "时间、", "对象、", "范围"], ["Source, ", "time, ", "subject, ", "scope"]);
 function leadPlaces() {
   const widths = LEAD_ORDER().map((k) => Math.max(2 * LEAD_HALF, measure(L(...LEADS[k]), NOTE))), pitch = Math.max(130, ...widths.slice(1).map((w, i) => (widths[i] + w) / 2 + LEAD_GAP)), middle = (widths.length - 1) / 2;
   return { xs: widths.map((_, i) => 960 + (i - middle) * pitch), widths };
 }
 function stageFacts(t, a, c) {
-  const records = a * ramp(t, c.primary - 0.15, 0.4), observed = a * ramp(t, c.observe - 0.15, 0.4), names = ROW_Y3 + 52 + NAME_GAP;
-  recordMark(RECORDS_X[0], ROW_Y3, 84, 104, { alpha: records });
-  nameText(L("原始记录", "Primary records"), RECORDS_X[0], names, {
+  const { xs, widths } = leadPlaces();
+  const records = a * ramp(t, c.primary - 0.15, 0.4), observed = a * ramp(t, c.observe - 0.15, 0.4);
+  recordMark(xs[0], ROW_Y3, ...RECORD, { alpha: records });
+  nameText(L("原始记录", "Primary records"), xs[0], NAMES_Y, {
     valign: "top",
     alpha: a * named(t, c.primary)
   });
-  eye(RECORDS_X[1], ROW_Y3, { alpha: observed, repeat: 1, r: 34 });
-  nameText(L("能重复的观察", "Observations"), RECORDS_X[1], names, {
+  eye(xs.at(-1), ROW_Y3, { alpha: observed, repeat: 1, r: EYE_R });
+  nameText(L("能重复的观察", "Observations"), xs.at(-1), NAMES_Y, {
     valign: "top",
     alpha: a * named(t, c.observe)
   });
@@ -2851,8 +2859,11 @@ function stageFacts(t, a, c) {
     build: true,
     alpha: a
   });
-  const { xs, widths } = leadPlaces();
-  line(xs[0], JOIN_Y, xs.at(-1), JOIN_Y, { color: P.line, alpha: a, width: 2.5 });
+  line(xs[0], JOIN_Y, xs.at(-1), JOIN_Y, {
+    color: P.line,
+    alpha: a * ramp(t, c.leads[0] - 0.15, 0.4),
+    width: 2.5
+  });
   LEAD_ORDER().forEach((k, i) => {
     const on2 = a * ramp(t, c.leads[i] - 0.15, 0.4);
     line(xs[i], JOIN_Y, xs[i], LEADS_Y - LEAD_HALF - 4, { color: P.line, alpha: on2, width: 2.5 });
@@ -2877,9 +2888,9 @@ function stageFacts(t, a, c) {
     const q = voiceTime(t) * 0.35 % 1;
     flowDot(960, mix(JOIN_Y, BAR_Y + 8, q), 5, q, { color: P.line, alpha: a });
   }
-  const under = LEADS_Y + LEAD_HALF + 16 + 25 + 14, on = a * soon(t, c.onlyLeads - 0.1, 0.5);
+  const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16, on = a * soon(t, c.onlyLeads - 0.1, 0.5);
   if (on > 0.01) {
-    const half = Math.max(...xs.map((x, i) => Math.abs(x - 960) + widths[i] / 2));
+    const half = Math.max(...xs.map((x, i) => Math.abs(x - 960) + widths[i] / 2)) + BRACKET_CLEAR;
     stroke(
       () => {
         ctx.moveTo(960 - half, under - 8);
@@ -2899,9 +2910,9 @@ function stageFacts(t, a, c) {
 // picture/film/scenes/p03/kinds.js
 var KINDS = { left: 560, right: 1360, y: 490, name: 350 };
 var SEAL_R = 58;
-var RECORD = [110, 140];
+var RECORD2 = [110, 140];
 function twoKinds(s, t, a, c, { facts = false } = {}) {
-  const g = a * clearOfTitle(s, t, KINDS.name - 30), on = g * ramp(t, s.voice_start - 0.4, 0.35), fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD[1] / 2) + NAME_GAP;
+  const g = a * clearOfTitle(s, t, KINDS.name - 30), on = g * ramp(t, s.voice_start - 0.4, 0.35), fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD2[1] / 2) + NAME_GAP;
   nameText(L("两种依据", "Two kinds of authority"), 960, KINDS.name, {
     valign: "bottom",
     alpha: g * (facts ? 1 : named(t, c.two) * (1 - ramp(t, c.act - 0.15, 0.4)))
@@ -2917,12 +2928,12 @@ function twoKinds(s, t, a, c, { facts = false } = {}) {
       ctx.moveTo(KINDS.left, KINDS.y - SEAL_R - 4);
       ctx.lineTo(KINDS.left, joint);
       ctx.lineTo(KINDS.right, joint);
-      ctx.lineTo(KINDS.right, KINDS.y - RECORD[1] / 2 - 4);
+      ctx.lineTo(KINDS.right, KINDS.y - RECORD2[1] / 2 - 4);
     },
     { color: P.line, alpha: on, width: 2.5 }
   );
   seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
-  recordMark(KINDS.right, KINDS.y, ...RECORD, { alpha: on });
+  recordMark(KINDS.right, KINDS.y, ...RECORD2, { alpha: on });
   const rise = facts ? 1 : soon(t, c.apart + 0.05, 0.6);
   if (rise > 0)
     line(960, KINDS.y + 110, 960, KINDS.y + 110 - 190 * rise, {
@@ -3374,7 +3385,7 @@ var WORK = () => L(
     }
   ]
 );
-var RECORD2 = () => L(
+var RECORD3 = () => L(
   [
     { term: ["一次讲清"], qual: ["结论、", "依据、", "做法"] },
     { term: ["现有的工作记录"], qual: ["问题、", "方案、", "做法、", "验收"] },
@@ -3438,7 +3449,7 @@ function spineX2(c) {
       Math.max(top, HEAD_GAP + measure(head.right))
     ],
     ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
-    ...RECORD2().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
+    ...RECORD3().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
   ].sort((p, q) => p[0] - q[0]);
   let left = 0, right = 0;
   const offsets = parts.map(([, l, r]) => {
@@ -3480,7 +3491,7 @@ function stageLadder(t, a, c) {
   );
   dot(x, marked, 6, { color: P.authority, alpha: a * ramp(t, c.tiers[0] - 0.15, 0.4) });
   const docRight = x + DOC_RIGHT, times = recordTimes(c);
-  RECORD2().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
+  RECORD3().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
     const [w, h] = DOCS[k], at2 = times[k].term[0], on = a * ramp(t, at2 - 0.15, 0.4);
     tierDoc(docRight - w / 2, TIER_Y[k], w, h, { alpha: on, rows: 2 + k });
     termRow(t, term, times[k].term, qual, times[k].qual, docRight + NAME_GAP, TIER_Y[k] - 32, {
@@ -5321,26 +5332,36 @@ function lanesStage(s, t, c, g0) {
   });
   nameText(L("修好了", "Fixed"), A4.stamp, sy + 40 + NAME_GAP, { valign: "top", alpha: fixed });
 }
-var G = { x0: 700, x1: 1220, ys: [360, 480, 600] };
+var G = { x0: 700, x1: 1220, ys: [360, 480, 600], reach: 24 };
 function aimStage(s, t, c, g) {
-  const ats = c.gains, [y0, y1, y2] = G.ys, mid = (G.x0 + G.x1) / 2;
-  nameText(L("学习的目的", "The aim of learning"), mid, y0 - 34 - NAME_GAP, {
+  const ats = c.gains, starts = [cue(s, "下一次故障", "find the next failure earlier"), ats[1], ats[2]], [y0, y1, y2] = G.ys, mid = (G.x0 + G.x1) / 2, top = y0 - G.reach, bottom = y2 + G.reach, grown = starts.map((at2) => soon(t, at2 - 0.15, 0.8));
+  nameText(L("学习的目的", "The aim of learning"), G.x0, y0 - 34 - NAME_GAP, {
+    align: "left",
     valign: "bottom",
     alpha: g * early(t, c.first1b, c.aim)
   });
   stroke(
-    () => G.ys.forEach((y) => {
-      ctx.moveTo(G.x0, y);
-      ctx.lineTo(G.x1, y);
-    }),
+    () => {
+      ctx.moveTo(G.x0, top);
+      ctx.lineTo(G.x0, bottom);
+      G.ys.forEach((y, i) => {
+        if (grown[i] <= 0) return;
+        ctx.moveTo(G.x0, y);
+        ctx.lineTo(mix(G.x0, G.x1, grown[i]), y);
+      });
+    },
     { color: P.line, alpha: g, width: 3.5 }
   );
-  const q = flowOf2(t, 0.3);
-  dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
-  const f = g * ramp(t, ats[0] - 0.15, 0.4), early0 = soon(t, ats[0] + 0.2, 0.9);
+  [top, bottom].forEach((y) => dot(G.x0, y, 4.5, { color: P.line, alpha: g }));
+  const drawn = starts[0] - 0.15 + 0.8;
+  if (t >= drawn) {
+    const q = (voiceTime(t) - voiceTime(drawn)) * 0.3 % 1;
+    dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
+  }
+  const f = g * ramp(t, starts[0] - 0.15, 0.4), d = g * ramp(t, ats[0] - 0.15, 0.4), early0 = soon(t, ats[0] + 0.2, 0.9);
   dot(1020, y0, 8, { color: P.unknown, alpha: f });
-  ring(1110, y0, 14, { color: P.muted, alpha: f * early0 * 0.6, width: 2 });
-  ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: f, width: 3 });
+  ring(1110, y0, 14, { color: P.muted, alpha: d * early0 * 0.6, width: 2 });
+  ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: d, width: 3 });
   const j = g * ramp(t, ats[1] - 0.15, 0.4), clear = soon(t, ats[1] + 0.2, 0.6);
   diamond(mid, y1, 20, { color: P.authority, alpha: j, solid: clear > 0.5 });
   openMark2(mid, y1, 28, { alpha: j * (1 - clear) });

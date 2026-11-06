@@ -3,11 +3,11 @@
  * who decides and which facts are needed hang as one list; when it ends, a station from which, either, the two empty
  * seats of failure 3 fill with a decision and with the person who does what by when, or a branch ends in an open
  * question, what is still missing. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for its one
- * thought: the two kinds apart at the top, each named with what it answers, and under them a rail on which the
- * outcomes will stand; a divider rises between the two kinds, each one's way toward the other stopping at a bar beside
- * it; the seal's way to a false fact and the record's way to an action each stop at a bar; when the two conflict, the
- * divider runs on down to the conflict, between them, and its way runs down to a report of the conflict and its
- * impact, under which the two ways it must not take are refused. */
+ * thought: the two kinds apart at the top, each named with what it answers; a divider rises between the two kinds,
+ * each one's way toward the other stopping at a bar beside it; the seal's way to a false fact and the record's way to
+ * an action each stop at a bar, over a rail drawn with the false fact on which the outcomes stand; when the two
+ * conflict, the divider runs on down to the conflict, between them, and its way runs down to a report of the conflict
+ * and its impact, under which the two ways it must not take are refused. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
@@ -131,21 +131,29 @@ function station(x, y, alpha) {
 
 /* F's places: the kinds on the top row, each named beside itself at its outer side; the divider between them, named
  * over itself, and the conflict under it; the false fact, the report and the action over one rail, their names on one
- * baseline under it, and the refusals the report keeps under its name. The rail stands whole in the line tone from the
- * stage's first frame, as the trust chain's does, so the picture already reaches below the frame's middle while the two
- * kinds stand alone on the top row, and nothing has to move to make room for what comes under them. */
-const TOP = 300,
+ * baseline under it, and the refusals the report keeps under its name. The rail is drawn whole with the first outcome,
+ * the false fact, on its words. The stage stands once, low enough that the two kinds alone on the top row stand within
+ * the reviewers' limit of the content centre two seconds into the thought, and short enough that the whole thought's
+ * picture stays balanced on it: the seal's way stops at a bar 114 px under the kinds' row and the record's at 90 px,
+ * and the outcomes stand 30 px under the seal's bar, so nothing has to move to make room for what comes under the
+ * kinds. */
+const TOP = 418,
   DIVIDER = [TOP - 56, TOP + 56],
   /* The conflict stands far enough under the kinds' ways that its name, beside it, names it and not them. */
   CONFLICT_Y = DIVIDER[1] + 56,
-  MID = 590,
+  STOPS = [TOP + 114, TOP + 90],
+  MID = STOPS[0] + 30 + 52,
   RAIL = MID + 60,
   MID_NAMES = RAIL + NAME_GAP,
   SIDES = [600, 1320],
   BARS = [944, 976];
 export function stageApart(t, a, c) {
-  // The two kinds on the top row and the outcomes' rail under them stand from the stage's first frame.
-  line(SIDES[0] - 60, RAIL, SIDES[1] + 60, RAIL, { color: P.line, alpha: a, width: 2.5 });
+  // The two kinds on the top row stand from the stage's first frame; the outcomes' rail is drawn with the false fact.
+  line(SIDES[0] - 60, RAIL, SIDES[1] + 60, RAIL, {
+    color: P.line,
+    alpha: a * ramp(t, c.falseTrue - 0.15, 0.4),
+    width: 2.5,
+  });
   seal(SIDES[0], TOP, 46, { alpha: a });
   recordMark(SIDES[1], TOP, 88, 112, { alpha: a });
   // Each kind keeps the whole name it has had since 03.2 and 03.4, its term and what it answers, centred on its row.
@@ -192,7 +200,7 @@ export function stageApart(t, a, c) {
   });
   // Authority to act cannot make a false fact true: the seal's way down to it stops at a bar.
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4),
-    stop = TOP + 150;
+    [stop, stop2] = STOPS;
   line(SIDES[0], TOP + 50, SIDES[0], mix(TOP + 50, stop - 6, soon(t, c.falseTrue + 0.05, 0.5)), {
     alpha: falseOn,
     width: 2.5,
@@ -206,7 +214,6 @@ export function stageApart(t, a, c) {
   // A fact does not grant permission to act: the record's way down to the action stops at a bar.
   const actOn = a * ramp(t, c.permission - 0.15, 0.4);
   // The record's way is shorter than the seal's, its bar nearer the record: two refusals, not one repeated shape.
-  const stop2 = stop - 36;
   line(SIDES[1], TOP + 60, SIDES[1], mix(TOP + 60, stop2 - 6, soon(t, c.permission + 0.05, 0.5)), {
     alpha: actOn,
     width: 2.5,
@@ -251,7 +258,7 @@ export function stageApart(t, a, c) {
   const refused = [c.alter, c.oneSide];
   L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach(
     (v, i) =>
-      rejectedName(v, 960, MID_NAMES + 58 + i * 44, {
+      rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
         valign: "top",
         alpha: a * listIn(t, refused, i),
         mark: ramp(t, refused[i] + 0.05, 0.3),
