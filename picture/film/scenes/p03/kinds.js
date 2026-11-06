@@ -3,7 +3,7 @@
  * divider between them. */
 
 import { ctx } from "../../canvas.js";
-import { flowDot, line, stroke } from "../../drawing/strokes.js";
+import { flowAt, flowDot, line, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { named } from "../../naming/lists.js";
@@ -11,7 +11,6 @@ import { NAME_GAP, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
 import { recordMark } from "./marks.js";
 
 /* A and C1: the two kinds apart, joined by one fork under their one name. The seal and the record stand far enough
@@ -32,9 +31,9 @@ export function twoKinds(s, t, a, c, { facts = false } = {}) {
     valign: "bottom",
     alpha: g * (facts ? 1 : named(t, c.two) * (1 - ramp(t, c.act - 0.15, 0.4))),
   });
-  const q = (voiceTime(t) * 0.3) % 1;
+  const out = flowAt(t, KINDS.right - 960);
   [KINDS.left, KINDS.right].forEach((x) =>
-    flowDot(mix(960, x, q), joint, 4.5, q, { color: P.line, alpha: on }),
+    flowDot(mix(960, x, out?.q ?? 0), joint, 4.5, out, { color: P.line, alpha: on }),
   );
   stroke(
     () => {

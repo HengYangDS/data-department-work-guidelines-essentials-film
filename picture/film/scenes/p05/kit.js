@@ -8,8 +8,8 @@ import { box, dot, fill, line, path, ring, stroke } from "../../drawing/strokes.
 import { documentIcon } from "../../drawing/symbols.js";
 import { named } from "../../naming/lists.js";
 import { P } from "../../palette.js";
-import { clamp, mix, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { clamp, ease, mix } from "../../timing/easing.js";
+import { travel } from "../../timing/pauses.js";
 
 /* A name may be read up to 0.3 s before the clause that says it and up to 1.5 s ahead of its words. A stage's first
  * name, when its words come a little into the thought, stands as early as that allows, so the thought shows a name
@@ -19,13 +19,10 @@ export const early = (t, clause, at) => named(t, Math.max(clause - 0.2, at - 1.3
 /* The shift that centres the extent from x0 to x1 on the frame. */
 export const centring = (x0, x1) => 960 - (x0 + x1) / 2;
 /* A picture built part by part stands centred on what is on screen: it stands at the shift `first` and glides as one
- * to each next shift, over 0.7 s from just after the word that brings the part that changes its extent. Each step is
- * [that word's time, the shift]. */
+ * to each next shift, over 0.9 s of voice time from just after the word that brings the part that changes its extent,
+ * a structural glide (timing/pauses.js, travel). Each step is [that word's time, the shift]. */
 export const glide = (t, first, steps) =>
-  steps.reduce((x, [at, to]) => mix(x, to, soon(t, at + 0.05, 0.7)), first);
-
-/* A looping phase in voice time, so a flow rests in the quiet between thoughts. */
-export const flowOf = (t, speed = 0.35, offset = 0) => (voiceTime(t) * speed + offset) % 1;
+  steps.reduce((x, [at, to]) => mix(x, to, travel(t, at + 0.05, 0.9)), first);
 
 /* A file: a page with its corner folded and three rules. */
 export function fileMark(x, y, { alpha = 1, w = 64, h = 80 } = {}) {
@@ -95,18 +92,20 @@ export function bar(x, y, { alpha = 1, length = 52, vertical = false, width = 4 
   if (vertical) line(x, y - length / 2, x, y + length / 2, { color: P.unknown, alpha, width });
   else line(x - length / 2, y, x + length / 2, y, { color: P.unknown, alpha, width });
 }
-/* A point that runs along a polyline from its start and stops at its end: `q` in [0, 1] is how far it has run. */
+/* A point that runs along a polyline from its start and stops at its end: `q` in [0, 1] is how far it has run, which
+ * the caller eases. It enters by its size over its first 16 px, so it never appears at full size at its start. */
 export function runPoint(points, q, { alpha = 1, color = P.unknown, r = 6 } = {}) {
   if (alpha < 0.01 || q <= 0) return;
   const legs = points.slice(1).map(([x, y], k) => Math.hypot(x - points[k][0], y - points[k][1])),
-    total = legs.reduce((a, b) => a + b, 0);
+    total = legs.reduce((a, b) => a + b, 0),
+    size = ease(clamp((q * total) / 16));
   let left = clamp(q) * total,
     k = 0;
   while (k < legs.length - 1 && left > legs[k]) left -= legs[k++];
   const u = legs[k] ? clamp(left / legs[k]) : 0,
     [x0, y0] = points[k],
     [x1, y1] = points[k + 1];
-  dot(mix(x0, x1, u), mix(y0, y1, u), r, { color, alpha });
+  dot(mix(x0, x1, u), mix(y0, y1, u), r * size, { color, alpha });
 }
 /* A dashed page: a document that is missing, its outline dashed and its rows not yet written. */
 export function missingPage(x, y, w, h, { alpha = 1 } = {}) {

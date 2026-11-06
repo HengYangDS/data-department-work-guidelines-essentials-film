@@ -6,14 +6,13 @@
  * a small figure in the colour of authority beside its station: the rank is the decision, never the person alone. The
  * column stands at one place while the ranks arrive, so no name moves once shown. */
 
-import { dot, flowDot, line, measure } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, measure } from "../../drawing/strokes.js";
 import { person, seal } from "../../drawing/symbols.js";
 import { listIn } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
 
 const HEAD_Y = 300,
   SEAL_R = 46,
@@ -60,9 +59,9 @@ export function stageOrder(t, a, c) {
     alpha: a,
   });
   line(x, top, x, top + (ROWS[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
-  // A point runs down the order in voice time, from the seal through the ranks standing.
-  const q = (voiceTime(t) * 0.22) % 1;
-  if (grow >= 1) flowDot(x, mix(top, ROWS[3], q), 5, q, { color: P.authority, alpha: a });
+  // A point runs down the order in voice time, from the seal through the ranks standing, once the spine has grown.
+  const runs = flowAt(t, ROWS[3] - top, { from: c.order + 0.55 });
+  flowDot(x, mix(top, ROWS[3], runs?.q ?? 0), 5, runs, { color: P.authority, alpha: a });
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
     dot(x, ROWS[k], 7, { color: P.ink, alpha: on });

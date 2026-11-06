@@ -6,7 +6,7 @@
  * state it does not make. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { box, dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { agent, check, documentIcon, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { bubble, recoverIcon, tagIcon } from "../../drawing/workspace.js";
@@ -15,8 +15,10 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, centring, early, flowOf, openMark } from "../p05/kit.js";
+import { ease, mix, ramp, soon } from "../../timing/easing.js";
+import { travel, voiceTime } from "../../timing/pauses.js";
+import { bar, centring, early, openMark } from "../p05/kit.js";
+import { nightPlace, nightWay } from "./night.js";
 
 /* C: the chain of trust. The job's earlier start stands on the compact timeline in the top band, the start the decision
  * owner approves; below it seven stations at one pitch on one rail, each a small mark over the rail and its name under
@@ -57,12 +59,13 @@ function stationMark(i, x, y, a) {
   } else recoverIcon(x, y, 15, { alpha: a, color: P.evidence });
 }
 export function chainStage(s, t, c, g) {
-  // The earlier start the decision owner approves, on the compact timeline.
-  lastNight(960, 250, 0.75, {
+  // The earlier start the decision owner approves, on the compact timeline, standing where B left it with B's flow, so
+  // it does not jump at the cut.
+  lastNight(nightPlace(), 250, 0.75, {
     alpha: g,
     lateBy: -0.6,
     arrival: 1,
-    flow: flowOf(t, 0.25),
+    flow: { t, length: nightWay(c) },
     names: {
       arrival: { v: L("任务提前启动", "An earlier start"), alpha: early(t, c.first3, c.approved) },
     },
@@ -88,10 +91,8 @@ export function chainStage(s, t, c, g) {
     alpha: g * 0.9,
     width: mix(5, 2.5, slim),
   });
-  if (t > ats[n - 1] + 0.6) {
-    const q = flowOf(t, 0.2);
-    flowDot(mix(xs[0], xs[n - 1], q), C.y, 6, q, { color: P.evidence, alpha: g });
-  }
+  const runs = flowAt(t, xs[n - 1] - xs[0], { from: ats[n - 1] + 0.6 });
+  flowDot(mix(xs[0], xs[n - 1], runs?.q ?? 0), C.y, 6, runs, { color: P.evidence, alpha: g });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4),
       lit = speaking(t, ats, i);
@@ -281,10 +282,11 @@ export function verifiedStage(s, t, c, g) {
   // Actually observed: an eye beside the work in use, joined to it, the way carrying what is seen.
   const seen = g * named(t, c.observed);
   line(useX + fw / 2 + 8, fy, eyeX - 40, fy, { color: P.line, alpha: seen, width: 2.5 });
-  if (t > c.observed + 0.4) {
-    const q = flowOf(t, 0.5);
-    flowDot(mix(eyeX - 40, useX + fw / 2 + 8, q), fy, 4.5, q, { color: P.evidence, alpha: seen });
-  }
+  const carried = flowAt(t, eyeX - 40 - (useX + fw / 2 + 8), { from: c.observed + 0.4 });
+  flowDot(mix(eyeX - 40, useX + fw / 2 + 8, carried?.q ?? 0), fy, 4.5, carried, {
+    color: P.evidence,
+    alpha: seen,
+  });
   stroke(
     () => {
       ctx.moveTo(eyeX - 30, fy);
@@ -303,7 +305,9 @@ export function verifiedStage(s, t, c, g) {
  * larger extent as a dashed trace, which a bar closes: the narrower claim is named under what is covered and the
  * inflated wording, refused, under what is unproved. The rail stands whole from the first, so the claim stands at one
  * place, the midpoint of the centring shifts of its states: the rail alone, with the pin, and with both. */
-const F = { y: 450, w: 600, h: 200, narrow: 380 };
+const F = { y: 450, w: 600, h: 200, narrow: 380 },
+  /* The sheet draws in over this many seconds of voice time: 220 px at most about 330 px/s. */
+  NARROWING = 1.0;
 const SUBJECT = () => L("哪个对象、哪个版本", "Subject and version"),
   SIGNED = () => L("谁、什么时候、什么方法", "When, by whom, how");
 export function claimStage(s, t, c, g) {
@@ -319,7 +323,7 @@ export function claimStage(s, t, c, g) {
       [left, right],
     ].map(([l, r]) => centring(960 + l, 960 + r)),
     x = 960 + (Math.max(...shifts) + Math.min(...shifts)) / 2,
-    narrowed = soon(t, c.narrow + 0.05, 0.8),
+    narrowed = travel(t, c.narrow + 0.05, NARROWING),
     w = mix(F.w, F.narrow, narrowed),
     cl = x - F.w / 2,
     top = F.y - F.h / 2,
@@ -352,13 +356,19 @@ export function claimStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * early(t, c.first6, c.claim),
   });
-  // Pinned at the rail's right to its subject and version; a point runs along the pin.
+  // Pinned at the rail's right to its subject and version; a point runs along the pin, from the sheet's edge, whose
+  // way lengthens as the sheet draws in: each pass keeps the length its way had when it began.
   const pin = g * named(t, c.subject),
-    tx = x + tagX;
-  if (t > c.subject + 0.5) {
-    const q = flowOf(t, 0.5);
-    flowDot(mix(cl + w + 4, tx - 35, q), F.y, 4, q, { color: P.ink, alpha: pin });
-  }
+    tx = x + tagX,
+    narrows = voiceTime(c.narrow + 0.05),
+    pinned = flowAt(
+      t,
+      (v) => tx - 35 - (cl + mix(F.w, F.narrow, ease((v - narrows) / NARROWING)) + 4),
+      {
+        from: c.subject + 0.5,
+      },
+    );
+  flowDot(mix(cl + w + 4, tx - 35, pinned?.q ?? 0), F.y, 4, pinned, { color: P.ink, alpha: pin });
   tagIcon(tx - 35, F.y, 70, 34, { alpha: pin, color: P.ink });
   nameText(SUBJECT(), tx, under, { valign: "top", alpha: pin });
   // Signed at the rail's left by its verification.

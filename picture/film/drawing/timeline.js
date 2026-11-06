@@ -8,7 +8,7 @@
  * top band is the same figure with the same words. */
 
 import { ctx } from "../canvas.js";
-import { dot, flowDot, labelSize, line, measure, ring, stroke } from "./strokes.js";
+import { dot, flowAt, flowDot, labelSize, line, measure, ring, stroke } from "./strokes.js";
 import { tableIcon } from "./symbols.js";
 import { LEADING, NAME_GAP, nameText, wrapName } from "../naming/names.js";
 import { LABEL, P } from "../palette.js";
@@ -141,18 +141,20 @@ const union = (boxes) =>
 /* Last night's timeline anchored at (x, y), `scale` 1 for the full form and about 0.75 for the compact one. Its parts:
  * `axis`, the night's hours, a rail in the line colour with a tick each hour, drawn on from its first hour as one
  * stroke; `card`, the price data, a table card that lands over the hour it arrived, fading in as it settles, its stem
- * then reaching down to the rail; `arrival`, that hour, a firm point on the rail, which by default stands as the stem
- * touches down; `late`, the two hours, measured below the rail in the colour of the unknown from the due hour to the
- * arrival, whose far end tick grows as the measure reaches it; `due`, the hour the data was due, an open ring on the
- * rail, drawn only where the narration names that hour (elsewhere the due hour is the near end of the measure); and
- * `lit`, the two hours lit on the rail itself, as a lane or a night shows them. `dash` on `late` or `lit` draws a delay
- * the narration only supposes, such as one that can recur. `flow`, a phase in [0, 1) that the caller advances in
- * voice time, runs a small point on along the rail beyond the arrival: the night goes on. `hours` and `lateBy` move the
- * rail's ends and the arrival, in hours from the due hour, while the anchor stays where it is. `names` places the
- * figure's names, each at its default side or the one it gives: `axis` over the rail's left end (or "left", before
- * it), `card` over the card (or "right", beside it), `due` and `arrival` over their hours (or "left" and "right", at
- * the two ends of the measure), and `late` under the measure (or "top", over the lit hours). Returns where every part
- * and name stands, whatever the figure's opacity, so a scene can join its own marks to the figure. */
+ * then reaching down to the rail; `arrival`, that hour, a firm point on the rail, which by default grows by its size as
+ * the stem comes down and stands whole as it touches down; `late`, the two hours, measured below the rail in the colour
+ * of the unknown from the due hour to the arrival, whose near end tick grows as the measure sets off and far end tick
+ * as the measure reaches it; `due`, the hour the data was due, an open ring on the rail, drawn only where the narration
+ * names that hour (elsewhere the due hour is the near end of the measure); and `lit`, the two hours lit on the rail
+ * itself, as a lane or a night shows them. `dash` on `late` or `lit` draws a delay the narration only supposes, such as
+ * one that can recur. `flow`, the time and flowAt's options ({t, from, until}, and `length`, the way's length when it
+ * changes as the arrival moves), runs a small point on along the rail beyond the arrival at the film's even flow pace:
+ * the night goes on. `hours` and `lateBy` move the rail's ends and the arrival, in hours from the due hour, while the
+ * anchor stays where it is. `names` places the figure's names, each at its default side or the one it gives: `axis`
+ * over the rail's left end (or "left", before it), `card` over the card (or "right", beside it), `due` and `arrival`
+ * over their hours (or "left" and "right", at the two ends of the measure), and `late` under the measure (or "top",
+ * over the lit hours). Returns where every part and name stands, whatever the figure's opacity, so a scene can join its
+ * own marks to the figure. */
 export function lastNight(
   x,
   y,
@@ -175,12 +177,14 @@ export function lastNight(
     placed = {};
   const [A, C, S, D, H] = [axis, card, late, due, lit].map(partOf),
     // The card fades in over the first 0.4 of its share and settles onto its place over the first 0.6; its stem
-    // reaches down to the rail over the last 0.6, and the arrival's point stands as it touches down, unless given.
+    // reaches down to the rail over the last 0.6, and the arrival's point grows by its size over the stem's last 0.4
+    // and stands whole as it touches down, unless given, so it enters as a point lands rather than popping in at ink.
     settle = ease(clamp(C.upto / 0.6)),
     lift = LANDING * scale * (1 - settle),
     reach = clamp((C.upto - 0.4) / 0.6),
     R = partOf(
-      arrival ?? (C.upto > 0 ? { upto: clamp((reach - 0.85) / 0.15), alpha: C.alpha } : 0),
+      arrival ??
+        (C.upto > 0 ? { upto: 1, alpha: C.alpha, size: ease(clamp((reach - 0.6) / 0.4)) } : 0),
     );
   // The night's hours, one stroke: the rail draws on from its first hour, and each hour's tick as the rail reaches it.
   if (A.upto > 0) {
@@ -205,15 +209,17 @@ export function lastNight(
       width: g.rail * 2,
       dash: H.dash ? [10, 9] : null,
     });
-  // The two hours measured below the rail: the due hour's end tick stands at once and the arrival's grows out of the
-  // measure as the measure reaches it, the two ticks one stroke, so the measure is one mark with one name.
+  // The two hours measured below the rail: the due hour's end tick grows as the measure sets off from it and the
+  // arrival's grows out of the measure as the measure reaches it, the two ticks one stroke, so the measure is one mark
+  // with one name and neither tick stands at once.
   if (S.upto > 0) {
     const { y: sy, tick, width, left, right } = g.span,
       o = { color: P.unknown, alpha: alpha * S.alpha, width },
+      near = tick * ease(clamp(S.upto / 0.15)),
       grown = tick * clamp((S.upto - 0.85) / 0.15);
     stroke(() => {
-      ctx.moveTo(left, sy - tick);
-      ctx.lineTo(left, sy + tick);
+      ctx.moveTo(left, sy - near);
+      ctx.lineTo(left, sy + near);
       if (grown > 0.5) {
         ctx.moveTo(right, sy - grown);
         ctx.lineTo(right, sy + grown);
@@ -244,15 +250,19 @@ export function lastNight(
     dot(g.due, y, g.mark, { color: P.ground, alpha: a });
     ring(g.due, y, g.mark, { color: P.ink, alpha: a, width: 2.5 });
   }
-  if (R.upto > 0)
-    dot(g.arrival, y, g.mark, { color: P.ink, alpha: alpha * R.alpha * clamp(R.upto) });
+  if (R.upto > 0 && (R.size ?? 1) > 0)
+    dot(g.arrival, y, g.mark * (R.size ?? 1), {
+      color: P.ink,
+      alpha: alpha * R.alpha * clamp(R.upto),
+    });
   // The night goes on: a point, smaller than the arrival's so that it never reads as another hour marked, leaves the
   // arrival along the rail and shrinks away at its end, then starts again.
-  if (flow !== null && A.upto >= 1)
-    flowDot(mix(g.arrival, g.right, flow), y, Math.max(3, 4 * scale), flow, {
-      color: P.ink,
-      alpha: alpha * A.alpha,
-    });
+  const night =
+    flow && A.upto >= 1 ? flowAt(flow.t, flow.length ?? g.right - g.arrival, flow) : null;
+  flowDot(mix(g.arrival, g.right, night?.q ?? 0), y, Math.max(3, 4 * scale), night, {
+    color: P.ink,
+    alpha: alpha * A.alpha,
+  });
   for (const slot of Object.keys(SIDES)) {
     const n = nameOf(names[slot]);
     if (!n?.v) continue;

@@ -2,6 +2,7 @@
 
 import { film } from "../timeline.js";
 import { units } from "./cues.js";
+import { ease } from "./easing.js";
 
 /* The quiet between consecutive thoughts, as [end of one thought, start of the next]. A change that would fall in
  * that quiet holds through it and happens on the next words, so the picture changes with the speech rather than in
@@ -78,3 +79,10 @@ export const voiceTime = (t) => {
   }
   return t - before - down / 2 - (resume - rest) - up / 2;
 };
+/* A structural movement that sets off at `at` (a mark gliding to its next place, a structure growing or narrowing, an
+ * index moving on): the share of its way it has travelled, eased in and out by the smoothstep curve over `duration`
+ * seconds of voice time. It leaves rest and settles gently and peaks at 1.5 times its mean pace, so a way of d px peaks
+ * at 1.5 d / duration px/s, which a structural movement keeps well under 600. Still under way when a thought ends, it
+ * rests with the voice clock in the quiet and goes on with the next thought, so it never changes the picture in a
+ * quiet. */
+export const travel = (t, at, duration) => ease((voiceTime(t) - voiceTime(at)) / duration);

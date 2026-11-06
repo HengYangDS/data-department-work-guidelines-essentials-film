@@ -14,13 +14,13 @@ import { NAME_GAP, nameText } from "../../naming/names.js";
 import { radialName, railNames } from "../../naming/placement.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { clamp, mix, ramp, soon } from "../../timing/easing.js";
+import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
+import { thoughtEnd, voiceTime } from "../../timing/pauses.js";
 import {
   bar,
   chartMark,
   early,
   fileMark,
-  flowOf,
   missingPage,
   openMark,
   runPoint,
@@ -73,8 +73,10 @@ export function evidenceStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, rowAt, i),
     set: "non-proofs",
   });
-  // None of them establishes: their ways rise from each, join, and stop at a bar under the open marks.
+  // None of them establishes: their ways rise from each, join, and stop at a bar under the open marks. The way that
+  // joins them draws on from the outer two toward the middle one as they arrive, rather than standing at once.
   const rise = soon(t, c.refuse - 0.1, 0.5),
+    join = ease(clamp((rise - 0.8) / 0.2)),
     up = soon(t, c.refuse + 0.25, 0.45),
     shut = g * ramp(t, c.refuse + 0.55, 0.3);
   stroke(
@@ -83,10 +85,11 @@ export function evidenceStage(s, t, c, g) {
         ctx.moveTo(x, ROW_Y - 40);
         ctx.lineTo(x, mix(ROW_Y - 40, BUS_Y, rise));
       }
-      if (rise > 0.98) {
-        ctx.moveTo(ROW_XS[0], BUS_Y);
-        ctx.lineTo(ROW_XS[2], BUS_Y);
-      }
+      if (join > 0)
+        for (const x of [ROW_XS[0], ROW_XS[2]]) {
+          ctx.moveTo(x, BUS_Y);
+          ctx.lineTo(mix(x, ROW_XS[1], join), BUS_Y);
+        }
     },
     { color: P.line, alpha: g * ramp(t, c.refuse - 0.15, 0.3), width: 2 },
   );
@@ -136,7 +139,7 @@ export function fitStage(s, t, c, g) {
   link(cardX + cw / 2 + 12, A2.y, useX - A2.r - 12, A2.y, {
     alpha: g,
     width: 3,
-    flow: t > c.fit ? flowOf(t, 0.4) : null,
+    flow: { t, from: c.fit },
   });
   nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + useX - A2.r) / 2, A2.y - NAME_GAP, {
     valign: "bottom",
@@ -147,13 +150,18 @@ export function fitStage(s, t, c, g) {
     valign: "bottom",
     alpha: use,
   });
-  // The seal: its rim on the words of trust, its stamp once the data has been shown fit for the use.
+  // The seal: its rim on the words of trust, its stamp once the data has been shown fit for the use, in one
+  // continuous movement of 0.4 s that settles before the thought's quiet, however soon after the use the thought ends.
   const sx = cardX + cw / 2,
     sy = top + ch,
     rim = g * named(t, c.trust),
-    stamp = g * soon(t, Math.max(c.trust, c.use + 0.4) + 0.05, 0.5);
+    stamped = ramp(
+      t,
+      Math.min(Math.max(c.trust, c.use + 0.4) + 0.05, thoughtEnd(c.use) - 0.45),
+      0.4,
+    );
   dot(sx, sy, 27, { color: P.ground, alpha: rim });
-  seal(sx, sy, 26, { color: P.evidence, alpha: rim, stamp, hollow: stamp < 0.5 });
+  seal(sx, sy, 26, { color: P.evidence, alpha: rim, stamp: g * stamped, hollow: 1 - stamped });
   nameText(L("可信", "Trust"), sx + 26 + NAME_GAP, sy, { align: "left", alpha: rim });
 }
 
@@ -254,7 +262,7 @@ export function scopeStage(s, t, c, g) {
     top = scopeTop(),
     bottom = top + S.h,
     roam = g * soon(t, c.explore - 0.15, 0.6),
-    dx = 26 * Math.sin(Math.PI * 2 * flowOf(t, 0.22)) * roam,
+    dx = 26 * Math.sin(Math.PI * 2 * 0.22 * voiceTime(t)) * roam,
     [cw, ch] = S.card,
     scope = g * early(t, c.scopeClause, c.scope);
   // The data at the scope's top, moving about as it is explored, and its name under it.
@@ -376,7 +384,9 @@ export function viewsStage(s, t, c, g) {
     E.icon + 88,
     { gap: NAME_GAP, alpha: (i) => g * listIn(t, views, i), set: "views" },
   );
-  // None may climb back: a bar shuts the trunk, and a point runs up from the last view and stops below it.
+  // None may climb back: a bar shuts the trunk, and a point runs up from the last view and stops below it. Its way is
+  // about 480 px and the thought ends some 1.7 s after the words, so it eases in and out over 1.55 s from just before
+  // them (at most about 470 px/s) and settles before the quiet.
   bar(960, barY, { alpha: g * ramp(t, c.become + 0.05, 0.3), length: 48 });
   runPoint(
     [
@@ -385,7 +395,7 @@ export function viewsStage(s, t, c, g) {
       [960, E.bus],
       [960, barY + 10],
     ],
-    soon(t, c.become + 0.05, 1.4),
+    ramp(t, c.become - 0.1, 1.55),
     { alpha: shown[3] },
   );
   // The source of truth: the data takes its seal on the words that name it.

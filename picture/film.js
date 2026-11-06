@@ -53,7 +53,6 @@ var bezier = (x1, y1, x2, y2) => (q) => {
 };
 var standard = bezier(0.4, 0, 0.2, 1);
 var soon = (t, start, duration = 0.55) => standard((t - start) / duration);
-var pass = (q, edge = 0.12) => clamp(q / edge) * clamp((1 - q) / edge);
 
 // picture/film/drawing/colour.js
 var groundLuminance = /* @__PURE__ */ (() => {
@@ -211,6 +210,7 @@ var voiceTime = (t) => {
   }
   return t - before - down / 2 - (resume - rest) - up / 2;
 };
+var travel = (t, at2, duration) => ease((voiceTime(t) - voiceTime(at2)) / duration);
 
 // picture/film/framing/camera.js
 var CAMERA = {
@@ -338,13 +338,31 @@ function dot(x, y, r, { color = P.evidence, alpha = 1, hollow = false, width = 2
   if (hollow) stroke(() => ctx.arc(x, y, r, 0, Math.PI * 2), { color, alpha, width });
   else fill(() => ctx.arc(x, y, r, 0, Math.PI * 2), { color, alpha });
 }
+var lengthOf = (points) => points.slice(1).reduce((v, pt, i) => v + Math.hypot(pt[0] - points[i][0], pt[1] - points[i][1]), 0);
+function along(points, q) {
+  const lengths = points.slice(1).map((pt, i) => Math.hypot(pt[0] - points[i][0], pt[1] - points[i][1])), total = lengths.reduce((a, b) => a + b, 0);
+  let left = clamp(q) * total;
+  const kept = [points[0]];
+  for (let i = 0; i < lengths.length; i++) {
+    if (left >= lengths[i]) {
+      kept.push(points[i + 1]);
+      left -= lengths[i];
+      continue;
+    }
+    const f = lengths[i] ? left / lengths[i] : 0, a = points[i], b = points[i + 1];
+    kept.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+    break;
+  }
+  return { point: kept.at(-1), kept };
+}
 function path(points, { upto = 1, ...o } = {}) {
   if (points.length < 2 || upto <= 0) return;
-  const n = Math.max(2, Math.round(points.length * clamp(upto)));
-  stroke(
-    () => points.slice(0, n).forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)),
-    { width: 2.5, color: P.ink, ...o }
-  );
+  const drawn = upto >= 1 ? points : along(points, upto).kept;
+  stroke(() => drawn.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)), {
+    width: 2.5,
+    color: P.ink,
+    ...o
+  });
 }
 function ring(x, y, r, { color = P.evidence, alpha = 1, width = 2, upto = 1, start = -Math.PI / 2, dash = null } = {}) {
   if (upto <= 0) return;
@@ -355,7 +373,39 @@ function ring(x, y, r, { color = P.evidence, alpha = 1, width = 2, upto = 1, sta
     dash
   });
 }
-var flowDot = (x, y, r, q, o) => dot(x, y, r * pass(q), o);
+var PACE = 160;
+var SPAN = 0.8;
+var BLANK = 0.06;
+var EDGE = 0.15;
+function flowAt(t, length, { from = null, until = null, pace = PACE, offset = 0 } = {}) {
+  if (from !== null && t < from) return null;
+  const v = voiceTime(t), origin = (from === null ? 0 : voiceTime(from)) + offset, spanOf = (l) => Math.max(l / pace, SPAN);
+  if (v < origin) return null;
+  let begin = origin, span;
+  if (typeof length === "function") {
+    span = spanOf(length(begin));
+    while (begin + span + BLANK <= v) {
+      begin += span + BLANK;
+      span = spanOf(length(begin));
+    }
+  } else {
+    span = spanOf(length);
+    begin = origin + Math.floor((v - origin) / (span + BLANK)) * (span + BLANK);
+  }
+  const into = v - begin;
+  if (!(length > 0 || typeof length === "function") || into > span) return null;
+  const edge = Math.min(EDGE, span / 2);
+  let size = ease(Math.min(1, into / edge, (span - into) / edge));
+  if (until !== null && t >= until) {
+    const stop = voiceTime(until);
+    if (begin >= stop) return null;
+    size *= 1 - ease((v - stop) / EDGE);
+  }
+  return size > 0 ? { q: into / span, size } : null;
+}
+var flowDot = (x, y, r, flow, o) => {
+  if (flow) dot(x, y, r * flow.size, o);
+};
 
 // picture/film/framing/captions.js
 var CAPTION_JOIN = 0.3;
@@ -378,15 +428,16 @@ function caption(t) {
 
 // picture/film/drawing/symbols.js
 function diamond(x, y, r, { color = P.evidence, alpha = 1, solid = false, width = 2.5 } = {}) {
-  const build = () => {
-    ctx.moveTo(x, y - r);
-    ctx.lineTo(x + r, y);
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x - r, y);
+  const build = (k = 1) => () => {
+    ctx.moveTo(x, y - r * k);
+    ctx.lineTo(x + r * k, y);
+    ctx.lineTo(x, y + r * k);
+    ctx.lineTo(x - r * k, y);
     ctx.closePath();
   };
-  if (solid) fill(build, { color, alpha });
-  else stroke(build, { color, alpha, width });
+  const filled = solid === true ? 1 : solid === false ? 0 : clamp(solid);
+  if (filled > 0) fill(build(filled), { color, alpha });
+  if (solid !== true) stroke(build(), { color, alpha, width });
 }
 function token(x, y, { color = P.ink, alpha = 1, r = 14, hollow = false } = {}) {
   dot(x, y, r, { color, alpha, hollow, width: 3 });
@@ -415,9 +466,14 @@ function clock(x, y, r, { hand = 0, color = P.ink, alpha = 1 } = {}) {
   line(x, y, x, y - r * 0.5, { color, alpha: alpha * 0.6, width: 2 });
 }
 function seal(x, y, r, { color = P.authority, alpha = 1, hollow = false, stamp = alpha } = {}) {
+  const open = hollow === true ? 1 : hollow === false ? 0 : clamp(hollow);
   ring(x, y, r, { color, alpha, width: 3 });
-  ring(x, y, r * 0.74, { color, alpha: stamp * 0.6, width: 1.5, dash: hollow ? [5, 5] : null });
-  if (!hollow) check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp });
+  if (open > 0)
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * open, width: 1.5, dash: [5, 5] });
+  if (open < 1) {
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * (1 - open), width: 1.5 });
+    check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp, upto: 1 - open });
+  }
 }
 function person(x, y, { color = P.ink, alpha = 1, size = 1, solid = true } = {}) {
   const r = 15 * size, fillQ = solid === true ? 1 : solid === false ? 0 : clamp(solid);
@@ -566,20 +622,52 @@ var opensChapter = (s) => {
   const i = film.segments.indexOf(s);
   return i > 0 && film.segments[i - 1].chapter !== s.chapter;
 };
-var titleY = (s, t) => mix(540, 72, ease(clamp((t - (cardLanding(s) - RISE)) / RISE)));
+var CLEAR = 0.4;
+function titlePasses(s, h) {
+  const { start, duration } = riseOf(s);
+  if (h >= 540) return start;
+  if (h <= 72) return Infinity;
+  const share = (540 - h) / (540 - 72);
+  let lo = start, hi = start + duration;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (risen(s, mid) < share) lo = mid;
+    else hi = mid;
+  }
+  return hi;
+}
 var clearOfTitle = (s, t, y = 400) => {
   if (!opensChapter(s)) return 1;
   const c = cameraOf(s, t);
-  return clamp((c.oy + c.k * (y - c.ay) - 45 - titleY(s, t)) / 60);
+  return ramp(t, titlePasses(s, c.oy + c.k * (y - c.ay) - 45), CLEAR);
 };
-var cardLanding = (s) => s.voice_start + 0.1;
-var RISE = 1.1;
+var LAND = 0.3;
+var CRUISE = 560;
+var RAMP_IN = 0.12;
+var RAMP_OUT = 0.07;
+var cardLanding = (s) => s.voice_start + LAND;
+function riseOf(s) {
+  const title = film.chapters.find((c) => c.id === s.chapter).title, head = measure(`${chapterNumber(s.chapter)}  ${title}`, 24, false, "chapter"), way = Math.hypot(960 - (96 + head / 2), 540 - 72), start = Math.max(s.start, cardLanding(s) - (1 + RAMP_IN + RAMP_OUT) * way / CRUISE);
+  return { way, start, duration: cardLanding(s) - start };
+}
+var covered2 = (x) => x ** 3 - x ** 4 / 2;
+function risen(s, t) {
+  const { start, duration } = riseOf(s), pace = (1 + RAMP_IN + RAMP_OUT) / duration, gather = 2 * RAMP_IN / pace, settle = 2 * RAMP_OUT / pace, into = t - start;
+  if (into <= 0) return 0;
+  if (into < gather) return pace * gather * covered2(into / gather);
+  if (into < duration - settle) return RAMP_IN + pace * (into - gather);
+  if (into < duration) {
+    const y = (into - duration + settle) / settle;
+    return 1 - RAMP_OUT + pace * settle * (y - covered2(y));
+  }
+  return 1;
+}
 function chapterCard(s, t) {
   if (!opensChapter(s) || t >= cardLanding(s)) return;
   const enter = ramp(t, s.start, 0.3);
   if (enter <= 0) return;
   const chapter = film.chapters.find((c) => c.id === s.chapter), number = chapterNumber(s.chapter);
-  const large = en ? 54 : 60, p = clamp((t - (cardLanding(s) - RISE)) / RISE), q = ease(p), size = mix(large, 24, q);
+  const large = en ? 54 : 60, q = risen(s, t), size = mix(large, 24, q);
   ctx.save();
   ctx.font = font(24, false, `${number}  ${chapter.title}`);
   const prefix = ctx.measureText(`${number}  `).width;
@@ -598,7 +686,7 @@ function chapterCard(s, t) {
   });
   line(900, 600, 1020, 600, {
     color: P.line,
-    alpha: enter * (1 - ramp(t, cardLanding(s) - RISE, 0.35))
+    alpha: enter * (1 - ramp(t, riseOf(s).start + 0.2, 0.4))
   });
 }
 function illustrative(alpha) {
@@ -871,22 +959,6 @@ function rounded(corners, r) {
   out.push(corners.at(-1));
   return out;
 }
-function along(points, q) {
-  const lengths = points.slice(1).map((pt, i) => Math.hypot(pt[0] - points[i][0], pt[1] - points[i][1])), total = lengths.reduce((a, b) => a + b, 0);
-  let left = clamp(q) * total;
-  const kept = [points[0]];
-  for (let i = 0; i < lengths.length; i++) {
-    if (left >= lengths[i]) {
-      kept.push(points[i + 1]);
-      left -= lengths[i];
-      continue;
-    }
-    const f = lengths[i] ? left / lengths[i] : 0, a = points[i], b = points[i + 1];
-    kept.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
-    break;
-  }
-  return { point: kept.at(-1), kept };
-}
 function link(x1, y1, x2, y2, {
   route = null,
   mid = null,
@@ -938,10 +1010,12 @@ function link(x1, y1, x2, y2, {
       width,
       dash
     });
-  if (end) dot(x2, y2, width + 2.5, { color, alpha: alpha * clamp((upto - 0.9) / 0.1) });
-  if (flow !== null && flow < upto) {
-    const [px, py] = along(points, flow).point;
-    flowDot(px, py, width + 2, flow, { color, alpha });
+  const grown = ease(clamp((upto - 0.95) / 0.05));
+  if (end && grown > 0) dot(x2, y2, (width + 2.5) * grown, { color, alpha });
+  const state = flow ? flowAt(flow.t, lengthOf(points), flow) : null;
+  if (state && state.q < upto) {
+    const [px, py] = along(points, state.q).point;
+    flowDot(px, py, width + 2, state, { color, alpha });
   }
 }
 
@@ -1160,7 +1234,7 @@ var MARK = 7;
 var CARD = [150, 110];
 var STEM = 36;
 var LANDING = 14;
-var SPAN = 44;
+var SPAN2 = 44;
 var SPAN_TICK = 10;
 var SPAN_WIDTH = 3;
 var DUE_TICK = 9;
@@ -1171,7 +1245,7 @@ function geometry(x, y, scale, hours, lateBy) {
     top: y - stem - ch,
     right: at2(h) + cw / 2,
     bottom: y - stem
-  }), span = y + Math.max(40, SPAN * scale);
+  }), span = y + Math.max(40, SPAN2 * scale);
   return {
     x,
     y,
@@ -1242,7 +1316,7 @@ function lastNight(x, y, scale = 1, {
 } = {}) {
   const g = geometry(x, y, scale, hours, lateBy), placed = {};
   const [A5, C4, S2, D3, H] = [axis, card, late, due, lit].map(partOf), settle = ease(clamp(C4.upto / 0.6)), lift = LANDING * scale * (1 - settle), reach = clamp((C4.upto - 0.4) / 0.6), R2 = partOf(
-    arrival ?? (C4.upto > 0 ? { upto: clamp((reach - 0.85) / 0.15), alpha: C4.alpha } : 0)
+    arrival ?? (C4.upto > 0 ? { upto: 1, alpha: C4.alpha, size: ease(clamp((reach - 0.6) / 0.4)) } : 0)
   );
   if (A5.upto > 0) {
     const end = mix(g.left, g.right, clamp(A5.upto));
@@ -1266,10 +1340,10 @@ function lastNight(x, y, scale = 1, {
       dash: H.dash ? [10, 9] : null
     });
   if (S2.upto > 0) {
-    const { y: sy, tick, width, left, right } = g.span, o = { color: P.unknown, alpha: alpha * S2.alpha, width }, grown = tick * clamp((S2.upto - 0.85) / 0.15);
+    const { y: sy, tick, width, left, right } = g.span, o = { color: P.unknown, alpha: alpha * S2.alpha, width }, near = tick * ease(clamp(S2.upto / 0.15)), grown = tick * clamp((S2.upto - 0.85) / 0.15);
     stroke(() => {
-      ctx.moveTo(left, sy - tick);
-      ctx.lineTo(left, sy + tick);
+      ctx.moveTo(left, sy - near);
+      ctx.lineTo(left, sy + near);
       if (grown > 0.5) {
         ctx.moveTo(right, sy - grown);
         ctx.lineTo(right, sy + grown);
@@ -1298,13 +1372,16 @@ function lastNight(x, y, scale = 1, {
     dot(g.due, y, g.mark, { color: P.ground, alpha: a });
     ring(g.due, y, g.mark, { color: P.ink, alpha: a, width: 2.5 });
   }
-  if (R2.upto > 0)
-    dot(g.arrival, y, g.mark, { color: P.ink, alpha: alpha * R2.alpha * clamp(R2.upto) });
-  if (flow !== null && A5.upto >= 1)
-    flowDot(mix(g.arrival, g.right, flow), y, Math.max(3, 4 * scale), flow, {
+  if (R2.upto > 0 && (R2.size ?? 1) > 0)
+    dot(g.arrival, y, g.mark * (R2.size ?? 1), {
       color: P.ink,
-      alpha: alpha * A5.alpha
+      alpha: alpha * R2.alpha * clamp(R2.upto)
     });
+  const night = flow && A5.upto >= 1 ? flowAt(flow.t, flow.length ?? g.right - g.arrival, flow) : null;
+  flowDot(mix(g.arrival, g.right, night?.q ?? 0), y, Math.max(3, 4 * scale), night, {
+    color: P.ink,
+    alpha: alpha * A5.alpha
+  });
   for (const slot of Object.keys(SIDES)) {
     const n = nameOf(names[slot]);
     if (!n?.v) continue;
@@ -1493,7 +1570,8 @@ function forkMark(cx, cy, { alpha = 1, facts = 0, run = null } = {}) {
   });
   dot(...branch.at(-1), 6, { color: P.authority, alpha });
   dot(fx, y, 5, { color: P.ink, alpha });
-  if (run !== null) flowDot(...along(branch, run).point, 5, run, { color: P.authority, alpha });
+  const runs = run && flowAt(run.t, lengthOf(branch), run);
+  if (runs) flowDot(...along(branch, runs.q).point, 5, runs, { color: P.authority, alpha });
   openMark(cx + 88, y, 21, { alpha: alpha * facts });
 }
 function forkBranch(fx, y) {
@@ -1530,11 +1608,14 @@ function patchMark(cx, cy, { alpha = 1, drip = null, again = 0, light = 0 } = {}
     },
     { color: P.line, alpha, width: 2 }
   );
-  if (drip !== null) flowDot(cx, mix(py + 10, cy + 30, drip), 5, drip, { color: P.ink, alpha });
-  if (again > 0.01 && drip !== null) {
-    const q = (drip + 0.5) % 1;
-    flowDot(cx + 58, mix(cy + 20, cy + 76, q), 5, q, { color: P.ink, alpha: alpha * again });
-  }
+  const falls = drip && flowAt(drip.t, cy + 30 - (py + 10), drip);
+  if (falls) flowDot(cx, mix(py + 10, cy + 30, falls.q), 5, falls, { color: P.ink, alpha });
+  const passes = again > 0.01 && drip && flowAt(drip.t, 56, { ...drip, offset: 0.4 });
+  if (passes)
+    flowDot(cx + 58, mix(cy + 20, cy + 76, passes.q), 5, passes, {
+      color: P.ink,
+      alpha: alpha * again
+    });
   if (light > 0.01) ring(cx, py + 3, 27, { color: P.unknown, alpha: alpha * light, width: 3 });
 }
 function meetingMark(cx, cy, { alpha = 1, seats = [0, 0], beat = [0, 0, 0] } = {}) {
@@ -1622,7 +1703,7 @@ function cuesOf(s) {
 var XS = [450, 790, 1130, 1470];
 var ROW_Y = 570;
 var NAME_TOP = 675;
-var SPAN2 = 680;
+var SPAN3 = 680;
 var CROSS_Y = 425;
 var BRACKET_Y = NAME_TOP + 54;
 var TOPS = [
@@ -1656,7 +1737,7 @@ function stageNight(t, a, c) {
     card: soon(t, c.data - 0.15, 0.8),
     late: soon(t, c.late + 0.05, 0.7),
     // The night runs on from the first word, so the opening holds its rail, its name and a moving point.
-    flow: voiceTime(t) * 0.25 % 1,
+    flow: { t },
     names
   });
 }
@@ -1665,7 +1746,7 @@ function compactNight(a, t) {
     alpha: a,
     card: 1,
     late: 1,
-    flow: voiceTime(t) * 0.25 % 1,
+    flow: { t },
     names: {
       axis: L("昨晚", "Last night"),
       card: { v: L("价格数据", "Price data"), side: "right" },
@@ -1674,17 +1755,17 @@ function compactNight(a, t) {
   });
 }
 function figure(k, x, t, a, c, busy = false) {
-  const vt = voiceTime(t), on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4), part = (at2) => ramp(t, at2 - 0.15, 0.4);
+  const on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4), part = (at2) => ramp(t, at2 - 0.15, 0.4);
   if (k === 0)
     forkMark(x, ROW_Y, {
       alpha: on,
       facts: busy ? 0 : part(c.facts),
-      run: busy ? vt * 0.45 % 1 : null
+      run: busy ? { t } : null
     });
   if (k === 1)
     patchMark(x, ROW_Y, {
       alpha: on,
-      drip: vt * 0.7 % 1,
+      drip: { t },
       again: busy ? 0 : part(c.again),
       light: busy ? 0 : part(c.mechanism)
     });
@@ -1702,7 +1783,7 @@ function figure(k, x, t, a, c, busy = false) {
   if (k === 3)
     pagesMark(x, ROW_Y, {
       alpha: on,
-      pages: busy ? 9 : 3 + 6 * soon(t, c.more + 0.05, 1.6),
+      pages: busy ? 9 : 3 + 6 * travel(t, c.more + 0.05, 2.4),
       bars: busy ? 0 : part(c.judgment)
     });
 }
@@ -1712,10 +1793,10 @@ function stageFailures(t, a, c) {
   line(960, 362, 960, CROSS_Y, rail);
   path(
     [
-      [960 - SPAN2, BRACKET_Y],
-      [960 - SPAN2, CROSS_Y],
-      [960 + SPAN2, CROSS_Y],
-      [960 + SPAN2, BRACKET_Y]
+      [960 - SPAN3, BRACKET_Y],
+      [960 - SPAN3, CROSS_Y],
+      [960 + SPAN3, CROSS_Y],
+      [960 + SPAN3, BRACKET_Y]
     ],
     rail
   );
@@ -1759,11 +1840,11 @@ function busyRow(t, a, c) {
   });
 }
 function rowName(v, t, at2, a) {
-  const y = BRACKET_Y, on = a * soon(t, at2 - 0.1, 0.5), reach = SPAN2 * on;
+  const y = BRACKET_Y, on = a * soon(t, at2 - 0.1, 0.5), reach = SPAN3 * on, tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
-  if (on > 0.98)
-    [-SPAN2, SPAN2].forEach(
-      (dx) => line(960 + dx, y, 960 + dx, y - 10, { color: P.line, alpha: a, width: 2 })
+  if (tick > 0.5)
+    [-SPAN3, SPAN3].forEach(
+      (dx) => line(960 + dx, y, 960 + dx, y - tick, { color: P.line, alpha: a, width: 2 })
     );
   nameText(v, 960, y + NAME_GAP, { valign: "top", alpha: a * named(t, at2) });
 }
@@ -1847,8 +1928,8 @@ function tagIcon(x, y, w, h, { alpha = 1, color = P.authority } = {}) {
 function recoverIcon(x, y, r, { alpha = 1, color = P.evidence, upto = 1 } = {}) {
   if (alpha < 0.01) return;
   ring(x, y, r, { color, alpha, width: 3, upto: 0.78 * clamp(upto), start: -Math.PI * 0.35 });
-  const a = -Math.PI * 0.35 + Math.PI * 2 * 0.78 * clamp(upto);
-  if (upto > 0.9) dot(x + r * Math.cos(a), y + r * Math.sin(a), 5, { color, alpha });
+  const a = -Math.PI * 0.35 + Math.PI * 2 * 0.78 * clamp(upto), grown = ease(clamp((upto - 0.75) / 0.25));
+  if (grown > 0) dot(x + r * Math.cos(a), y + r * Math.sin(a), 5 * grown, { color, alpha });
 }
 function layersIcon(x, y, w, h, { alpha = 1, color = P.ink, fillColor = P.row, layers = 3 } = {}) {
   if (alpha < 0.01) return;
@@ -2205,7 +2286,7 @@ function stageOutcomes(s, t, c) {
   }, lit);
   link(XS2[0], RAIL_Y, XS2[0], RING_Y - RING - 7, {
     ...lit,
-    flow: t > c.first + 0.6 ? vt * 0.5 % 1 : null
+    flow: { t, from: c.first + 0.6 }
   });
 }
 
@@ -2288,12 +2369,11 @@ function stageGuide2(s, t, a, c) {
     valign: "top",
     alpha: g * named(t, c.agents)
   });
-  const reach = soon(t, c.delegate + 0.05, 0.8);
   link(MEMBERS[2] + 34, ROW, AGENTS[0] - 34, ROW, {
     alpha: g * ramp(t, c.delegate - 0.15, 0.4),
-    upto: reach,
+    upto: soon(t, c.delegate + 0.05, 0.8),
     width: 2.5,
-    flow: reach > 0.99 ? voiceTime(t) * 0.45 % 1 : null
+    flow: { t, from: c.delegate + 0.85 }
   });
   nameText(L("委托", "Delegation"), 960, ROW_NAMES, {
     valign: "top",
@@ -2318,10 +2398,11 @@ var HANDED = () => L(["一个文件", "一张表", "一份报告", "一个流程
 var OUTPUTS = () => L(["判断", "数据资产", "行动"], ["Judgments", "Data assets", "Actions"]);
 var QUALITIES = () => L(["讲得清", "经得起查", "能用到哪里"], ["Explained", "Checked", "Clear limits"]);
 function theWay(t, a, c, end) {
-  const signal = ramp(t, c.signal - 0.15, 0.4), start = t >= c.signal - 0.15 ? WAVE_END : WAY[0];
-  line(start, WAY_Y, end, WAY_Y, { color: P.line, alpha: a, width: 3.5 });
+  const signal = ramp(t, c.signal - 0.15, 0.4);
+  line(WAVE_END, WAY_Y, end, WAY_Y, { color: P.line, alpha: a, width: 3.5 });
+  line(WAY[0], WAY_Y, WAVE_END, WAY_Y, { color: P.line, alpha: a * (1 - signal), width: 3.5 });
   dot(WAY[1], WAY_Y, 6, { color: P.line, alpha: a });
-  if (t < c.signal - 0.15) dot(WAY[0], WAY_Y, 6, { color: P.line, alpha: a });
+  dot(WAY[0], WAY_Y, 6, { color: P.line, alpha: a * (1 - signal) });
   wave(WAY[0], WAVE_END, WAY_Y, voiceTime(t) * 5, { alpha: a * signal });
   nameText(L("工作的价值", "The value of data work"), 960, OVER, {
     valign: "bottom",
@@ -2350,8 +2431,8 @@ function stageWay(t, a, c) {
       width: 3
     });
   });
-  const q = vt * 0.3 % 1;
-  if (t > c.others) flowDot(mix(WAVE_END, end, q), WAY_Y, 6, q, { color: P.evidence, alpha: a });
+  const carried = flowAt(t, end - WAVE_END, { from: c.others });
+  flowDot(mix(WAVE_END, end, carried?.q ?? 0), WAY_Y, 6, carried, { color: P.evidence, alpha: a });
   OUTPUTS().forEach((v, k) => {
     const on = a * ramp(t, c.outputs[k] - 0.15, 0.4);
     line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], OUT_Y - 32, { color: P.line, alpha: on, width: 2 });
@@ -2508,7 +2589,6 @@ var LEADS = [
 var LEAD_ORDER = () => L([0, 1, 2, 3, 4], [0, 2, 3, 4, 1]);
 
 // picture/film/scenes/p03/case.js
-var flowOf = (t) => voiceTime(t) * 0.25 % 1;
 var NIGHT = () => L("昨晚", "Last night");
 var COLLECTION = () => L("采集", "Collection");
 var LATE = () => L("晚了两个小时", "Two hours late");
@@ -2517,7 +2597,7 @@ function theNight(t, a, c) {
     alpha: a,
     card: soon(t, c.collection - 0.15, 0.8),
     late: soon(t, c.late - 0.15, 0.7),
-    flow: flowOf(t),
+    flow: { t },
     names: {
       axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
       card: { v: COLLECTION(), side: "right", alpha: named(t, c.collection + 0.1) },
@@ -2618,7 +2698,7 @@ function stageCase(t, a, c) {
   const cx = COLUMNS[2];
   forkMark(cx, ROW_Y2 - 20, {
     alpha: a * ramp(t, c.choice - 0.15, 0.4),
-    run: voiceTime(t) * 0.45 % 1
+    run: { t }
   });
   termRow(
     t,
@@ -2677,8 +2757,8 @@ function stageMeeting(t, a, c) {
     },
     { color: P.line, alpha: a, width: 4 }
   );
-  const q = vt * 0.2 % 1;
-  flowDot(mix(COURSE[0], COURSE[1], q), COURSE_Y, 5, q, { color: P.ink, alpha: a });
+  const runs = flowAt(t, COURSE[1] - COURSE[0]);
+  flowDot(mix(COURSE[0], COURSE[1], runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
   const before = a * ramp(t, c.before - 0.15, 0.4), over = COURSE_Y - STATION_R - NAME_GAP, under = COURSE_Y + STATION_R + NAME_GAP;
   station(COURSE[0], COURSE_Y, before);
   nameText(L("会前", "Before it"), COURSE[0], over, {
@@ -2775,7 +2855,7 @@ function stageApart(t, a, c) {
   line(SIDES2[0] + 52, TOP, mix(SIDES2[0] + 52, BARS[0], reach), TOP, { alpha: ways, width: 2.5 });
   line(SIDES2[1] - 50, TOP, mix(SIDES2[1] - 50, BARS[1], reach), TOP, { alpha: ways, width: 2.5 });
   BARS.forEach(
-    (bx) => bar(bx, TOP, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 })
+    (bx) => bar(bx, TOP, { alpha: ways * ramp(t, c.substitute + 0.25, 0.4), vertical: true, length: 34 })
   );
   rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
     valign: "bottom",
@@ -2799,12 +2879,12 @@ function stageApart(t, a, c) {
     width: 2.5
   });
   bar(SIDES2[1], stop2, { alpha: actOn * ramp(t, c.permission + 0.45, 0.2), length: 34 });
-  const q = voiceTime(t) * 0.4 % 1;
   [
     [SIDES2[0], TOP + 50, c.falseTrue],
     [SIDES2[1], TOP + 60, c.permission, stop2]
-  ].forEach(([wx, from, at2, end = stop]) => {
-    if (t > at2 + 0.6) flowDot(wx, mix(from, end - 8, q), 4.5, q, { color: P.line, alpha: a });
+  ].forEach(([wx, top, at2, end = stop]) => {
+    const runs = flowAt(t, end - 8 - top, { from: at2 + 0.6 });
+    flowDot(wx, mix(top, end - 8, runs?.q ?? 0), 4.5, runs, { color: P.line, alpha: a });
   });
   actionMark(SIDES2[1], MID, { alpha: actOn });
   nameText(L("去做的权限", "Permission to act"), SIDES2[1], MID_NAMES, {
@@ -2905,10 +2985,8 @@ function stageFacts(t, a, c) {
     });
     bar(960, BAR_Y, { alpha: a * ramp(t, c.notPrimary + 0.6, 0.3), length: 56 });
   }
-  if (meet >= 1) {
-    const q = voiceTime(t) * 0.35 % 1;
-    flowDot(960, mix(JOIN_Y, BAR_Y + 8, q), 5, q, { color: P.line, alpha: a });
-  }
+  const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.notPrimary + 0.75 });
+  flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
   const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16, on = a * soon(t, c.onlyLeads - 0.1, 0.5);
   if (on > 0.01) {
     const half = Math.max(...xs.map((x, i) => Math.abs(x - 960) + widths[i] / 2)) + BRACKET_CLEAR;
@@ -2938,9 +3016,9 @@ function twoKinds(s, t, a, c, { facts = false } = {}) {
     valign: "bottom",
     alpha: g * (facts ? 1 : named(t, c.two) * (1 - ramp(t, c.act - 0.15, 0.4)))
   });
-  const q = voiceTime(t) * 0.3 % 1;
+  const out = flowAt(t, KINDS.right - 960);
   [KINDS.left, KINDS.right].forEach(
-    (x) => flowDot(mix(960, x, q), joint, 4.5, q, { color: P.line, alpha: on })
+    (x) => flowDot(mix(960, x, out?.q ?? 0), joint, 4.5, out, { color: P.line, alpha: on })
   );
   stroke(
     () => {
@@ -3020,8 +3098,8 @@ function stageOrder(t, a, c) {
     alpha: a
   });
   line(x, top, x, top + (ROWS[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
-  const q = voiceTime(t) * 0.22 % 1;
-  if (grow >= 1) flowDot(x, mix(top, ROWS[3], q), 5, q, { color: P.authority, alpha: a });
+  const runs = flowAt(t, ROWS[3] - top, { from: c.order + 0.55 });
+  flowDot(x, mix(top, ROWS[3], runs?.q ?? 0), 5, runs, { color: P.authority, alpha: a });
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
     dot(x, ROWS[k], 7, { color: P.ink, alpha: on });
@@ -3323,7 +3401,7 @@ function stageCases(t, a, c) {
     alpha: a * listIn(t, ats, 0),
     set: "cases"
   });
-  const near = a * ramp(t, c.near - 0.15, 0.4), halted = soon(t, c.near + 0.05, 0.7), hx = mix(x + 40, right - 34, halted), hy = C.y;
+  const near = a * ramp(t, c.near - 0.15, 0.4), halted = travel(t, c.near + 0.05, 0.9), hx = mix(x + 40, right - 34, halted), hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
   ring(hx, hy, 17, {
     color: P.authority,
@@ -3506,10 +3584,7 @@ function stageLadder(t, a, c) {
       alpha: a
     });
   });
-  const marked = c.tiers.reduce(
-    (y, at2, k) => mix(y, TIER_Y[k], soon(t, at2 - 0.15, 0.4)),
-    TIER_Y[0]
-  );
+  const marked = c.tiers.reduce((y, at2, k) => mix(y, TIER_Y[k], travel(t, at2, 0.9)), TIER_Y[0]);
   dot(x, marked, 6, { color: P.authority, alpha: a * ramp(t, c.tiers[0] - 0.15, 0.4) });
   const docRight = x + DOC_RIGHT, times = recordTimes(c);
   RECORD3().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
@@ -3544,7 +3619,7 @@ var BUBBLE = 39;
 var EXAMINED = () => L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]);
 var FIXES = () => L(["换供应商", "改生产环境里的采集任务"], ["A new vendor", "Collection job in production"]);
 function stageReview(t, a, c) {
-  const [w3, h3] = DOCS[2], lit = ramp(t, c.belongs - 0.15, 0.4), vt = voiceTime(t), tierY = E.tierY + E.drop, nightY = E.nightY + E.drop, work = WORK()[2], workTop = tierY + h3 / 2 + NAME_GAP, fixRoom = Math.max(...FIXES().map((v) => measure(v))) + 2 * NAME_GAP, nightAt = w3 / 2 + 10 + fixRoom + FIX_STEP + FIX_TURN + NIGHT_REACH, upperLeft = -Math.max(w3 / 2, blockWidth(work) / 2), tierX = 960 + E.lean - (upperLeft + nightAt + NIGHT_REACH) / 2;
+  const [w3, h3] = DOCS[2], lit = ramp(t, c.belongs - 0.15, 0.4), tierY = E.tierY + E.drop, nightY = E.nightY + E.drop, work = WORK()[2], workTop = tierY + h3 / 2 + NAME_GAP, fixRoom = Math.max(...FIXES().map((v) => measure(v))) + 2 * NAME_GAP, nightAt = w3 / 2 + 10 + fixRoom + FIX_STEP + FIX_TURN + NIGHT_REACH, upperLeft = -Math.max(w3 / 2, blockWidth(work) / 2), tierX = 960 + E.lean - (upperLeft + nightAt + NIGHT_REACH) / 2;
   tierDoc(tierX, tierY, w3, h3, { alpha: a, color: blend(P.ink, P.authority, lit), rows: 4 });
   const { term, qual, width = Infinity, noteWidth: noteWidth2 = width } = work;
   const workBlock = termRow(t, term, [-Infinity], qual, [-Infinity], tierX, workTop, {
@@ -3558,7 +3633,7 @@ function stageReview(t, a, c) {
     alpha: a,
     card: 1,
     hours: E.hours,
-    flow: vt * 0.25 % 1,
+    flow: { t },
     names: { axis: { v: L("昨晚的事", "Last night's case"), alpha: named(t, c.lastCase) } }
   });
   FIXES().forEach((v, i) => {
@@ -3740,7 +3815,7 @@ function stageField(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.four)
   });
-  const run = soon(t, c.never + 0.05, 0.7);
+  const run = ramp(t, c.never - 0.05, 0.8);
   dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
     color: P.ink,
     alpha: a * ramp(t, c.four - 0.15, 0.3)
@@ -3779,7 +3854,6 @@ scenes["04"] = function(s, t) {
 // picture/film/scenes/p05/kit.js
 var early = (t, clause, at2) => named(t, Math.max(clause - 0.2, at2 - 1.35));
 var centring = (x0, x1) => 960 - (x0 + x1) / 2;
-var flowOf2 = (t, speed = 0.35, offset = 0) => (voiceTime(t) * speed + offset) % 1;
 function fileMark(x, y, { alpha = 1, w = 64, h = 80 } = {}) {
   documentIcon(x - w / 2, y - h / 2, w, h, { alpha, rows: 3 });
 }
@@ -3843,11 +3917,11 @@ function bar2(x, y, { alpha = 1, length = 52, vertical = false, width = 4 } = {}
 }
 function runPoint(points, q, { alpha = 1, color = P.unknown, r = 6 } = {}) {
   if (alpha < 0.01 || q <= 0) return;
-  const legs = points.slice(1).map(([x, y], k2) => Math.hypot(x - points[k2][0], y - points[k2][1])), total = legs.reduce((a, b) => a + b, 0);
+  const legs = points.slice(1).map(([x, y], k2) => Math.hypot(x - points[k2][0], y - points[k2][1])), total = legs.reduce((a, b) => a + b, 0), size = ease(clamp(q * total / 16));
   let left = clamp(q) * total, k = 0;
   while (k < legs.length - 1 && left > legs[k]) left -= legs[k++];
   const u = legs[k] ? clamp(left / legs[k]) : 0, [x0, y0] = points[k], [x1, y1] = points[k + 1];
-  dot(mix(x0, x1, u), mix(y0, y1, u), r, { color, alpha });
+  dot(mix(x0, x1, u), mix(y0, y1, u), r * size, { color, alpha });
 }
 function missingPage(x, y, w, h, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
@@ -3896,17 +3970,18 @@ function evidenceStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, rowAt, i),
     set: "non-proofs"
   });
-  const rise = soon(t, c.refuse - 0.1, 0.5), up = soon(t, c.refuse + 0.25, 0.45), shut = g * ramp(t, c.refuse + 0.55, 0.3);
+  const rise = soon(t, c.refuse - 0.1, 0.5), join = ease(clamp((rise - 0.8) / 0.2)), up = soon(t, c.refuse + 0.25, 0.45), shut = g * ramp(t, c.refuse + 0.55, 0.3);
   stroke(
     () => {
       for (const x of ROW_XS) {
         ctx.moveTo(x, ROW_Y4 - 40);
         ctx.lineTo(x, mix(ROW_Y4 - 40, BUS_Y, rise));
       }
-      if (rise > 0.98) {
-        ctx.moveTo(ROW_XS[0], BUS_Y);
-        ctx.lineTo(ROW_XS[2], BUS_Y);
-      }
+      if (join > 0)
+        for (const x of [ROW_XS[0], ROW_XS[2]]) {
+          ctx.moveTo(x, BUS_Y);
+          ctx.lineTo(mix(x, ROW_XS[1], join), BUS_Y);
+        }
     },
     { color: P.line, alpha: g * ramp(t, c.refuse - 0.15, 0.3), width: 2 }
   );
@@ -3939,7 +4014,7 @@ function fitStage(s, t, c, g) {
   link(cardX + cw / 2 + 12, A22.y, useX - A22.r - 12, A22.y, {
     alpha: g,
     width: 3,
-    flow: t > c.fit ? flowOf2(t, 0.4) : null
+    flow: { t, from: c.fit }
   });
   nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + useX - A22.r) / 2, A22.y - NAME_GAP, {
     valign: "bottom",
@@ -3950,9 +4025,13 @@ function fitStage(s, t, c, g) {
     valign: "bottom",
     alpha: use
   });
-  const sx = cardX + cw / 2, sy = top + ch, rim = g * named(t, c.trust), stamp = g * soon(t, Math.max(c.trust, c.use + 0.4) + 0.05, 0.5);
+  const sx = cardX + cw / 2, sy = top + ch, rim = g * named(t, c.trust), stamped = ramp(
+    t,
+    Math.min(Math.max(c.trust, c.use + 0.4) + 0.05, thoughtEnd(c.use) - 0.45),
+    0.4
+  );
   dot(sx, sy, 27, { color: P.ground, alpha: rim });
-  seal(sx, sy, 26, { color: P.evidence, alpha: rim, stamp, hollow: stamp < 0.5 });
+  seal(sx, sy, 26, { color: P.evidence, alpha: rim, stamp: g * stamped, hollow: 1 - stamped });
   nameText(L("可信", "Trust"), sx + 26 + NAME_GAP, sy, { align: "left", alpha: rim });
 }
 var B2 = { x: 960, y: 505, rx: 400, ry: 245, card: [200, 128] };
@@ -4019,7 +4098,7 @@ function workXs() {
   });
 }
 function scopeStage(s, t, c, g) {
-  const left = 960 - S.w / 2, top = scopeTop(), bottom = top + S.h, roam = g * soon(t, c.explore - 0.15, 0.6), dx = 26 * Math.sin(Math.PI * 2 * flowOf2(t, 0.22)) * roam, [cw, ch] = S.card, scope = g * early(t, c.scopeClause, c.scope);
+  const left = 960 - S.w / 2, top = scopeTop(), bottom = top + S.h, roam = g * soon(t, c.explore - 0.15, 0.6), dx = 26 * Math.sin(Math.PI * 2 * 0.22 * voiceTime(t)) * roam, [cw, ch] = S.card, scope = g * early(t, c.scopeClause, c.scope);
   tableIcon(960 + dx - cw / 2, top + S.inset, cw, ch, { alpha: g, stroke: P.muted });
   const under = top + S.inset + ch + NAME_GAP, data = nameText(L("说不清这些的数据", "Data that cannot answer"), 960, under, {
     valign: "top",
@@ -4126,7 +4205,7 @@ function viewsStage(s, t, c, g) {
       [960, E2.bus],
       [960, barY + 10]
     ],
-    soon(t, c.become + 0.05, 1.4),
+    ramp(t, c.become - 0.1, 1.55),
     { alpha: shown[3] }
   );
   const truth = g * named(t, c.truth), sx = 960 + cw / 2 + 48, sy = E2.top + ch / 2;
@@ -4150,17 +4229,17 @@ function nightNames(t, c) {
   };
 }
 function backtest(t, c, g, m, top) {
-  const x0 = m.at(-1), x1 = m.at(3), bottom = top + TEST.h, a = g * named(t, c.backtest), seen = soon(t, c.backtest - 0.1, 0.9), points = CURVE.map((v, i) => [
+  const x0 = m.at(-1), x1 = m.at(3), bottom = top + TEST.h, a = g * named(t, c.backtest), seen = ramp(t, c.backtest - 0.1, 1.6), points = CURVE.map((v, i) => [
     x0 + (x1 - x0) * i / (CURVE.length - 1),
     bottom - 8 - v * (TEST.h - 16)
-  ]);
+  ]), total = lengthOf(points);
   line(x0, bottom, x1, bottom, { color: P.line, alpha: a, width: 2 });
   path(points, { color: P.ink, alpha: a, width: 3, upto: seen });
   points.forEach(([x, y], i) => {
-    const within = x > m.due + 1 && x < m.arrival - 1;
+    const within = x > m.due + 1 && x < m.arrival - 1, reached = lengthOf(points.slice(0, i + 1)) / total;
     dot(x, y, 6.5, {
       color: within ? P.unknown : P.evidence,
-      alpha: a * ramp(seen, i / CURVE.length, 0.15)
+      alpha: a * ease(clamp((seen - reached + 0.15) / 0.4))
     });
   });
   nameText(L("回测", "Backtest"), x0 - NAME_GAP, top + TEST.h / 2, { align: "right", alpha: a });
@@ -4178,7 +4257,7 @@ function nightStage(s, t, c, g) {
     card: soon(t, c.first3 - 0.15, 0.8),
     due: soon(t, c.usual - 0.1, 0.4),
     late: soon(t, c.measure + 0.05, 0.7),
-    flow: t > c.later + 0.6 ? flowOf2(t, 0.25) : null,
+    flow: { t, from: c.later + 0.6 },
     names
   });
   backtest(t, c, g, m, y + e.bottom + TEST.gap);
@@ -4193,7 +4272,7 @@ function hindsightStage(s, t, c, g) {
     alpha: g,
     card: soon(t, c.then - 0.15, 0.8),
     hours: D.hours,
-    flow: t < c.cannot ? flowOf2(t, 0.25) : null,
+    flow: { t, until: c.cannot },
     names
   });
   dot(m.left, y, m.mark, { color: P.line, alpha: g });
@@ -4218,10 +4297,8 @@ function hindsightStage(s, t, c, g) {
   nameText(series, today, box2.top - NAME_GAP, { valign: "bottom", alpha: data });
   const barX = m.arrival + HOUR * D.scale * 0.8, no = g * named(t, c.cannot);
   bar2(barX, y, { alpha: g * ramp(t, c.cannot + 0.35, 0.3), vertical: true, length: 44 });
-  if (t > c.cannot) {
-    const q = flowOf2(t, 0.5);
-    flowDot(mix(today - 12, barX + 10, q), y, 6, q, { color: P.unknown, alpha: g });
-  }
+  const back = flowAt(t, today - 12 - (barX + 10), { from: c.cannot });
+  flowDot(mix(today - 12, barX + 10, back?.q ?? 0), y, 6, back, { color: P.unknown, alpha: g });
   rejectedName(L("证明不了", "Cannot show"), barX, under, {
     valign: "top",
     alpha: no,
@@ -4308,6 +4385,182 @@ scenes["05"] = function(s, t) {
   illustrative(C4 + D3);
 };
 
+// picture/film/scenes/p06/night.js
+function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
+  if (alpha < 0.01) return;
+  stroke(
+    () => {
+      ctx.moveTo(x, y - s * 0.55);
+      ctx.lineTo(x + s * 0.45, y - s * 0.38);
+      ctx.lineTo(x + s * 0.42, y + s * 0.08);
+      ctx.quadraticCurveTo(x + s * 0.32, y + s * 0.4, x, y + s * 0.58);
+      ctx.quadraticCurveTo(x - s * 0.32, y + s * 0.4, x - s * 0.42, y + s * 0.08);
+      ctx.lineTo(x - s * 0.45, y - s * 0.38);
+      ctx.closePath();
+    },
+    { color, alpha, width }
+  );
+}
+function nightNames2(t, c) {
+  return {
+    axis: { v: L("昨晚", "Last night"), alpha: early(t, c.first1, c.night) },
+    late: { v: L("任务启动晚了", "Late start"), alpha: named(t, c.lateJob) }
+  };
+}
+function backStage(s, t, c, g) {
+  const names = nightNames2(t, c), e = lastNightExtent(1, { late: 1, names }), pageTop = 551 - 36 - 110 - NAME_GAP - 30, x = 960 - (e.left + e.right) / 2, y = 505 - (Math.min(e.top, pageTop - 551) + e.bottom) / 2;
+  const m = lastNight(x, y, 1, {
+    alpha: g,
+    late: soon(t, c.lateJob - 0.15, 0.7),
+    // The job's start stands on the rail as its log's stem touches down, by a fade a viewer sees.
+    arrival: { upto: ramp(t, c.log + 0.35, 0.4), alpha: 1 },
+    flow: { t },
+    names
+  });
+  const page = (h, shown, at2, rows) => {
+    const b = m.above(h), a = g * shown(t), reach = soon(t, at2 + 0.1, 0.5), cx = (b.left + b.right) / 2;
+    documentIcon(b.left + 20, b.top, b.right - b.left - 40, b.bottom - b.top, { alpha: a, rows });
+    line(cx, b.bottom, cx, mix(b.bottom, m.y, reach), { color: P.line, alpha: a, width: 2 });
+    return b;
+  };
+  const pubIn = (v) => early(v, c.checked, c.publication), logIn = (v) => named(v, c.log), pub = page(0, pubIn, Math.max(c.checked - 0.2, c.publication - 1.35), 2), log = page(2, logIn, c.log, 2);
+  nameText(L("发布时间", "Publication time"), m.due, pub.top - NAME_GAP, {
+    valign: "bottom",
+    alpha: g * pubIn(t)
+  });
+  nameText(L("任务日志", "Job log"), m.arrival, log.top - NAME_GAP, {
+    valign: "bottom",
+    alpha: g * logIn(t)
+  });
+  const on = g * named(t, c.onTime), sx = pub.right - 20, sy = pub.bottom - 18;
+  dot(sx, sy, 17, { color: P.ground, alpha: on });
+  dot(sx, sy, 17, { color: P.evidence, alpha: on, hollow: true, width: 2.5 });
+  check(sx, sy + 1, 18, { alpha: on, upto: soon(t, c.onTime + 0.05, 0.4) });
+  nameText(L("按时发布", "On time"), sx + 17 + NAME_GAP, sy, { align: "left", alpha: on });
+}
+var B3 = {
+  scale: 0.75,
+  x: 960,
+  y: 250,
+  spine: 642,
+  slab: [680, 1060],
+  ys: [458, 588, 718],
+  h: 84
+};
+var MOVE = 1.3;
+var moves = (c) => c.earlier + 0.45;
+var nightPlace = () => B3.x + (measure(L("昨晚", "Last night")) + NAME_GAP) / 2;
+var startMoved = (t, c) => travel(t, moves(c), MOVE);
+function nightWay(c) {
+  const from = voiceTime(moves(c));
+  return (v) => (4 - mix(2, -0.6, ease((v - from) / MOVE))) * HOUR * B3.scale;
+}
+var THREE2 = () => L("三层", "Three layers");
+var LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]);
+var REFUSED = () => L("从根上修好", "A systemic fix");
+function layersStage(s, t, c, g) {
+  const move = startMoved(t, c), names = {
+    axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
+    late: { v: L("任务启动晚了", "Late start"), alpha: 1 - ramp(t, c.earlier + 0.05, 0.4) }
+  };
+  const m = lastNight(nightPlace(), B3.y, B3.scale, {
+    alpha: g,
+    late: { upto: 1, alpha: 1 - move },
+    lateBy: mix(2, -0.6, move),
+    arrival: 1,
+    flow: { t, length: nightWay(c) },
+    names
+  });
+  const place = m.above(0), missing = g * named(t, Math.min(c.missing, c.fill)), patched = g * ramp(t, Math.max(c.missing, c.fill) + 0.2, 0.4);
+  missingPage(place.left + 14, place.top, place.right - place.left - 28, place.bottom - place.top, {
+    alpha: missing
+  });
+  documentIcon(
+    place.left + 14,
+    place.top,
+    place.right - place.left - 28,
+    place.bottom - place.top,
+    {
+      alpha: patched,
+      rows: 0
+    }
+  );
+  patchMark2((place.left + place.right) / 2, place.bottom - 22, 22, { alpha: patched });
+  line(m.due, place.bottom, m.due, m.y - m.tick, { color: P.line, alpha: missing, width: 2 });
+  nameText(
+    L("缺的数据", "The missing data"),
+    place.right + NAME_GAP - 14,
+    (place.top + place.bottom) / 2,
+    {
+      align: "left",
+      alpha: missing
+    }
+  );
+  [
+    [-1.3, c.asks[1]],
+    [0.6, c.asks[2]]
+  ].forEach(([h, at2]) => openMark2(m.at(h), m.y, 7, { alpha: g * ramp(t, at2 - 0.15, 0.4) }));
+  const guard = g * named(t, c.safeguard);
+  dot(m.due, m.y, 15, { color: P.ground, alpha: guard });
+  shieldMark(m.due, m.y, 26, { alpha: guard });
+  nameText(L("刚好够用的防护", "The lightest safeguard"), m.due, m.y + 15 + NAME_GAP, {
+    valign: "top",
+    alpha: guard
+  });
+  const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35), toBracket = B3.slab[1] + NAME_GAP + L(170, 190), left = B3.spine - NAME_GAP - measure(THREE2()), reach = toBracket + NAME_GAP + measure(REFUSED()) + 42, shift = centring(left, reach), spine = B3.spine + shift, [x0, x1] = B3.slab.map((x) => x + shift), ats = c.layers, top = B3.ys[0] - B3.h / 2, bottom = B3.ys[2] + B3.h / 2, count = g * early(t, c.first2, c.three);
+  line(spine, top, spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
+    color: P.ink,
+    alpha: count,
+    width: 3
+  });
+  nameText(THREE2(), spine - NAME_GAP, (top + bottom) / 2, {
+    align: "right",
+    alpha: count
+  });
+  const done = g * ramp(t, c.firstTwo - 0.1, 0.4);
+  B3.ys.forEach((y, i) => {
+    const q = g * ramp(t, ats[i] - 0.15, 0.4), lit = g * speaking(t, ats, i);
+    line(spine, y, x0, y, { color: P.line, alpha: q, width: 2 });
+    box(x0, y - B3.h / 2, x1 - x0, B3.h, {
+      fill: P.row,
+      stroke: P.line,
+      alpha: q,
+      radius: 10,
+      width: 2.5
+    });
+    box(x0, y - B3.h / 2, x1 - x0, B3.h, { stroke: P.ink, alpha: q * lit, radius: 10, width: 3 });
+    if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
+    else openMark2(x0 + 190, y, 17, { alpha: g * ramp(t, c.asks[0] + 0.05, 0.4) });
+    if (i === 0) patchMark2(x0 + 60, y, 30, { alpha: q });
+    if (i === 1) {
+      dot(x0 + 60, y, 17, { color: P.ink, alpha: q, hollow: true, width: 2.5 });
+      line(x0 + 60, y, x0 + 60, y - 10, { color: P.ink, alpha: q, width: 2.5 });
+      line(x0 + 60, y, x0 + 52, y - 4, { color: P.ink, alpha: q, width: 2.5 });
+    }
+    if (i === 2) shieldMark(x0 + 60, y, 34, { alpha: q, color: P.ink });
+    nameText(LAYERS()[i], x1 + NAME_GAP, y, {
+      align: "left",
+      alpha: g * listIn(t, ats, i),
+      set: "layers"
+    });
+  });
+  const bx = toBracket + shift, a = g * named(t, refusedAt - 0.4), ty = B3.ys[0] - B3.h / 2 + 6, by = B3.ys[1] + B3.h / 2 - 6;
+  path(
+    [
+      [bx - 14, ty],
+      [bx, ty],
+      [bx, by],
+      [bx - 14, by]
+    ],
+    { upto: soon(t, refusedAt - 0.4, 0.6), color: P.ink, alpha: a, width: 2.5 }
+  );
+  rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
+    align: "left",
+    alpha: g * named(t, refusedAt),
+    mark: ramp(t, c.notFix + 0.05, 0.4)
+  });
+}
+
 // picture/film/scenes/p06/claims.js
 var C2 = { y: 690, pitch: 180, icon: 634 };
 function stationMark(i, x, y, a) {
@@ -4343,11 +4596,11 @@ function stationMark(i, x, y, a) {
   } else recoverIcon(x, y, 15, { alpha: a, color: P.evidence });
 }
 function chainStage(s, t, c, g) {
-  lastNight(960, 250, 0.75, {
+  lastNight(nightPlace(), 250, 0.75, {
     alpha: g,
     lateBy: -0.6,
     arrival: 1,
-    flow: flowOf2(t, 0.25),
+    flow: { t, length: nightWay(c) },
     names: {
       arrival: { v: L("任务提前启动", "An earlier start"), alpha: early(t, c.first3, c.approved) }
     }
@@ -4367,10 +4620,8 @@ function chainStage(s, t, c, g) {
     alpha: g * 0.9,
     width: mix(5, 2.5, slim)
   });
-  if (t > ats[n - 1] + 0.6) {
-    const q = flowOf2(t, 0.2);
-    flowDot(mix(xs[0], xs[n - 1], q), C2.y, 6, q, { color: P.evidence, alpha: g });
-  }
+  const runs = flowAt(t, xs[n - 1] - xs[0], { from: ats[n - 1] + 0.6 });
+  flowDot(mix(xs[0], xs[n - 1], runs?.q ?? 0), C2.y, 6, runs, { color: P.evidence, alpha: g });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4), lit = speaking(t, ats, i);
     dot(x, C2.y, 6, { color: P.ink, alpha: a });
@@ -4525,10 +4776,11 @@ function verifiedStage(s, t, c, g) {
   });
   const seen = g * named(t, c.observed);
   line(useX + fw / 2 + 8, fy, eyeX - 40, fy, { color: P.line, alpha: seen, width: 2.5 });
-  if (t > c.observed + 0.4) {
-    const q = flowOf2(t, 0.5);
-    flowDot(mix(eyeX - 40, useX + fw / 2 + 8, q), fy, 4.5, q, { color: P.evidence, alpha: seen });
-  }
+  const carried = flowAt(t, eyeX - 40 - (useX + fw / 2 + 8), { from: c.observed + 0.4 });
+  flowDot(mix(eyeX - 40, useX + fw / 2 + 8, carried?.q ?? 0), fy, 4.5, carried, {
+    color: P.evidence,
+    alpha: seen
+  });
   stroke(
     () => {
       ctx.moveTo(eyeX - 30, fy);
@@ -4541,6 +4793,7 @@ function verifiedStage(s, t, c, g) {
   nameText(L("实际看到的", "Actually observed"), eyeX, under, { valign: "top", alpha: seen });
 }
 var F2 = { y: 450, w: 600, h: 200, narrow: 380 };
+var NARROWING = 1;
 var SUBJECT = () => L("哪个对象、哪个版本", "Subject and version");
 var SIGNED = () => L("谁、什么时候、什么方法", "When, by whom, how");
 function claimStage(s, t, c, g) {
@@ -4548,7 +4801,7 @@ function claimStage(s, t, c, g) {
     [18 - signX, tagX - 35],
     [18 - signX, right],
     [left, right]
-  ].map(([l, r]) => centring(960 + l, 960 + r)), x = 960 + (Math.max(...shifts) + Math.min(...shifts)) / 2, narrowed = soon(t, c.narrow + 0.05, 0.8), w = mix(F2.w, F2.narrow, narrowed), cl = x - F2.w / 2, top = F2.y - F2.h / 2, under = F2.y + 34 + NAME_GAP;
+  ].map(([l, r]) => centring(960 + l, 960 + r)), x = 960 + (Math.max(...shifts) + Math.min(...shifts)) / 2, narrowed = travel(t, c.narrow + 0.05, NARROWING), w = mix(F2.w, F2.narrow, narrowed), cl = x - F2.w / 2, top = F2.y - F2.h / 2, under = F2.y + 34 + NAME_GAP;
   line(x - signX + 18, F2.y, x + tagX - 35, F2.y, { color: P.line, alpha: g, width: 2 });
   if (narrowed > 0)
     box(cl, top, F2.w, F2.h, {
@@ -4573,19 +4826,22 @@ function claimStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * early(t, c.first6, c.claim)
   });
-  const pin = g * named(t, c.subject), tx = x + tagX;
-  if (t > c.subject + 0.5) {
-    const q = flowOf2(t, 0.5);
-    flowDot(mix(cl + w + 4, tx - 35, q), F2.y, 4, q, { color: P.ink, alpha: pin });
-  }
+  const pin = g * named(t, c.subject), tx = x + tagX, narrows = voiceTime(c.narrow + 0.05), pinned = flowAt(
+    t,
+    (v) => tx - 35 - (cl + mix(F2.w, F2.narrow, ease((v - narrows) / NARROWING)) + 4),
+    {
+      from: c.subject + 0.5
+    }
+  );
+  flowDot(mix(cl + w + 4, tx - 35, pinned?.q ?? 0), F2.y, 4, pinned, { color: P.ink, alpha: pin });
   tagIcon(tx - 35, F2.y, 70, 34, { alpha: pin, color: P.ink });
   nameText(SUBJECT(), tx, under, { valign: "top", alpha: pin });
   const sign = g * named(t, c.signed), sx = x - signX;
   ring(sx, F2.y, 18, { color: P.evidence, alpha: sign, width: 2.5 });
   check(sx, F2.y + 1, 18, { alpha: sign });
   nameText(SIGNED(), sx, under, { valign: "top", alpha: sign });
-  const cy = top + F2.h + 40, split = cl + F2.narrow, covered2 = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
-  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered2 * 0.85, radius: 4 });
+  const cy = top + F2.h + 40, split = cl + F2.narrow, covered3 = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
+  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered3 * 0.85, radius: 4 });
   box(split + 6, cy - 12, cl + F2.w - split - 6, 24, {
     stroke: P.unknown,
     alpha: unproved,
@@ -4593,7 +4849,7 @@ function claimStage(s, t, c, g) {
     width: 2.5,
     dash: [6, 6]
   });
-  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered2 });
+  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered3 });
   nameText(L("没证明", "Unproved"), two, row1, { valign: "top", alpha: unproved });
   nameText(L("收窄说法", "A narrower claim"), one, row2, {
     valign: "top",
@@ -4645,173 +4901,6 @@ function pairsStage(s, t, c, g) {
     openMark2(rx, row.y, r, { alpha: b });
     nameText(row.from, lx, row.y + 70 + NAME_GAP, { valign: "top", alpha: a });
     nameText(row.not, rx, row.y + 70 + NAME_GAP, { valign: "top", alpha: b });
-  });
-}
-
-// picture/film/scenes/p06/night.js
-function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
-  if (alpha < 0.01) return;
-  stroke(
-    () => {
-      ctx.moveTo(x, y - s * 0.55);
-      ctx.lineTo(x + s * 0.45, y - s * 0.38);
-      ctx.lineTo(x + s * 0.42, y + s * 0.08);
-      ctx.quadraticCurveTo(x + s * 0.32, y + s * 0.4, x, y + s * 0.58);
-      ctx.quadraticCurveTo(x - s * 0.32, y + s * 0.4, x - s * 0.42, y + s * 0.08);
-      ctx.lineTo(x - s * 0.45, y - s * 0.38);
-      ctx.closePath();
-    },
-    { color, alpha, width }
-  );
-}
-function nightNames2(t, c) {
-  return {
-    axis: { v: L("昨晚", "Last night"), alpha: early(t, c.first1, c.night) },
-    late: { v: L("任务启动晚了", "Late start"), alpha: named(t, c.lateJob) }
-  };
-}
-function backStage(s, t, c, g) {
-  const names = nightNames2(t, c), e = lastNightExtent(1, { late: 1, names }), pageTop = 551 - 36 - 110 - NAME_GAP - 30, x = 960 - (e.left + e.right) / 2, y = 505 - (Math.min(e.top, pageTop - 551) + e.bottom) / 2;
-  const m = lastNight(x, y, 1, {
-    alpha: g,
-    late: soon(t, c.lateJob - 0.15, 0.7),
-    arrival: { upto: ramp(t, c.log + 0.35, 0.2), alpha: 1 },
-    flow: flowOf2(t, 0.25),
-    names
-  });
-  const page = (h, shown, at2, rows) => {
-    const b = m.above(h), a = g * shown(t), reach = soon(t, at2 + 0.1, 0.5), cx = (b.left + b.right) / 2;
-    documentIcon(b.left + 20, b.top, b.right - b.left - 40, b.bottom - b.top, { alpha: a, rows });
-    line(cx, b.bottom, cx, mix(b.bottom, m.y, reach), { color: P.line, alpha: a, width: 2 });
-    return b;
-  };
-  const pubIn = (v) => early(v, c.checked, c.publication), logIn = (v) => named(v, c.log), pub = page(0, pubIn, Math.max(c.checked - 0.2, c.publication - 1.35), 2), log = page(2, logIn, c.log, 2);
-  nameText(L("发布时间", "Publication time"), m.due, pub.top - NAME_GAP, {
-    valign: "bottom",
-    alpha: g * pubIn(t)
-  });
-  nameText(L("任务日志", "Job log"), m.arrival, log.top - NAME_GAP, {
-    valign: "bottom",
-    alpha: g * logIn(t)
-  });
-  const on = g * named(t, c.onTime), sx = pub.right - 20, sy = pub.bottom - 18;
-  dot(sx, sy, 17, { color: P.ground, alpha: on });
-  dot(sx, sy, 17, { color: P.evidence, alpha: on, hollow: true, width: 2.5 });
-  check(sx, sy + 1, 18, { alpha: on, upto: soon(t, c.onTime + 0.05, 0.4) });
-  nameText(L("按时发布", "On time"), sx + 17 + NAME_GAP, sy, { align: "left", alpha: on });
-}
-var B3 = {
-  scale: 0.75,
-  x: 960,
-  y: 250,
-  spine: 642,
-  slab: [680, 1060],
-  ys: [458, 588, 718],
-  h: 84
-};
-var THREE2 = () => L("三层", "Three layers");
-var LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]);
-var REFUSED = () => L("从根上修好", "A systemic fix");
-function layersStage(s, t, c, g) {
-  const move = soon(t, c.earlier + 0.45, 0.9), names = {
-    axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
-    late: { v: L("任务启动晚了", "Late start"), alpha: 1 - ramp(t, c.earlier + 0.05, 0.4) }
-  };
-  const m = lastNight(B3.x + (measure(names.axis.v) + NAME_GAP) / 2, B3.y, B3.scale, {
-    alpha: g,
-    late: { upto: 1, alpha: 1 - move },
-    lateBy: mix(2, -0.6, move),
-    arrival: 1,
-    flow: flowOf2(t, 0.25),
-    names
-  });
-  const place = m.above(0), missing = g * named(t, Math.min(c.missing, c.fill)), patched = g * ramp(t, Math.max(c.missing, c.fill) + 0.2, 0.4);
-  missingPage(place.left + 14, place.top, place.right - place.left - 28, place.bottom - place.top, {
-    alpha: missing
-  });
-  documentIcon(
-    place.left + 14,
-    place.top,
-    place.right - place.left - 28,
-    place.bottom - place.top,
-    {
-      alpha: patched,
-      rows: 0
-    }
-  );
-  patchMark2((place.left + place.right) / 2, place.bottom - 22, 22, { alpha: patched });
-  line(m.due, place.bottom, m.due, m.y - m.tick, { color: P.line, alpha: missing, width: 2 });
-  nameText(
-    L("缺的数据", "The missing data"),
-    place.right + NAME_GAP - 14,
-    (place.top + place.bottom) / 2,
-    {
-      align: "left",
-      alpha: missing
-    }
-  );
-  [
-    [-1.3, c.asks[1]],
-    [0.6, c.asks[2]]
-  ].forEach(([h, at2]) => openMark2(m.at(h), m.y, 7, { alpha: g * ramp(t, at2 - 0.15, 0.4) }));
-  const guard = g * named(t, c.safeguard);
-  dot(m.due, m.y, 15, { color: P.ground, alpha: guard });
-  shieldMark(m.due, m.y, 26, { alpha: guard });
-  nameText(L("刚好够用的防护", "The lightest safeguard"), m.due, m.y + 15 + NAME_GAP, {
-    valign: "top",
-    alpha: guard
-  });
-  const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35), toBracket = B3.slab[1] + NAME_GAP + L(170, 190), left = B3.spine - NAME_GAP - measure(THREE2()), reach = toBracket + NAME_GAP + measure(REFUSED()) + 42, shift = centring(left, reach), spine = B3.spine + shift, [x0, x1] = B3.slab.map((x) => x + shift), ats = c.layers, top = B3.ys[0] - B3.h / 2, bottom = B3.ys[2] + B3.h / 2, count = g * early(t, c.first2, c.three);
-  line(spine, top, spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
-    color: P.ink,
-    alpha: count,
-    width: 3
-  });
-  nameText(THREE2(), spine - NAME_GAP, (top + bottom) / 2, {
-    align: "right",
-    alpha: count
-  });
-  const done = g * ramp(t, c.firstTwo - 0.1, 0.4);
-  B3.ys.forEach((y, i) => {
-    const q = g * ramp(t, ats[i] - 0.15, 0.4), lit = g * speaking(t, ats, i);
-    line(spine, y, x0, y, { color: P.line, alpha: q, width: 2 });
-    box(x0, y - B3.h / 2, x1 - x0, B3.h, {
-      fill: P.row,
-      stroke: P.line,
-      alpha: q,
-      radius: 10,
-      width: 2.5
-    });
-    box(x0, y - B3.h / 2, x1 - x0, B3.h, { stroke: P.ink, alpha: q * lit, radius: 10, width: 3 });
-    if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
-    else openMark2(x0 + 190, y, 17, { alpha: g * ramp(t, c.asks[0] + 0.05, 0.4) });
-    if (i === 0) patchMark2(x0 + 60, y, 30, { alpha: q });
-    if (i === 1) {
-      dot(x0 + 60, y, 17, { color: P.ink, alpha: q, hollow: true, width: 2.5 });
-      line(x0 + 60, y, x0 + 60, y - 10, { color: P.ink, alpha: q, width: 2.5 });
-      line(x0 + 60, y, x0 + 52, y - 4, { color: P.ink, alpha: q, width: 2.5 });
-    }
-    if (i === 2) shieldMark(x0 + 60, y, 34, { alpha: q, color: P.ink });
-    nameText(LAYERS()[i], x1 + NAME_GAP, y, {
-      align: "left",
-      alpha: g * listIn(t, ats, i),
-      set: "layers"
-    });
-  });
-  const bx = toBracket + shift, a = g * named(t, refusedAt - 0.4), ty = B3.ys[0] - B3.h / 2 + 6, by = B3.ys[1] + B3.h / 2 - 6;
-  stroke(
-    () => {
-      ctx.moveTo(bx - 14, ty);
-      ctx.lineTo(bx, ty);
-      ctx.lineTo(bx, mix(ty, by, soon(t, refusedAt - 0.4, 0.6)));
-      if (soon(t, refusedAt - 0.4, 0.6) > 0.98) ctx.lineTo(bx - 14, by);
-    },
-    { color: P.ink, alpha: a, width: 2.5 }
-  );
-  rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
-    align: "left",
-    alpha: g * named(t, refusedAt),
-    mark: ramp(t, c.notFix + 0.05, 0.4)
   });
 }
 
@@ -4968,7 +5057,7 @@ function delegationStage(s, t, c, g) {
   const tl = g * ramp(t, c.find - 0.15, 0.4), m = lastNight(x, D2.rail, D2.scale, {
     alpha: tl,
     hours: [-1, 3],
-    flow: t > c.find + 0.6 ? flowOf2(t, 0.25) : null
+    flow: { t, from: c.find + 0.6 }
   });
   const times = [m.due, m.arrival];
   times.forEach(
@@ -5047,7 +5136,7 @@ function callerStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns"
   });
-  const sub = g * named(t, c.submit), wx = mix(E3.caller, xs[0], soon(t, c.submit, 0.8)), wy = E3.y + 200;
+  const sub = g * named(t, c.submit), wx = mix(E3.caller, xs[0], travel(t, c.submit, 0.9)), wy = E3.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });
   line(wx - 24, wy + 8, wx + 10, wy + 8, { color: P.muted, alpha: sub, width: 2 });
@@ -5100,7 +5189,7 @@ var GROUP = [
   [31, 34]
 ];
 function collaborationStage(s, t, c, g) {
-  const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = soon(t, c.extend - 0.6, 0.45), deep = soon(t, c.refusals[0] - 0.6, 0.45), halfW = mix(110, wide, grow), y = A3.y, ax = A3.ax, px = A3.px;
+  const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = travel(t, c.extend - 0.6, 0.6), deep = travel(t, c.refusals[0] - 0.6, 0.6), halfW = mix(110, wide, grow), y = A3.y, ax = A3.ax, px = A3.px;
   people3(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
     { alpha: g, size: 1.05 }
@@ -5113,7 +5202,7 @@ function collaborationStage(s, t, c, g) {
   agent(ax, y, { alpha: g, size: 2 });
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
   const left = px + 110, outEnd = ax - wide - 2 * NAME_GAP, collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab));
-  link(left, y, ax - 56, y, { alpha: g, flow: flowOf2(t, 0.3), width: 2.5 });
+  link(left, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
   nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + outEnd) / 2, y - NAME_GAP, {
     valign: "bottom",
     alpha: collab
@@ -5132,7 +5221,7 @@ function collaborationStage(s, t, c, g) {
       set: "refusals"
     })
   );
-  const ats = c.stays, open = soon(t, c.stay - 0.1, 1.3), ys = [0, 1, 2, 3].map((k) => y + 196 + k * 44), m = mix(8, 30, open);
+  const ats = c.stays, open = travel(t, c.stay - 0.1, 0.8), ys = [0, 1, 2, 3].map((k) => y + 196 + k * 44), m = mix(8, 30, open);
   if (open > 0.01)
     fill(
       () => ctx.roundRect(px - 100 - m, ys[0] - 15 - m, 200 + 2 * m, ys[3] - ys[0] + 30 + 2 * m, 14),
@@ -5147,27 +5236,27 @@ function collaborationStage(s, t, c, g) {
   ).forEach((v, i) => nameText(v, px, ys[i], { alpha: g * listIn(t, ats, i), set: "stays" }));
 }
 var B4 = { y: 530, decision: 200 };
+var CLIMB = [0.35, 0.68, 0.95, 1.2, 1.55, 2.15];
+var FADE = 0.45;
 var PAGE2 = [190, 250];
-function stack(x, y, pages, { alpha = 1 } = {}) {
+function stack(x, y, shares, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
-  const n = Math.round(pages), [w, h] = PAGE2;
-  stroke(
-    () => {
-      for (let k = n - 1; k >= 1; k--) {
-        const ox = x + k * 7, oy = y - k * 7;
-        ctx.moveTo(ox + w, oy - h + 7);
-        ctx.lineTo(ox + w, oy - h);
-        ctx.lineTo(ox + 7, oy - h);
-      }
-    },
-    { color: P.muted, alpha, width: 2 }
-  );
+  const [w, h] = PAGE2;
+  const corner = (k) => {
+    const ox = x + k * 7, oy = y - k * 7;
+    ctx.moveTo(ox + w, oy - h + 7);
+    ctx.lineTo(ox + w, oy - h);
+    ctx.lineTo(ox + 7, oy - h);
+  };
+  for (let k = shares.length - 1; k >= 1; k--)
+    if (shares[k] > 0.01)
+      stroke(() => corner(k), { color: P.muted, alpha: alpha * shares[k], width: 2 });
   documentIcon(x, y - h, w, h, { alpha, rows: 4 });
 }
 function pagesStage(s, t, c, g) {
-  const decided = g * named(t, c.decision), x = 960 + (266 - 166) / 2, pages = g * early(t, c.first2, c.pages), climbed = 4 + 6 * soon(t, c.first2, 3.6);
+  const decided = g * named(t, c.decision), x = 960 + (266 - 166) / 2, pages = g * early(t, c.first2, c.pages), shares = [1, 1, 1, 1, ...CLIMB.map((at2) => ramp(t, c.first2 + at2, FADE))];
   agent(x - 200, B4.y, { alpha: pages, size: 3 });
-  stack(x - 87, B4.y + 125, climbed, { alpha: pages });
+  stack(x - 87, B4.y + 125, shares, { alpha: pages });
   nameText(L("十页分析", "The ten pages"), x + 40, B4.y + 125 + NAME_GAP, {
     valign: "top",
     alpha: pages
@@ -5181,8 +5270,8 @@ function pagesStage(s, t, c, g) {
   });
   link(dx, dy + 60, dx, B4.y - 78, {
     alpha: decided,
-    upto: soon(t, c.decision, 0.7),
-    flow: t > c.decision + 0.8 ? flowOf2(t, 0.4) : null
+    upto: soon(t, c.decision - 0.1, 0.55),
+    flow: { t, from: c.decision + 0.8 }
   });
 }
 var C3 = { y: 425, pile: 170, clear: 34 };
@@ -5191,7 +5280,7 @@ function boundaryStage(s, t, c, g) {
   const ats = c.five, items = L(
     ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
     ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"]
-  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(105, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, nameLeft = -half - NAME_GAP - measure(name), x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2, grown = ats.reduce((v, at2) => v + soon(t, at2 - 0.6, 0.45), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
+  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(105, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, nameLeft = -half - NAME_GAP - measure(name), x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2, grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
   boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
   nameText(name, x - half - NAME_GAP, top, {
@@ -5316,7 +5405,7 @@ function lanesStage(s, t, c, g0) {
     alpha: recur,
     due: 1,
     lit: { upto: soon(t, c.recur, 0.8), dash: true },
-    flow: t > c.warns ? flowOf2(t, 0.3) : null,
+    flow: { t, from: c.warns },
     names: {
       late: { v: L("还会出现", "Recurrence"), side: "top", alpha: 1 },
       axis: { v: L("调度", "The schedule"), side: "left", alpha: named(t, c.schedule) }
@@ -5349,7 +5438,7 @@ function lanesStage(s, t, c, g0) {
     color: P.evidence,
     alpha: fixed,
     stamp: fixed * stamped,
-    hollow: stamped < 0.5
+    hollow: 1 - stamped
   });
   nameText(L("修好了", "Fixed"), A4.stamp, sy + 40 + NAME_GAP, { valign: "top", alpha: fixed });
 }
@@ -5374,19 +5463,16 @@ function aimStage(s, t, c, g) {
     { color: P.line, alpha: g, width: 3.5 }
   );
   [top, bottom].forEach((y) => dot(G.x0, y, 4.5, { color: P.line, alpha: g }));
-  const drawn = starts[0] - 0.15 + 0.8;
-  if (t >= drawn) {
-    const q = (voiceTime(t) - voiceTime(drawn)) * 0.3 % 1;
-    dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
-  }
-  const f = g * ramp(t, starts[0] - 0.15, 0.4), d = g * ramp(t, ats[0] - 0.15, 0.4), early0 = soon(t, ats[0] + 0.2, 0.9);
+  const runs = flowAt(t, G.x1 - G.x0, { from: starts[0] - 0.15 + 0.8 });
+  flowDot(mix(G.x0, G.x1, runs?.q ?? 0), y0, 5, runs, { color: P.ink, alpha: g });
+  const f = g * ramp(t, starts[0] - 0.15, 0.4), d = g * ramp(t, ats[0] - 0.15, 0.4), early0 = travel(t, ats[0] + 0.2, 1.1);
   dot(1020, y0, 8, { color: P.unknown, alpha: f });
   ring(1110, y0, 14, { color: P.muted, alpha: d * early0 * 0.6, width: 2 });
   ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: d, width: 3 });
   const j = g * ramp(t, ats[1] - 0.15, 0.4), clear = soon(t, ats[1] + 0.2, 0.6);
-  diamond(mid, y1, 20, { color: P.authority, alpha: j, solid: clear > 0.5 });
+  diamond(mid, y1, 20, { color: P.authority, alpha: j, solid: clear });
   openMark2(mid, y1, 28, { alpha: j * (1 - clear) });
-  const r = g * ramp(t, ats[2] - 0.15, 0.4), shrink = soon(t, ats[2] + 0.2, 1.2);
+  const r = g * ramp(t, ats[2] - 0.15, 0.4), shrink = travel(t, ats[2] + 0.2, 1.2);
   stroke(
     () => {
       ctx.moveTo(G.x0 + 30, y2);
@@ -5468,13 +5554,8 @@ function signsStage(s, t, c, g) {
   );
   beats(t, xs[1], B5.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
   beats(t, xs[3], B5.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
-  if (t > c.guard + 1) {
-    const q = flowOf2(t, 0.3);
-    dot(mix(xs[0] - 108, xs[3] + 108, q), B5.y, 4 * Math.min(1, q * 8, (1 - q) * 8), {
-      color: P.ink,
-      alpha: g
-    });
-  }
+  const runs = flowAt(t, xs[3] + 108 - (xs[0] - 108), { from: c.guard + 1 });
+  flowDot(mix(xs[0] - 108, xs[3] + 108, runs?.q ?? 0), B5.y, 4, runs, { color: P.ink, alpha: g });
   nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, B5.y + 54 + NAME_GAP, {
     valign: "top",
     alpha: rescue
@@ -5523,7 +5604,7 @@ function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
 }
 var M = { x: 960, y: 540, scale: 0.8 };
 function monitorStage(s, t, c, g) {
-  const m = lastNight(M.x, M.y, M.scale, { alpha: g, due: 1, flow: flowOf2(t, 0.3) });
+  const m = lastNight(M.x, M.y, M.scale, { alpha: g, due: 1, flow: { t } });
   ring(m.due, M.y, 17, { color: P.evidence, alpha: g, width: 3 });
   line(m.due, M.y - 17, m.due, M.y - 60, { color: P.line, alpha: g, width: 2.5 });
   stroke(() => ctx.roundRect(m.due - 60, M.y - 150, 120, 90, 10), {
@@ -5597,7 +5678,7 @@ function nextUserStage(s, t, c, g) {
   const m = lastNight(x, y, 1, {
     alpha: g,
     card: 1,
-    flow: t > c.user + 0.6 ? flowOf2(t, 0.25) : null,
+    flow: { t, from: c.user + 0.6 },
     names
   });
   const user = g * named(t, c.user), ux = m.right + 90;
@@ -5637,13 +5718,8 @@ function aimsStage(s, t, c, g) {
       set: "aims"
     })
   );
-  if (t > ats[2] + 0.5) {
-    const q = flowOf2(t, 0.35);
-    dot(mix(px + 62, ox - 40, q), y, 6 * Math.min(1, q * 8, (1 - q) * 8), {
-      color: P.ink,
-      alpha: g
-    });
-  }
+  const runs = flowAt(t, ox - 40 - (px + 62), { from: ats[2] + 0.5 });
+  flowDot(mix(px + 62, ox - 40, runs?.q ?? 0), y, 6, runs, { color: P.ink, alpha: g });
 }
 
 // picture/film/scenes/p08/scene.js

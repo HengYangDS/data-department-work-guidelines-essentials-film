@@ -154,7 +154,8 @@ function cuesOf(s) {
 
 /* A: the field centred, its four sides counting in on 「四条底线」/ "Four boundaries", lit in the colour of authority, and
  * named over itself, where B and C name it too; a point stands at its centre, and on 「不能越过」/ "never be crossed" it
- * runs to its right side and stops there. */
+ * runs to its right side and stops there. The phrase ends its thought within a second, so the run eases out over 0.8 s
+ * of the film's own time and settles before the quiet that follows (at most 465 px/s), rather than resting part way. */
 const A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
 function stageField(t, a, c) {
   field(A.x, A.y, A.w, A.h, {
@@ -167,7 +168,7 @@ function stageField(t, a, c) {
     alpha: a * named(t, c.four),
   });
   // A point stands inside from the first words; on 「不能越过」/ "never be crossed" it runs to the right side and stops.
-  const run = soon(t, c.never + 0.05, 0.7);
+  const run = ramp(t, c.never - 0.05, 0.8);
   dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
     color: P.ink,
     alpha: a * ramp(t, c.four - 0.15, 0.3),

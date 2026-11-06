@@ -14,7 +14,8 @@ import { railNames, rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, centring, early, flowOf, openMark } from "../p05/kit.js";
+import { travel } from "../../timing/pauses.js";
+import { bar, centring, early, openMark } from "../p05/kit.js";
 
 /* Failure 1's fork: a way that splits, its taken branch in the colour of authority. */
 function fork(x, y, { alpha = 1 } = {}) {
@@ -97,7 +98,7 @@ export function delegationStage(s, t, c, g) {
     m = lastNight(x, D.rail, D.scale, {
       alpha: tl,
       hours: [-1, 3],
-      flow: t > c.find + 0.6 ? flowOf(t, 0.25) : null,
+      flow: { t, from: c.find + 0.6 },
     });
   const times = [m.due, m.arrival];
   times.forEach((tx, i) =>
@@ -193,10 +194,10 @@ export function callerStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns",
   });
-  // Submitting: the work card leaves the caller for the first station's column, and three checks build under the
-  // other three stations.
+  // Submitting: the work card leaves the caller for the first station's column, a glide over 0.9 s of voice time, and
+  // three checks build under the other three stations.
   const sub = g * named(t, c.submit),
-    wx = mix(E.caller, xs[0], soon(t, c.submit, 0.8)),
+    wx = mix(E.caller, xs[0], travel(t, c.submit, 0.9)),
     wy = E.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });

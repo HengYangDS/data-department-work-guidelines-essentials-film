@@ -9,7 +9,7 @@
  * others at its end, with the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
-import { dot, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
 import { cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { listIn, named } from "../../naming/lists.js";
@@ -122,12 +122,11 @@ function stageGuide(s, t, a, c) {
     alpha: g * named(t, c.agents),
   });
   // The delegation runs from the members to the Agents, a point travelling along it once it has reached them.
-  const reach = soon(t, c.delegate + 0.05, 0.8);
   link(MEMBERS[2] + 34, ROW, AGENTS[0] - 34, ROW, {
     alpha: g * ramp(t, c.delegate - 0.15, 0.4),
-    upto: reach,
+    upto: soon(t, c.delegate + 0.05, 0.8),
     width: 2.5,
-    flow: reach > 0.99 ? (voiceTime(t) * 0.45) % 1 : null,
+    flow: { t, from: c.delegate + 0.85 },
   });
   nameText(L("委托", "Delegation"), 960, ROW_NAMES, {
     valign: "top",
@@ -161,13 +160,14 @@ const HANDED = () =>
 const OUTPUTS = () => L(["判断", "数据资产", "行动"], ["Judgments", "Data assets", "Actions"]);
 const QUALITIES = () =>
   L(["讲得清", "经得起查", "能用到哪里"], ["Explained", "Checked", "Clear limits"]);
-/* The way, its name, and the signal at its left from the signal's words: the wave takes the way's first stretch. */
+/* The way, its name, and the signal at its left from the signal's words: the wave takes the way's first stretch, which
+ * fades out with the way's starting point as the wave fades in, so the way never loses its start in a frame. */
 function theWay(t, a, c, end) {
-  const signal = ramp(t, c.signal - 0.15, 0.4),
-    start = t >= c.signal - 0.15 ? WAVE_END : WAY[0];
-  line(start, WAY_Y, end, WAY_Y, { color: P.line, alpha: a, width: 3.5 });
+  const signal = ramp(t, c.signal - 0.15, 0.4);
+  line(WAVE_END, WAY_Y, end, WAY_Y, { color: P.line, alpha: a, width: 3.5 });
+  line(WAY[0], WAY_Y, WAVE_END, WAY_Y, { color: P.line, alpha: a * (1 - signal), width: 3.5 });
   dot(WAY[1], WAY_Y, 6, { color: P.line, alpha: a });
-  if (t < c.signal - 0.15) dot(WAY[0], WAY_Y, 6, { color: P.line, alpha: a });
+  dot(WAY[0], WAY_Y, 6, { color: P.line, alpha: a * (1 - signal) });
   wave(WAY[0], WAVE_END, WAY_Y, voiceTime(t) * 5, { alpha: a * signal });
   nameText(L("工作的价值", "The value of data work"), 960, OVER, {
     valign: "bottom",
@@ -202,9 +202,9 @@ function stageWay(t, a, c) {
       width: 3,
     });
   });
-  // Points travel the way from the signal to the others once they stand at its end.
-  const q = (vt * 0.3) % 1;
-  if (t > c.others) flowDot(mix(WAVE_END, end, q), WAY_Y, 6, q, { color: P.evidence, alpha: a });
+  // Points travel the way from the signal to the others once they stand at its end, the first from the way's start.
+  const carried = flowAt(t, end - WAVE_END, { from: c.others });
+  flowDot(mix(WAVE_END, end, carried?.q ?? 0), WAY_Y, 6, carried, { color: P.evidence, alpha: a });
   OUTPUTS().forEach((v, k) => {
     const on = a * ramp(t, c.outputs[k] - 0.15, 0.4);
     line(OUTPUT_X[k], WAY_Y + 2, OUTPUT_X[k], OUT_Y - 32, { color: P.line, alpha: on, width: 2 });

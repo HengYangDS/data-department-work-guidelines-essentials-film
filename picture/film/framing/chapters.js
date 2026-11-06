@@ -16,23 +16,73 @@ export const opensChapter = (s) => {
   return i > 0 && film.segments[i - 1].chapter !== s.chapter;
 };
 
-/* Marks in the rising chapter title's path wait until it has risen above them (a mark at height y appears as the title
- * passes y - 45 and stands once it is 60 px higher), so the two never meet, and they still stand by the first word. */
-const titleY = (s, t) => mix(540, 72, ease(clamp((t - (cardLanding(s) - RISE)) / RISE)));
-/* How far the rising chapter title has cleared a mark drawn at height y, measured on screen through the scene's
- * camera, so a closer shot keeps clear of the title as well as the scene's own frame. */
+/* Marks in the rising chapter title's path wait until it has risen above them: a mark at height y begins to fade in as
+ * the title passes y - 45 and stands CLEAR seconds later, a short fade rather than one gated on the title's travel, so
+ * the two never meet and the mark never snaps in behind the moving title; they still stand by the first word. */
+const CLEAR = 0.4;
+/* The time the rising title passes height h on the screen, on its way from its card's line (540) to the running head's
+ * (72); never, for a height it does not rise past. */
+function titlePasses(s, h) {
+  const { start, duration } = riseOf(s);
+  if (h >= 540) return start;
+  if (h <= 72) return Infinity;
+  const share = (540 - h) / (540 - 72);
+  let lo = start,
+    hi = start + duration;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (risen(s, mid) < share) lo = mid;
+    else hi = mid;
+  }
+  return hi;
+}
+/* How far a mark drawn at height y has faded in behind the rising chapter title, the height measured on screen through
+ * the scene's camera, so a closer shot keeps clear of the title as well as the scene's own frame. */
 export const clearOfTitle = (s, t, y = 400) => {
   if (!opensChapter(s)) return 1;
   const c = cameraOf(s, t);
-  return clamp((c.oy + c.k * (y - c.ay) - 45 - titleY(s, t)) / 60);
+  return ramp(t, titlePasses(s, c.oy + c.k * (y - c.ay) - 45), CLEAR);
 };
 
 /* A chapter opens on one centred line, its number and title, with a short rule beneath, once the previous chapter has
- * faded. The line then rises and shrinks into the running head it becomes over 1.1 s with an ease-in-out, landing just
- * after the first word, so it travels at most about 11 px per frame; the rule fades in place below it, so nothing
- * crosses. */
-const cardLanding = (s) => s.voice_start + 0.1,
-  RISE = 1.1;
+ * faded. The line then rises and shrinks into the running head it becomes, landing LAND after the first word. From
+ * rest it gathers pace over the first RAMP_IN of its way, while it still stands near the centre, crosses the content
+ * band at an even CRUISE px/s and settles over the last RAMP_OUT in the head band, its pace eased in and out. So it no
+ * longer flies up in 1.1 s at up to 1300 px/s, and it still crosses the content band in under 1.5 s, the longest a
+ * build-up may stand off the content centre (filmkit's reviewed balance, rules/balance.mjs), which a slower crossing
+ * would break. The rule fades in place below it as it leaves, so nothing crosses. */
+const LAND = 0.3,
+  CRUISE = 560,
+  RAMP_IN = 0.12,
+  RAMP_OUT = 0.07;
+const cardLanding = (s) => s.voice_start + LAND;
+/* A chapter title's rise: its way's length in px, from the card's centre to the running head's, when it sets off and
+ * how long it takes, at CRUISE pace unless the opening is too short for that. */
+function riseOf(s) {
+  const title = film.chapters.find((c) => c.id === s.chapter).title,
+    head = measure(`${chapterNumber(s.chapter)}  ${title}`, 24, false, "chapter"),
+    way = Math.hypot(960 - (96 + head / 2), 540 - 72),
+    start = Math.max(s.start, cardLanding(s) - ((1 + RAMP_IN + RAMP_OUT) * way) / CRUISE);
+  return { way, start, duration: cardLanding(s) - start };
+}
+/* The share of its way the title has risen at t: its pace grows from rest by the smoothstep curve over the first
+ * RAMP_IN, holds over the middle and falls to rest over the last RAMP_OUT; `covered` is the integral of smoothstep. */
+const covered = (x) => x ** 3 - x ** 4 / 2;
+function risen(s, t) {
+  const { start, duration } = riseOf(s),
+    pace = (1 + RAMP_IN + RAMP_OUT) / duration,
+    gather = (2 * RAMP_IN) / pace,
+    settle = (2 * RAMP_OUT) / pace,
+    into = t - start;
+  if (into <= 0) return 0;
+  if (into < gather) return pace * gather * covered(into / gather);
+  if (into < duration - settle) return RAMP_IN + pace * (into - gather);
+  if (into < duration) {
+    const y = (into - duration + settle) / settle;
+    return 1 - RAMP_OUT + pace * settle * (y - covered(y));
+  }
+  return 1;
+}
 export function chapterCard(s, t) {
   if (!opensChapter(s) || t >= cardLanding(s)) return;
   const enter = ramp(t, s.start, 0.3);
@@ -40,8 +90,7 @@ export function chapterCard(s, t) {
   const chapter = film.chapters.find((c) => c.id === s.chapter),
     number = chapterNumber(s.chapter);
   const large = en ? 54 : 60,
-    p = clamp((t - (cardLanding(s) - RISE)) / RISE),
-    q = ease(p),
+    q = risen(s, t),
     size = mix(large, 24, q);
   // The head's own spacing, scaled with the line: the number, two spaces, then the title.
   ctx.save();
@@ -65,7 +114,7 @@ export function chapterCard(s, t) {
   });
   line(900, 600, 1020, 600, {
     color: P.line,
-    alpha: enter * (1 - ramp(t, cardLanding(s) - RISE, 0.35)),
+    alpha: enter * (1 - ramp(t, riseOf(s).start + 0.2, 0.4)),
   });
 }
 /* The Illustrative chip of an illustrative case: one fixed slot at the right of the running head, in screen space, so

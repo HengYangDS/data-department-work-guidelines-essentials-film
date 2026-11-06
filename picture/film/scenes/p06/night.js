@@ -5,15 +5,16 @@
  * two is refused as a systemic fix. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, line, measure, stroke } from "../../drawing/strokes.js";
+import { box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { check, documentIcon } from "../../drawing/symbols.js";
-import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
+import { HOUR, lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { listIn, named, speaking } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, flowOf, missingPage, openMark, patchMark } from "../p05/kit.js";
+import { ease, mix, ramp, soon } from "../../timing/easing.js";
+import { travel, voiceTime } from "../../timing/pauses.js";
+import { centring, early, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
 export function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
@@ -51,8 +52,9 @@ export function backStage(s, t, c, g) {
   const m = lastNight(x, y, 1, {
     alpha: g,
     late: soon(t, c.lateJob - 0.15, 0.7),
-    arrival: { upto: ramp(t, c.log + 0.35, 0.2), alpha: 1 },
-    flow: flowOf(t, 0.25),
+    // The job's start stands on the rail as its log's stem touches down, by a fade a viewer sees.
+    arrival: { upto: ramp(t, c.log + 0.35, 0.4), alpha: 1 },
+    flow: { t },
     names,
   });
   // The publication over the due hour and the job log over the hour the job started, each with its stem to the rail.
@@ -105,22 +107,34 @@ const B = {
   ys: [458, 588, 718],
   h: 84,
 };
+/* B's compact timeline and C's (claims.js) stand in one place, B's, which leaves room for the night's name at its left,
+ * and run one flow on one way, so the timeline stands still across their cut and its point runs on. The job's start
+ * moves from two hours late to before the due hour over MOVE s of voice time (about 350 px, at most about 405 px/s);
+ * the way beyond it grows with it, and each pass of the flow keeps the length the way had when the pass began. */
+const MOVE = 1.3;
+const moves = (c) => c.earlier + 0.45;
+export const nightPlace = () => B.x + (measure(L("昨晚", "Last night")) + NAME_GAP) / 2;
+export const startMoved = (t, c) => travel(t, moves(c), MOVE);
+export function nightWay(c) {
+  const from = voiceTime(moves(c));
+  return (v) => (4 - mix(2, -0.6, ease((v - from) / MOVE))) * HOUR * B.scale;
+}
 const THREE = () => L("三层", "Three layers"),
   LAYERS = () => L(["控制影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
   REFUSED = () => L("从根上修好", "A systemic fix");
 export function layersStage(s, t, c, g) {
   // The late measure's name fades on the earlier start's words; the start moves once it has gone.
-  const move = soon(t, c.earlier + 0.45, 0.9),
+  const move = startMoved(t, c),
     names = {
       axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
       late: { v: L("任务启动晚了", "Late start"), alpha: 1 - ramp(t, c.earlier + 0.05, 0.4) },
     };
-  const m = lastNight(B.x + (measure(names.axis.v) + NAME_GAP) / 2, B.y, B.scale, {
+  const m = lastNight(nightPlace(), B.y, B.scale, {
     alpha: g,
     late: { upto: 1, alpha: 1 - move },
     lateBy: mix(2, -0.6, move),
     arrival: 1,
-    flow: flowOf(t, 0.25),
+    flow: { t, length: nightWay(c) },
     names,
   });
   // The missing data's place over the due hour, named at its right, and the patch that fills it.
@@ -216,19 +230,20 @@ export function layersStage(s, t, c, g) {
       set: "layers",
     });
   });
-  // Only the first two: a bracket beyond the names gathers them, refused as the fix at the root.
+  // Only the first two: a bracket beyond the names gathers them, refused as the fix at the root. It draws on along its
+  // whole length, its feet included, so no part of it stands at once.
   const bx = toBracket + shift,
     a = g * named(t, refusedAt - 0.4),
     ty = B.ys[0] - B.h / 2 + 6,
     by = B.ys[1] + B.h / 2 - 6;
-  stroke(
-    () => {
-      ctx.moveTo(bx - 14, ty);
-      ctx.lineTo(bx, ty);
-      ctx.lineTo(bx, mix(ty, by, soon(t, refusedAt - 0.4, 0.6)));
-      if (soon(t, refusedAt - 0.4, 0.6) > 0.98) ctx.lineTo(bx - 14, by);
-    },
-    { color: P.ink, alpha: a, width: 2.5 },
+  path(
+    [
+      [bx - 14, ty],
+      [bx, ty],
+      [bx, by],
+      [bx - 14, by],
+    ],
+    { upto: soon(t, refusedAt - 0.4, 0.6), color: P.ink, alpha: a, width: 2.5 },
   );
   rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
     align: "left",

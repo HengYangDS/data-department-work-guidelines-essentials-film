@@ -5,7 +5,7 @@
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { documentIcon, person, seal } from "../../drawing/symbols.js";
 import { lastNight, lastNightExtent } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
@@ -15,7 +15,7 @@ import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, flowOf, openMark } from "../p05/kit.js";
+import { centring, early, openMark } from "../p05/kit.js";
 
 /* A rule: a page with its seal on the lower right. */
 function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
@@ -28,7 +28,7 @@ function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
  * a clock with its loop back; and what the look asks, an open mark beside the monitor, left unanswered. */
 const M = { x: 960, y: 540, scale: 0.8 };
 export function monitorStage(s, t, c, g) {
-  const m = lastNight(M.x, M.y, M.scale, { alpha: g, due: 1, flow: flowOf(t, 0.3) });
+  const m = lastNight(M.x, M.y, M.scale, { alpha: g, due: 1, flow: { t } });
   ring(m.due, M.y, 17, { color: P.evidence, alpha: g, width: 3 });
   line(m.due, M.y - 17, m.due, M.y - 60, { color: P.line, alpha: g, width: 2.5 });
   stroke(() => ctx.roundRect(m.due - 60, M.y - 150, 120, 90, 10), {
@@ -120,7 +120,7 @@ export function nextUserStage(s, t, c, g) {
   const m = lastNight(x, y, 1, {
     alpha: g,
     card: 1,
-    flow: t > c.user + 0.6 ? flowOf(t, 0.25) : null,
+    flow: { t, from: c.user + 0.6 },
     names,
   });
   const user = g * named(t, c.user),
@@ -172,11 +172,6 @@ export function aimsStage(s, t, c, g) {
       set: "aims",
     }),
   );
-  if (t > ats[2] + 0.5) {
-    const q = flowOf(t, 0.35);
-    dot(mix(px + 62, ox - 40, q), y, 6 * Math.min(1, q * 8, (1 - q) * 8), {
-      color: P.ink,
-      alpha: g,
-    });
-  }
+  const runs = flowAt(t, ox - 40 - (px + 62), { from: ats[2] + 0.5 });
+  flowDot(mix(px + 62, ox - 40, runs?.q ?? 0), y, 6, runs, { color: P.ink, alpha: g });
 }

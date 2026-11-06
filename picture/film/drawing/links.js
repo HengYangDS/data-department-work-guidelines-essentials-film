@@ -1,15 +1,18 @@
 /* Drawn relations: orthogonal links that end in a quiet point. From ddwg-film v1.0.0 (c4e8aac), picture/film.js. */
 
 import { ctx } from "../canvas.js";
-import { dot, flowDot, stroke } from "./strokes.js";
+import { along, dot, flowAt, flowDot, lengthOf, stroke } from "./strokes.js";
 import { P } from "../palette.js";
-import { clamp } from "../timing/easing.js";
+import { clamp, ease } from "../timing/easing.js";
+
+export { along };
 
 /* A drawn relation follows the grid: a straight run when its ends share a row or a column, otherwise an orthogonal
  * route whose corners are quarter turns of radius `r` (never a diagonal). It draws on from its source along its length
- * and ends in a quiet point rather than an arrowhead; `flow`, a phase in [0, 1) that callers advance in voice time,
- * moves one dot along it to show the way the relation runs, so it rests in the quiet between thoughts. Routes: "vhv" leaves vertically, crosses at `mid` and arrives vertically; "hvh" the reverse;
- * "vh" and "hv" turn once. */
+ * and ends in a quiet point rather than an arrowhead, which grows by its size as the stroke lands on it. `flow`, the
+ * time and flowAt's options ({t, from, until}), runs one dot along it at the film's even flow pace to show the way the
+ * relation runs, so it rests in the quiet between thoughts. Routes: "vhv" leaves vertically, crosses at `mid` and
+ * arrives vertically; "hvh" the reverse; "vh" and "hv" turn once. */
 export function rounded(corners, r) {
   const out = [corners[0]];
   for (let i = 1; i < corners.length - 1; i++) {
@@ -32,28 +35,6 @@ export function rounded(corners, r) {
   }
   out.push(corners.at(-1));
   return out;
-}
-/* The point at share q of a polyline's length, and the polyline up to it. */
-export function along(points, q) {
-  const lengths = points
-      .slice(1)
-      .map((pt, i) => Math.hypot(pt[0] - points[i][0], pt[1] - points[i][1])),
-    total = lengths.reduce((a, b) => a + b, 0);
-  let left = clamp(q) * total;
-  const kept = [points[0]];
-  for (let i = 0; i < lengths.length; i++) {
-    if (left >= lengths[i]) {
-      kept.push(points[i + 1]);
-      left -= lengths[i];
-      continue;
-    }
-    const f = lengths[i] ? left / lengths[i] : 0,
-      a = points[i],
-      b = points[i + 1];
-    kept.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
-    break;
-  }
-  return { point: kept.at(-1), kept };
 }
 export function link(
   x1,
@@ -113,9 +94,12 @@ export function link(
       width,
       dash,
     });
-  if (end) dot(x2, y2, width + 2.5, { color, alpha: alpha * clamp((upto - 0.9) / 0.1) });
-  if (flow !== null && flow < upto) {
-    const [px, py] = along(points, flow).point;
-    flowDot(px, py, width + 2, flow, { color, alpha });
+  // The end point grows by its size as the stroke lands on it, over the last twentieth of its length.
+  const grown = ease(clamp((upto - 0.95) / 0.05));
+  if (end && grown > 0) dot(x2, y2, (width + 2.5) * grown, { color, alpha });
+  const state = flow ? flowAt(flow.t, lengthOf(points), flow) : null;
+  if (state && state.q < upto) {
+    const [px, py] = along(points, state.q).point;
+    flowDot(px, py, width + 2, state, { color, alpha });
   }
 }

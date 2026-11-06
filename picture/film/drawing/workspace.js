@@ -4,7 +4,7 @@ import { ctx } from "../canvas.js";
 import { box, dot, fill, line, ring, stroke, text } from "./strokes.js";
 import { documentIcon } from "./symbols.js";
 import { P } from "../palette.js";
-import { clamp } from "../timing/easing.js";
+import { clamp, ease } from "../timing/easing.js";
 
 /* Shared marks of this film: a repository, a worktree folder, a terminal, the trust kernel, a tag, a recovery
  * arrow and a question bubble. Each is drawn from the primitives above, so it fades with its stage and the checks
@@ -108,12 +108,14 @@ export function tagIcon(x, y, w, h, { alpha = 1, color = P.authority } = {}) {
   stroke(build, { color, alpha, width: 2.5 });
   dot(x + h / 2 + 2, y, 4, { color, alpha });
 }
-/* Recovery: an arc that turns back on itself and ends in a quiet point. */
+/* Recovery: an arc that turns back on itself and ends in a quiet point, which grows by its size as the arc draws on to
+ * it. */
 export function recoverIcon(x, y, r, { alpha = 1, color = P.evidence, upto = 1 } = {}) {
   if (alpha < 0.01) return;
   ring(x, y, r, { color, alpha, width: 3, upto: 0.78 * clamp(upto), start: -Math.PI * 0.35 });
-  const a = -Math.PI * 0.35 + Math.PI * 2 * 0.78 * clamp(upto);
-  if (upto > 0.9) dot(x + r * Math.cos(a), y + r * Math.sin(a), 5, { color, alpha });
+  const a = -Math.PI * 0.35 + Math.PI * 2 * 0.78 * clamp(upto),
+    grown = ease(clamp((upto - 0.75) / 0.25));
+  if (grown > 0) dot(x + r * Math.cos(a), y + r * Math.sin(a), 5 * grown, { color, alpha });
 }
 /* A question raised aloud: a bubble with a question mark in it. */
 export function askIcon(x, y, r, { alpha = 1, color = P.evidence } = {}) {

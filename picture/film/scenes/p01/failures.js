@@ -6,16 +6,29 @@
  * part arrives on the words that name it. */
 
 import { ctx } from "../../canvas.js";
-import { along } from "../../drawing/links.js";
-import { box, dot, fill, flowDot, line, ring, stroke, text } from "../../drawing/strokes.js";
+import {
+  along,
+  box,
+  dot,
+  fill,
+  flowAt,
+  flowDot,
+  lengthOf,
+  line,
+  ring,
+  stroke,
+  text,
+} from "../../drawing/strokes.js";
 import { P } from "../../palette.js";
-import { mix, soon } from "../../timing/easing.js";
+import { mix } from "../../timing/easing.js";
+import { travel } from "../../timing/pauses.js";
 
 /* A picture built part by part stands centred on what is on screen: it stands at the shift `first` and glides as one
- * to each next shift, over 0.7 s from just after the word that brings the part that changes its extent (the ETHOS
- * film's idiom, ethos-film scenes/p03/kernel.js). Each step is [that word's time, the shift]. */
+ * to each next shift, over 0.9 s of voice time from just after the word that brings the part that changes its extent
+ * (the ETHOS film's idiom, ethos-film scenes/p03/kernel.js), a structural glide (timing/pauses.js, travel). Each step
+ * is [that word's time, the shift]. */
 export const glide = (t, first, steps) =>
-  steps.reduce((x, [at, to]) => mix(x, to, soon(t, at + 0.05, 0.7)), first);
+  steps.reduce((x, [at, to]) => mix(x, to, travel(t, at + 0.05, 0.9)), first);
 
 /* Figures drawn as one mark: heads one fill (or one dashed stroke when the people are absent) and shoulders one stroke,
  * as symbols.js draws a person at `size`. */
@@ -56,7 +69,8 @@ export function openMark(x, y, r, { alpha = 1, turn = 0 } = {}) {
 
 /* Failure 1: the choice before the facts. A short line of time; at its left a fork whose taken branch (the authority
  * colour, a choice made) leaves the line, and further along the line, where the facts would be, an open question
- * (`facts`). `run` is a phase in [0, 1) for a point that runs the taken branch, or null. */
+ * (`facts`). `run`, the time and flowAt's options ({t, from}), runs a point along the taken branch as a flow, or is
+ * null. */
 export function forkMark(cx, cy, { alpha = 1, facts = 0, run = null } = {}) {
   if (alpha < 0.01) return;
   const y = cy + 28,
@@ -70,7 +84,8 @@ export function forkMark(cx, cy, { alpha = 1, facts = 0, run = null } = {}) {
   });
   dot(...branch.at(-1), 6, { color: P.authority, alpha });
   dot(fx, y, 5, { color: P.ink, alpha });
-  if (run !== null) flowDot(...along(branch, run).point, 5, run, { color: P.authority, alpha });
+  const runs = run && flowAt(run.t, lengthOf(branch), run);
+  if (runs) flowDot(...along(branch, runs.q).point, 5, runs, { color: P.authority, alpha });
   openMark(cx + 88, y, 21, { alpha: alpha * facts });
 }
 /* The taken branch as points: level from the fork, a quarter turn up and a quarter turn level again, 48 px higher. */
@@ -90,8 +105,9 @@ function forkBranch(fx, y) {
 }
 
 /* Failure 2: the symptom patched, the mechanism untouched. A pipe broken at its middle drips; a patch under the break
- * catches the drip (`drip`, a phase in [0, 1), or null); `again` sends a second drip past the patch, the failure of the
- * next month; `light` rings the break, the mechanism left as it was. */
+ * catches the drip (`drip`, the time and flowAt's options ({t}), a flow down from the break, or null); `again` sends a
+ * second drip past the patch, falling while the first does, a little after it, the failure of the next month; `light`
+ * rings the break, the mechanism left as it was. */
 export function patchMark(cx, cy, { alpha = 1, drip = null, again = 0, light = 0 } = {}) {
   if (alpha < 0.01) return;
   const py = cy - 18;
@@ -115,11 +131,14 @@ export function patchMark(cx, cy, { alpha = 1, drip = null, again = 0, light = 0
     },
     { color: P.line, alpha, width: 2 },
   );
-  if (drip !== null) flowDot(cx, mix(py + 10, cy + 30, drip), 5, drip, { color: P.ink, alpha });
-  if (again > 0.01 && drip !== null) {
-    const q = (drip + 0.5) % 1;
-    flowDot(cx + 58, mix(cy + 20, cy + 76, q), 5, q, { color: P.ink, alpha: alpha * again });
-  }
+  const falls = drip && flowAt(drip.t, cy + 30 - (py + 10), drip);
+  if (falls) flowDot(cx, mix(py + 10, cy + 30, falls.q), 5, falls, { color: P.ink, alpha });
+  const passes = again > 0.01 && drip && flowAt(drip.t, 56, { ...drip, offset: 0.4 });
+  if (passes)
+    flowDot(cx + 58, mix(cy + 20, cy + 76, passes.q), 5, passes, {
+      color: P.ink,
+      alpha: alpha * again,
+    });
   if (light > 0.01) ring(cx, py + 3, 27, { color: P.unknown, alpha: alpha * light, width: 3 });
 }
 

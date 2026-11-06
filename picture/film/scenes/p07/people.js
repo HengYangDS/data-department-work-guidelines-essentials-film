@@ -13,7 +13,8 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { centring, early, flowOf } from "../p05/kit.js";
+import { travel } from "../../timing/pauses.js";
+import { centring, early } from "../p05/kit.js";
 
 /* People drawn as one mark: their heads one fill and their shoulders one stroke, so a group named once does not read
  * as members that each wait for a name. Each person is [x, y]. */
@@ -48,9 +49,10 @@ export function boundary(x0, y0, x1, y1, { alpha = 1, color = P.line, width = 2.
 /* A: the relationship. A group of people at the left and the Agent at the right on one line, joined by a link that
  * carries the delegation and is named over its middle as the whole relationship. The Agent's boundary closes round it,
  * the link running in through its side, and grows just before each thing it holds is said: what it extends, then what
- * it cannot give. It grows about the Agent from a top edge that stays, so its name, centred over that edge, and the
- * link's name, over the part of the link the grown boundary leaves outside, never move. Under the people, what stays
- * with them builds as one list, and a tinted field gathers it when it is said to stay. */
+ * it cannot give, each growth a structural glide over 0.6 s of voice time ending on the words. It grows about the Agent
+ * from a top edge that stays, so its name, centred over that edge, and the link's name, over the part of the link the
+ * grown boundary leaves outside, never move. Under the people, what stays with them builds as one list, and a tinted
+ * field gathers it when it is said to stay. */
 const A = { y: 410, px: 560, ax: 1260 };
 const GROUP = [
   [-62, -34],
@@ -62,8 +64,8 @@ const GROUP = [
 export function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"),
     wide = Math.max(measure(term) / 2 + 34, L(150, 230)),
-    grow = soon(t, c.extend - 0.6, 0.45),
-    deep = soon(t, c.refusals[0] - 0.6, 0.45),
+    grow = travel(t, c.extend - 0.6, 0.6),
+    deep = travel(t, c.refusals[0] - 0.6, 0.6),
     halfW = mix(110, wide, grow),
     y = A.y,
     ax = A.ax,
@@ -86,7 +88,7 @@ export function collaborationStage(s, t, c, g) {
   const left = px + 110,
     outEnd = ax - wide - 2 * NAME_GAP,
     collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab));
-  link(left, y, ax - 56, y, { alpha: g, flow: flowOf(t, 0.3), width: 2.5 });
+  link(left, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
   nameText(L("人与人工智能的协作", "Human–AI collaboration"), (left + outEnd) / 2, y - NAME_GAP, {
     valign: "bottom",
     alpha: collab,
@@ -109,10 +111,10 @@ export function collaborationStage(s, t, c, g) {
     }),
   );
   // What stays with people: a column under them, gathered in a tinted field that opens as they are said to stay.
-  // The field opens from just round the names to its full margin, so its edges never cross them and it is still
-  // settling as the thought ends.
+  // The field opens from just round the names to its full margin over 0.8 s of voice time, so its edges never cross
+  // them and it settles with the voice rather than in the quiet after the thought.
   const ats = c.stays,
-    open = soon(t, c.stay - 0.1, 1.3),
+    open = travel(t, c.stay - 0.1, 0.8),
     ys = [0, 1, 2, 3].map((k) => y + 196 + k * 44),
     m = mix(8, 30, open);
   if (open > 0.01)
@@ -130,28 +132,31 @@ export function collaborationStage(s, t, c, g) {
   ).forEach((v, i) => nameText(v, px, ys[i], { alpha: g * listIn(t, ats, i), set: "stays" }));
 }
 
-/* B: the ten pages return, an Agent beside its stack, which climbs a page at a time as the thought begins; the stage
- * stands centred on them. The decision they should have served arrives over the Agent, a ring with its point named
+/* B: the ten pages return, an Agent beside its stack, which climbs a page at a time as the thought begins: six pages
+ * join it, each fading in at its own place over FADE seconds, begun CLIMB seconds after the thought's first words, the
+ * next page starting before the last is whole, so the stack grows continuously, quickly at first and settling, and no
+ * page snaps in; the stage stands centred on them. The decision they should have served arrives over the Agent, a ring with its point named
  * over it, inside the extent the Agent and its pages already hold, so the stage never moves; its link runs down to the
  * Agent, the decision first. */
-const B = { y: 530, decision: 200 };
+const B = { y: 530, decision: 200 },
+  CLIMB = [0.35, 0.68, 0.95, 1.2, 1.55, 2.15],
+  FADE = 0.45;
 const PAGE = [190, 250];
-function stack(x, y, pages, { alpha = 1 } = {}) {
+/* The stack of pages: the front page and, behind it, the corner of each page k (from 1) at its own share in `shares`,
+ * each page a stroke of its own at its place, so no page joins or leaves another's stroke as the stack grows. */
+function stack(x, y, shares, { alpha = 1 } = {}) {
   if (alpha < 0.01) return;
-  const n = Math.round(pages),
-    [w, h] = PAGE;
-  stroke(
-    () => {
-      for (let k = n - 1; k >= 1; k--) {
-        const ox = x + k * 7,
-          oy = y - k * 7;
-        ctx.moveTo(ox + w, oy - h + 7);
-        ctx.lineTo(ox + w, oy - h);
-        ctx.lineTo(ox + 7, oy - h);
-      }
-    },
-    { color: P.muted, alpha, width: 2 },
-  );
+  const [w, h] = PAGE;
+  const corner = (k) => {
+    const ox = x + k * 7,
+      oy = y - k * 7;
+    ctx.moveTo(ox + w, oy - h + 7);
+    ctx.lineTo(ox + w, oy - h);
+    ctx.lineTo(ox + 7, oy - h);
+  };
+  for (let k = shares.length - 1; k >= 1; k--)
+    if (shares[k] > 0.01)
+      stroke(() => corner(k), { color: P.muted, alpha: alpha * shares[k], width: 2 });
   documentIcon(x, y - h, w, h, { alpha, rows: 4 });
 }
 export function pagesStage(s, t, c, g) {
@@ -159,9 +164,9 @@ export function pagesStage(s, t, c, g) {
     // Extents from x: the Agent's left at -266 and the stack's right at +166.
     x = 960 + (266 - 166) / 2,
     pages = g * early(t, c.first2, c.pages),
-    climbed = 4 + 6 * soon(t, c.first2, 3.6);
+    shares = [1, 1, 1, 1, ...CLIMB.map((at) => ramp(t, c.first2 + at, FADE))];
   agent(x - 200, B.y, { alpha: pages, size: 3 });
-  stack(x - 87, B.y + 125, climbed, { alpha: pages });
+  stack(x - 87, B.y + 125, shares, { alpha: pages });
   nameText(L("十页分析", "The ten pages"), x + 40, B.y + 125 + NAME_GAP, {
     valign: "top",
     alpha: pages,
@@ -174,10 +179,12 @@ export function pagesStage(s, t, c, g) {
     valign: "bottom",
     alpha: decided,
   });
+  // The link draws on as the decision is named and settles before the thought's quiet, which in Chinese begins about
+  // half a second after 「哪个决定」.
   link(dx, dy + 60, dx, B.y - 78, {
     alpha: decided,
-    upto: soon(t, c.decision, 0.7),
-    flow: t > c.decision + 0.8 ? flowOf(t, 0.4) : null,
+    upto: soon(t, c.decision - 0.1, 0.55),
+    flow: { t, from: c.decision + 0.8 },
   });
 }
 
@@ -205,7 +212,7 @@ export function boundaryStage(s, t, c, g) {
     toPile = half + C.clear + pileHalf,
     nameLeft = -half - NAME_GAP - measure(name),
     x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2,
-    grown = ats.reduce((v, at) => v + soon(t, at - 0.6, 0.45), 0),
+    grown = ats.reduce((v, at) => v + travel(t, at - 0.6, 0.6), 0),
     y = C.y,
     top = y - room,
     // The first thing said takes the bottom from the Agent's room to under the first row (y + 161), each further one a

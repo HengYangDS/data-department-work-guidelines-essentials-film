@@ -18,8 +18,8 @@ import { measure } from "../../drawing/strokes.js";
 import { P } from "../../palette.js";
 import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
-import { clamp, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { clamp, ease, ramp, soon } from "../../timing/easing.js";
+import { travel, voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { forkMark, meetingMark, openMark, pagesMark, patchMark } from "./failures.js";
@@ -101,7 +101,7 @@ function stageNight(t, a, c) {
     card: soon(t, c.data - 0.15, 0.8),
     late: soon(t, c.late + 0.05, 0.7),
     // The night runs on from the first word, so the opening holds its rail, its name and a moving point.
-    flow: (voiceTime(t) * 0.25) % 1,
+    flow: { t },
     names,
   });
 }
@@ -112,7 +112,7 @@ function compactNight(a, t) {
     alpha: a,
     card: 1,
     late: 1,
-    flow: (voiceTime(t) * 0.25) % 1,
+    flow: { t },
     names: {
       axis: L("昨晚", "Last night"),
       card: { v: L("价格数据", "Price data"), side: "right" },
@@ -122,22 +122,22 @@ function compactNight(a, t) {
 }
 
 /* One failure's figure at (x, ROW_Y), its parts on their words; `busy` shows it as it stands once told: the fork's
- * taken way and the dripping pipe keep running in voice time, while the meeting and the stack of pages, whose marks
- * count the speakers and the material, hold still. */
+ * taken way and the dripping pipe keep running as flows in voice time, while the meeting and the stack of pages, whose
+ * marks count the speakers and the material, hold still. The stack climbs its six pages over 2.4 s of voice time, so
+ * each page fades in as it settles rather than snapping in. */
 function figure(k, x, t, a, c, busy = false) {
-  const vt = voiceTime(t),
-    on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4),
+  const on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4),
     part = (at) => ramp(t, at - 0.15, 0.4);
   if (k === 0)
     forkMark(x, ROW_Y, {
       alpha: on,
       facts: busy ? 0 : part(c.facts),
-      run: busy ? (vt * 0.45) % 1 : null,
+      run: busy ? { t } : null,
     });
   if (k === 1)
     patchMark(x, ROW_Y, {
       alpha: on,
-      drip: (vt * 0.7) % 1,
+      drip: { t },
       again: busy ? 0 : part(c.again),
       light: busy ? 0 : part(c.mechanism),
     });
@@ -156,7 +156,7 @@ function figure(k, x, t, a, c, busy = false) {
   if (k === 3)
     pagesMark(x, ROW_Y, {
       alpha: on,
-      pages: busy ? 9 : 3 + 6 * soon(t, c.more + 0.05, 1.6),
+      pages: busy ? 9 : 3 + 6 * travel(t, c.more + 0.05, 2.4),
       bars: busy ? 0 : part(c.judgment),
     });
 }
@@ -229,15 +229,17 @@ function busyRow(t, a, c) {
     });
   });
 }
-/* A name for the whole row: a bracket under its names, drawn on with the name that hangs under it. */
+/* A name for the whole row: a bracket under its names, drawn on with the name that hangs under it; its end ticks grow
+ * as the bracket reaches them. */
 function rowName(v, t, at, a) {
   const y = BRACKET_Y,
     on = a * soon(t, at - 0.1, 0.5),
-    reach = SPAN * on;
+    reach = SPAN * on,
+    tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
-  if (on > 0.98)
+  if (tick > 0.5)
     [-SPAN, SPAN].forEach((dx) =>
-      line(960 + dx, y, 960 + dx, y - 10, { color: P.line, alpha: a, width: 2 }),
+      line(960 + dx, y, 960 + dx, y - tick, { color: P.line, alpha: a, width: 2 }),
     );
   nameText(v, 960, y + NAME_GAP, { valign: "top", alpha: a * named(t, at) });
 }

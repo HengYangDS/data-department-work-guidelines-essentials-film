@@ -24,7 +24,6 @@ import { voiceTime } from "../../timing/pauses.js";
 import { forkMark, openMark } from "../p01/failures.js";
 import { dashedPage, eye } from "./marks.js";
 
-const flowOf = (t) => (voiceTime(t) * 0.25) % 1;
 const NIGHT = () => L("昨晚", "Last night"),
   COLLECTION = () => L("采集", "Collection"),
   LATE = () => L("晚了两个小时", "Two hours late");
@@ -39,7 +38,7 @@ function theNight(t, a, c) {
     alpha: a,
     card: soon(t, c.collection - 0.15, 0.8),
     late: soon(t, c.late - 0.15, 0.7),
-    flow: flowOf(t),
+    flow: { t },
     names: {
       axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
       card: { v: COLLECTION(), side: "right", alpha: named(t, c.collection + 0.1) },
@@ -156,7 +155,7 @@ export function stageCase(t, a, c) {
   const cx = COLUMNS[2];
   forkMark(cx, ROW_Y - 20, {
     alpha: a * ramp(t, c.choice - 0.15, 0.4),
-    run: (voiceTime(t) * 0.45) % 1,
+    run: { t },
   });
   termRow(
     t,

@@ -5,21 +5,27 @@ import { box, dot, fill, line, measure, path, ring, stroke, text } from "./strok
 import { LABEL, P, TYPE } from "../palette.js";
 import { clamp, ease } from "../timing/easing.js";
 
+/* A diamond's outline, filled as far as `solid` says: true or false, or a share by which its fill spreads out from its
+ * centre inside the outline that stays, at the diamond's own ink, so a diamond that becomes solid never swaps one mark
+ * for another in a frame, nor stands half-faded over what it replaces. */
 export function diamond(
   x,
   y,
   r,
   { color = P.evidence, alpha = 1, solid = false, width = 2.5 } = {},
 ) {
-  const build = () => {
-    ctx.moveTo(x, y - r);
-    ctx.lineTo(x + r, y);
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x - r, y);
-    ctx.closePath();
-  };
-  if (solid) fill(build, { color, alpha });
-  else stroke(build, { color, alpha, width });
+  const build =
+    (k = 1) =>
+    () => {
+      ctx.moveTo(x, y - r * k);
+      ctx.lineTo(x + r * k, y);
+      ctx.lineTo(x, y + r * k);
+      ctx.lineTo(x - r * k, y);
+      ctx.closePath();
+    };
+  const filled = solid === true ? 1 : solid === false ? 0 : clamp(solid);
+  if (filled > 0) fill(build(filled), { color, alpha });
+  if (solid !== true) stroke(build(), { color, alpha, width });
 }
 /* Icons: people decide, Agents act inside boundaries, documents carry claims. */
 /* A work item moving through a process. */
@@ -53,16 +59,23 @@ export function clock(x, y, r, { hand = 0, color = P.ink, alpha = 1 } = {}) {
 }
 
 /* A seal stamps what a role may grant: a rim with an inner ring and a check inside. `stamp` is the opacity of the inner
- * ring and the check, so a seal's rim can stand before the seal is stamped. */
+ * ring and the check, so a seal's rim can stand before the seal is stamped. `hollow`, true or false or a share, is how
+ * far the seal stays unstamped: its inner ring dashed and no check; as it falls to 0 the solid ring fades in over the
+ * dashed one and the check draws on, so a seal is stamped in one continuous movement. */
 export function seal(
   x,
   y,
   r,
   { color = P.authority, alpha = 1, hollow = false, stamp = alpha } = {},
 ) {
+  const open = hollow === true ? 1 : hollow === false ? 0 : clamp(hollow);
   ring(x, y, r, { color, alpha, width: 3 });
-  ring(x, y, r * 0.74, { color, alpha: stamp * 0.6, width: 1.5, dash: hollow ? [5, 5] : null });
-  if (!hollow) check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp });
+  if (open > 0)
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * open, width: 1.5, dash: [5, 5] });
+  if (open < 1) {
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * (1 - open), width: 1.5 });
+    check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp, upto: 1 - open });
+  }
 }
 export function person(x, y, { color = P.ink, alpha = 1, size = 1, solid = true } = {}) {
   // `solid` may be a fraction: a seat becomes a person as its outlined head fills in.

@@ -5,7 +5,7 @@ import { ring } from "../drawing/strokes.js";
 import { P } from "../palette.js";
 import { phraseEnd } from "../timing/cues.js";
 import { clamp, mix, ramp, soon } from "../timing/easing.js";
-import { pauseHold, thoughtEnd } from "../timing/pauses.js";
+import { pauseHold, thoughtEnd, travel } from "../timing/pauses.js";
 import { stageCuts } from "../timing/stages.js";
 
 /* A name arrives on its words and stays while its mark stands; it leaves with its stage or its mark. */
@@ -71,6 +71,7 @@ export function beats(t, x, y, r, ats, { color = P.ink, alpha = 1 } = {}) {
 }
 /* A list said member by member keeps its spoken order along its axis and stays balanced while it builds: each member
  * stands at its place in the list's final layout, and the whole list stands `step` px toward its open end for each
- * member still to come, closing one step on each further member's words. Returns that offset at t. */
+ * member still to come, closing one step on each further member's words, a structural glide over 0.6 s of voice time
+ * (timing/pauses.js, travel). Returns that offset at t. */
 export const building = (t, ats, step = 48, lead = 0.1) =>
-  step * ats.slice(1).reduce((v, at) => v + 1 - soon(t, at - lead, 0.4), 0);
+  step * ats.slice(1).reduce((v, at) => v + 1 - travel(t, at - lead, 0.6), 0);

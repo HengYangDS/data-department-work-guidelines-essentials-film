@@ -208,6 +208,6 @@ export function stageOutcomes(s, t, c) {
   }, lit);
   link(XS[0], RAIL_Y, XS[0], RING_Y - RING - 7, {
     ...lit,
-    flow: t > c.first + 0.6 ? (vt * 0.5) % 1 : null,
+    flow: { t, from: c.first + 0.6 },
   });
 }

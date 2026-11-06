@@ -18,7 +18,7 @@ import { rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { travel } from "../../timing/pauses.js";
 import { bar } from "../p03/marks.js";
 import { lens, speaker, tierDoc } from "./marks.js";
 
@@ -183,12 +183,10 @@ export function stageLadder(t, a, c) {
       alpha: a,
     });
   });
-  // A point on the spine marks the tier being told: it arrives with the first tier at that tier's height, moves down to
-  // each next tier on that tier's first words, and holds there, so it never stands at a tier not told.
-  const marked = c.tiers.reduce(
-    (y, at, k) => mix(y, TIER_Y[k], soon(t, at - 0.15, 0.4)),
-    TIER_Y[0],
-  );
+  // A point on the spine marks the tier being told: it arrives with the first tier at that tier's height, glides down
+  // to each next tier from that tier's first words over 0.9 s of voice time (at most about 330 px/s), and holds there,
+  // so it never stands at a tier not told and never moves in the quiet before a tier's thought.
+  const marked = c.tiers.reduce((y, at, k) => mix(y, TIER_Y[k], travel(t, at, 0.9)), TIER_Y[0]);
   dot(x, marked, 6, { color: P.authority, alpha: a * ramp(t, c.tiers[0] - 0.15, 0.4) });
   // The records, each a document at the spine's right, their right edges on one line, named beside it.
   const docRight = x + DOC_RIGHT,
@@ -247,7 +245,6 @@ const FIXES = () =>
 export function stageReview(t, a, c) {
   const [w3, h3] = DOCS[2],
     lit = ramp(t, c.belongs - 0.15, 0.4),
-    vt = voiceTime(t),
     tierY = E.tierY + E.drop,
     nightY = E.nightY + E.drop,
     work = WORK()[2],
@@ -271,7 +268,7 @@ export function stageReview(t, a, c) {
     alpha: a,
     card: 1,
     hours: E.hours,
-    flow: (vt * 0.25) % 1,
+    flow: { t },
     names: { axis: { v: L("昨晚的事", "Last night's case"), alpha: named(t, c.lastCase) } },
   });
   // Its two possible fixes branch from the night into the tier, one list.

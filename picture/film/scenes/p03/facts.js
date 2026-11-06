@@ -11,13 +11,12 @@
  * them; on 「线索」/ "leads" a bracket centred on the axis and clearing every name names the row. */
 
 import { ctx } from "../../canvas.js";
-import { flowDot, line, measure, stroke } from "../../drawing/strokes.js";
+import { flowAt, flowDot, line, measure, stroke } from "../../drawing/strokes.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, growName, nameText } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
 import { LEAD_ORDER, LEADS, bar, eye, leadMark, recordMark } from "./marks.js";
 
 /* The record is C1's (110 by 140) and the eye beside it in proportion. The names hang one gap under the record, the
@@ -102,11 +101,9 @@ export function stageFacts(t, a, c) {
     });
     bar(960, BAR_Y, { alpha: a * ramp(t, c.notPrimary + 0.6, 0.3), length: 56 });
   }
-  // A point rises from the leads toward the records in voice time and stops at the bar.
-  if (meet >= 1) {
-    const q = (voiceTime(t) * 0.35) % 1;
-    flowDot(960, mix(JOIN_Y, BAR_Y + 8, q), 5, q, { color: P.line, alpha: a });
-  }
+  // A point rises from the leads toward the records in voice time and stops at the bar, once their way stands.
+  const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.notPrimary + 0.75 });
+  flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
   // 「线索」/ "leads": a bracket 16 px under the row's names, centred on the axis and reaching past every name, its ends
   // clear of the widest by BRACKET_CLEAR, drawn on with the name that hangs under its middle.
   const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16,

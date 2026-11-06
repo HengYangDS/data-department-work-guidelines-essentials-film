@@ -11,7 +11,7 @@
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
 import {
@@ -71,8 +71,8 @@ export function stageMeeting(t, a, c) {
     },
     { color: P.line, alpha: a, width: 4 },
   );
-  const q = (vt * 0.2) % 1;
-  flowDot(mix(COURSE[0], COURSE[1], q), COURSE_Y, 5, q, { color: P.ink, alpha: a });
+  const runs = flowAt(t, COURSE[1] - COURSE[0]);
+  flowDot(mix(COURSE[0], COURSE[1], runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
   // Before it: the station and its agenda, one list.
   const before = a * ramp(t, c.before - 0.15, 0.4),
     over = COURSE_Y - STATION_R - NAME_GAP,
@@ -190,8 +190,9 @@ export function stageApart(t, a, c) {
     });
   line(SIDES[0] + 52, TOP, mix(SIDES[0] + 52, BARS[0], reach), TOP, { alpha: ways, width: 2.5 });
   line(SIDES[1] - 50, TOP, mix(SIDES[1] - 50, BARS[1], reach), TOP, { alpha: ways, width: 2.5 });
+  // The bars stand as the ways reach them, by a short fade of their own rather than at once.
   BARS.forEach((bx) =>
-    bar(bx, TOP, { alpha: ways * (reach > 0.95 ? 1 : 0), vertical: true, length: 34 }),
+    bar(bx, TOP, { alpha: ways * ramp(t, c.substitute + 0.25, 0.4), vertical: true, length: 34 }),
   );
   rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
     valign: "bottom",
@@ -219,13 +220,13 @@ export function stageApart(t, a, c) {
     width: 2.5,
   });
   bar(SIDES[1], stop2, { alpha: actOn * ramp(t, c.permission + 0.45, 0.2), length: 34 });
-  // Once refused, a point runs down each way in voice time and stops at its bar.
-  const q = (voiceTime(t) * 0.4) % 1;
+  // Once refused, a point runs down each way in voice time and stops at its bar, its first from the way's top.
   [
     [SIDES[0], TOP + 50, c.falseTrue],
     [SIDES[1], TOP + 60, c.permission, stop2],
-  ].forEach(([wx, from, at, end = stop]) => {
-    if (t > at + 0.6) flowDot(wx, mix(from, end - 8, q), 4.5, q, { color: P.line, alpha: a });
+  ].forEach(([wx, top, at, end = stop]) => {
+    const runs = flowAt(t, end - 8 - top, { from: at + 0.6 });
+    flowDot(wx, mix(top, end - 8, runs?.q ?? 0), 4.5, runs, { color: P.line, alpha: a });
   });
   actionMark(SIDES[1], MID, { alpha: actOn });
   nameText(L("去做的权限", "Permission to act"), SIDES[1], MID_NAMES, {

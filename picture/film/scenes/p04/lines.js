@@ -16,7 +16,7 @@ import { NAME_GAP, NOTE, nameText, termRow, termRowLayout } from "../../naming/n
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { travel, voiceTime } from "../../timing/pauses.js";
 import { field, fieldIcon } from "./marks.js";
 
 /* The centre line and height of A's field (scene.js). B's and C's fields keep its top, so the name over each stands
@@ -133,7 +133,7 @@ export function stageCases(t, a, c) {
   });
   // Near a side: a point halts short of the right side, is ringed, and its way rises to the field's top.
   const near = a * ramp(t, c.near - 0.15, 0.4),
-    halted = soon(t, c.near + 0.05, 0.7),
+    halted = travel(t, c.near + 0.05, 0.9),
     hx = mix(x + 40, right - 34, halted),
     hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });

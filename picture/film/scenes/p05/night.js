@@ -7,14 +7,23 @@
 
 import { lastNight, lastNightExtent, HOUR } from "../../drawing/timeline.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowDot, labelSize, line, measure, path } from "../../drawing/strokes.js";
+import {
+  dot,
+  flowAt,
+  flowDot,
+  labelSize,
+  lengthOf,
+  line,
+  measure,
+  path,
+} from "../../drawing/strokes.js";
 import { tableIcon } from "../../drawing/symbols.js";
 import { named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
-import { bar, flowOf } from "./kit.js";
+import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
+import { bar } from "./kit.js";
 
 /* The backtest's height and how far it stands below the measure's name, and the room its marker's name takes under it:
  * the stage's place counts them from its first word, so nothing moves when they arrive. */
@@ -33,25 +42,28 @@ function nightNames(t, c) {
 }
 
 /* The backtest over the same hours, under the measure: a curve whose points inside the two hours stand in the colour
- * of the unknown, not available then. Its marker, on the words that say so, stands on the arrival's hour: every
- * decision in those hours counts from that later time. */
+ * of the unknown, not available then. The curve draws on over 1.6 s and each point fades in as the curve's tip passes
+ * it, over two fifths of the curve, so the points arrive one after another rather than each in a frame. Its marker, on
+ * the words that say so, stands on the arrival's hour: every decision in those hours counts from that later time. */
 function backtest(t, c, g, m, top) {
   const x0 = m.at(-1),
     x1 = m.at(3),
     bottom = top + TEST.h,
     a = g * named(t, c.backtest),
-    seen = soon(t, c.backtest - 0.1, 0.9),
+    seen = ramp(t, c.backtest - 0.1, 1.6),
     points = CURVE.map((v, i) => [
       x0 + ((x1 - x0) * i) / (CURVE.length - 1),
       bottom - 8 - v * (TEST.h - 16),
-    ]);
+    ]),
+    total = lengthOf(points);
   line(x0, bottom, x1, bottom, { color: P.line, alpha: a, width: 2 });
   path(points, { color: P.ink, alpha: a, width: 3, upto: seen });
   points.forEach(([x, y], i) => {
-    const within = x > m.due + 1 && x < m.arrival - 1;
+    const within = x > m.due + 1 && x < m.arrival - 1,
+      reached = lengthOf(points.slice(0, i + 1)) / total;
     dot(x, y, 6.5, {
       color: within ? P.unknown : P.evidence,
-      alpha: a * ramp(seen, i / CURVE.length, 0.15),
+      alpha: a * ease(clamp((seen - reached + 0.15) / 0.4)),
     });
   });
   nameText(L("回测", "Backtest"), x0 - NAME_GAP, top + TEST.h / 2, { align: "right", alpha: a });
@@ -77,7 +89,7 @@ export function nightStage(s, t, c, g) {
     card: soon(t, c.first3 - 0.15, 0.8),
     due: soon(t, c.usual - 0.1, 0.4),
     late: soon(t, c.measure + 0.05, 0.7),
-    flow: t > c.later + 0.6 ? flowOf(t, 0.25) : null,
+    flow: { t, from: c.later + 0.6 },
     names,
   });
   backtest(t, c, g, m, y + e.bottom + TEST.gap);
@@ -104,7 +116,7 @@ export function hindsightStage(s, t, c, g) {
     alpha: g,
     card: soon(t, c.then - 0.15, 0.8),
     hours: D.hours,
-    flow: t < c.cannot ? flowOf(t, 0.25) : null,
+    flow: { t, until: c.cannot },
     names,
   });
   // The rail's two ends are quiet points, so the rail stands whole while its first name is said.
@@ -138,10 +150,8 @@ export function hindsightStage(s, t, c, g) {
   const barX = m.arrival + HOUR * D.scale * 0.8,
     no = g * named(t, c.cannot);
   bar(barX, y, { alpha: g * ramp(t, c.cannot + 0.35, 0.3), vertical: true, length: 44 });
-  if (t > c.cannot) {
-    const q = flowOf(t, 0.5);
-    flowDot(mix(today - 12, barX + 10, q), y, 6, q, { color: P.unknown, alpha: g });
-  }
+  const back = flowAt(t, today - 12 - (barX + 10), { from: c.cannot });
+  flowDot(mix(today - 12, barX + 10, back?.q ?? 0), y, 6, back, { color: P.unknown, alpha: g });
   rejectedName(L("证明不了", "Cannot show"), barX, under, {
     valign: "top",
     alpha: no,

@@ -5,7 +5,7 @@
  * a needed safeguard that must not wait for an incident. */
 
 import { ctx } from "../../canvas.js";
-import { dot, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, seal } from "../../drawing/symbols.js";
 import { lastNight, nights } from "../../drawing/timeline.js";
 import { clearOfTitle } from "../../framing/chapters.js";
@@ -15,8 +15,8 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
-import { centring, early, flowOf, openMark } from "../p05/kit.js";
+import { travel } from "../../timing/pauses.js";
+import { centring, early, openMark } from "../p05/kit.js";
 
 /* A: two lanes at 0.8 sharing the agreed time. The upper lane is last night, its two hours lit and named over them;
  * the lower lane is the next nights, where the same delay may recur, drawn dashed and named over it, and which is the
@@ -44,7 +44,7 @@ export function lanesStage(s, t, c, g0) {
     alpha: recur,
     due: 1,
     lit: { upto: soon(t, c.recur, 0.8), dash: true },
-    flow: t > c.warns ? flowOf(t, 0.3) : null,
+    flow: { t, from: c.warns },
     names: {
       late: { v: L("还会出现", "Recurrence"), side: "top", alpha: 1 },
       axis: { v: L("调度", "The schedule"), side: "left", alpha: named(t, c.schedule) },
@@ -75,7 +75,7 @@ export function lanesStage(s, t, c, g0) {
     valign: "top",
     alpha: g * named(t, c.warns),
   });
-  // "Fixed": a stamp that stands open until the check is left, then is stamped.
+  // "Fixed": a stamp that stands open until the check is left, then is stamped in one continuous movement.
   const fixed = g * named(t, c.fixed),
     stamped = soon(t, c.monitor + 0.2, 0.5),
     sy = (A.up + A.low) / 2;
@@ -83,7 +83,7 @@ export function lanesStage(s, t, c, g0) {
     color: P.evidence,
     alpha: fixed,
     stamp: fixed * stamped,
-    hollow: stamped < 0.5,
+    hollow: 1 - stamped,
   });
   nameText(L("修好了", "Fixed"), A.stamp, sy + 40 + NAME_GAP, { valign: "top", alpha: fixed });
 }
@@ -125,27 +125,25 @@ export function aimStage(s, t, c, g) {
   );
   [top, bottom].forEach((y) => dot(G.x0, y, 4.5, { color: P.line, alpha: g }));
   // The point's first pass starts at the spine as the first strand is drawn whole, so it enters at its start.
-  const drawn = starts[0] - 0.15 + 0.8;
-  if (t >= drawn) {
-    const q = ((voiceTime(t) - voiceTime(drawn)) * 0.3) % 1;
-    dot(mix(G.x0, G.x1, q), y0, 5 * Math.min(1, q * 8, (1 - q) * 8), { color: P.ink, alpha: g });
-  }
-  // Found earlier: the next failure stands on its words; on the gain's words its detection moves earlier, leaving a
-  // muted trace where it was.
+  const runs = flowAt(t, G.x1 - G.x0, { from: starts[0] - 0.15 + 0.8 });
+  flowDot(mix(G.x0, G.x1, runs?.q ?? 0), y0, 5, runs, { color: P.ink, alpha: g });
+  // Found earlier: the next failure stands on its words; on the gain's words its detection glides earlier over 1.1 s
+  // of voice time (310 px, at most about 420 px/s), leaving a muted trace where it was.
   const f = g * ramp(t, starts[0] - 0.15, 0.4),
     d = g * ramp(t, ats[0] - 0.15, 0.4),
-    early0 = soon(t, ats[0] + 0.2, 0.9);
+    early0 = travel(t, ats[0] + 0.2, 1.1);
   dot(1020, y0, 8, { color: P.unknown, alpha: f });
   ring(1110, y0, 14, { color: P.muted, alpha: d * early0 * 0.6, width: 2 });
   ring(mix(1110, 800, early0), y0, 14, { color: P.evidence, alpha: d, width: 3 });
   // Judged more easily: an open decision whose doubt clears.
   const j = g * ramp(t, ats[1] - 0.15, 0.4),
     clear = soon(t, ats[1] + 0.2, 0.6);
-  diamond(mid, y1, 20, { color: P.authority, alpha: j, solid: clear > 0.5 });
+  diamond(mid, y1, 20, { color: P.authority, alpha: j, solid: clear });
   openMark(mid, y1, 28, { alpha: j * (1 - clear) });
-  // Less manual rescue: a long band that shrinks.
+  // Less manual rescue: a long band that shrinks, its end gliding back over 1.2 s of voice time (350 px, at most
+  // about 440 px/s).
   const r = g * ramp(t, ats[2] - 0.15, 0.4),
-    shrink = soon(t, ats[2] + 0.2, 1.2);
+    shrink = travel(t, ats[2] + 0.2, 1.2);
   stroke(
     () => {
       ctx.moveTo(G.x0 + 30, y2);
@@ -252,13 +250,8 @@ export function signsStage(s, t, c, g) {
   );
   beats(t, xs[1], B.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
   beats(t, xs[3], B.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
-  if (t > c.guard + 1) {
-    const q = flowOf(t, 0.3);
-    dot(mix(xs[0] - 108, xs[3] + 108, q), B.y, 4 * Math.min(1, q * 8, (1 - q) * 8), {
-      color: P.ink,
-      alpha: g,
-    });
-  }
+  const runs = flowAt(t, xs[3] + 108 - (xs[0] - 108), { from: c.guard + 1 });
+  flowDot(mix(xs[0] - 108, xs[3] + 108, runs?.q ?? 0), B.y, 4, runs, { color: P.ink, alpha: g });
   nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, B.y + 54 + NAME_GAP, {
     valign: "top",
     alpha: rescue,
