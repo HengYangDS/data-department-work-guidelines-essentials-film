@@ -5238,17 +5238,19 @@ var GROUP = [
   [-31, 34],
   [31, 34]
 ];
+var FAINT = 0.3;
 var OVER_BOUNDARY = 14;
 var BRACKET_TICK = 8;
 function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = travel(t, c.extend - 0.6, 0.6), deep = travel(t, c.refusals[0] - 0.6, 0.6), halfW = mix(110, wide, grow), y = A3.y, ax = A3.ax, px = A3.px, size = 1.05;
+  const peopleIn = en ? early(t, c.first1, c.people) : named(t, c.people);
   people3(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
-    { alpha: g, size }
+    { alpha: g * (en ? mix(FAINT, 1, peopleIn) : 1), size }
   );
   nameText(L("人", "People"), px, y + 96 + NAME_GAP, {
     valign: "top",
-    alpha: g * named(t, c.people)
+    alpha: g * peopleIn
   });
   const agentIn = g * (en ? early(t, c.first1, c.agent) : named(t, c.agent));
   agent(ax, y, { alpha: g, size: 2 });
@@ -5365,7 +5367,7 @@ function cuesOf7(s) {
   const c = {
     first1: cue(s, "在人与人工智能的协作里", "In human–AI collaboration"),
     collab: cue(s, "人与人工智能的协作", "human–AI collaboration"),
-    people: cue(s, "人", "In human–AI collaboration"),
+    people: cue(s, "人", "people"),
     boundaryClause: cue(s, "智能体在委托的范围内", "In human–AI collaboration"),
     agent: cue(s, "智能体", "Agents"),
     boundary: cue(s, "委托的范围", "a delegated boundary"),

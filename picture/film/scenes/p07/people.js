@@ -61,6 +61,8 @@ const GROUP = [
   [-31, 34],
   [31, 34],
 ];
+/* The ink of the English people before their name: faint, below the ink of a mark that waits for a name. */
+const FAINT = 0.3;
 /* The bracket over both groups stands this far over the boundary's name, its ticks this long. */
 const OVER_BOUNDARY = 14,
   BRACKET_TICK = 8;
@@ -74,13 +76,17 @@ export function collaborationStage(s, t, c, g) {
     ax = A.ax,
     px = A.px,
     size = 1.05;
+  // The Chinese says 人 first; the English says "people" only after the Agent and its boundary. There the group
+  // stands faint, the human side of the collaboration, and comes to full ink with its name as its word nears, so it
+  // never waits in its place for a name the narration has not reached.
+  const peopleIn = en ? early(t, c.first1, c.people) : named(t, c.people);
   people(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
-    { alpha: g, size },
+    { alpha: g * (en ? mix(FAINT, 1, peopleIn) : 1), size },
   );
   nameText(L("人", "People"), px, y + 96 + NAME_GAP, {
     valign: "top",
-    alpha: g * named(t, c.people),
+    alpha: g * peopleIn,
   });
   // The Agent's name may lead its words within its clause: in English the clause opens the thought.
   const agentIn = g * (en ? early(t, c.first1, c.agent) : named(t, c.agent));

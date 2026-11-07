@@ -17,7 +17,7 @@ function cuesOf(s) {
   const c = {
     first1: cue(s, "在人与人工智能的协作里", "In human–AI collaboration"),
     collab: cue(s, "人与人工智能的协作", "human–AI collaboration"),
-    people: cue(s, "人", "In human–AI collaboration"),
+    people: cue(s, "人", "people"),
     boundaryClause: cue(s, "智能体在委托的范围内", "In human–AI collaboration"),
     agent: cue(s, "智能体", "Agents"),
     boundary: cue(s, "委托的范围", "a delegated boundary"),
