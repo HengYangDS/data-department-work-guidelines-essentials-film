@@ -18,6 +18,7 @@ import {
   NAME_GAP,
   NOTE,
   TERM_STACK,
+  growName,
   growTexts,
   nameText,
   rejectedName,
@@ -26,7 +27,7 @@ import {
 import { rowNameTop } from "../../naming/placement.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { mix, ramp } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 import { bar } from "../p03/marks.js";
 import { lens, speaker, tierDoc } from "./marks.js";
@@ -47,7 +48,7 @@ const WORK = () =>
   L(
     [
       { term: ["局部、可逆"], qual: ["无对外承诺"] },
-      { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定"] },
+      { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定性"] },
       {
         term: ["生产、", "资金、", "敏感数据、", "安全合规"],
         qual: ["删除覆盖、", "对外承诺、", "不可逆"],
@@ -69,8 +70,8 @@ const WORK = () =>
     ],
   );
 /* The records: one clear exchange, the existing work record and, for the highest tier, a written decision with its
- * explicit authorization and its other requirements, each part on its own words. English says the second tier's
- * contents before the record, so it names the contents as the term and the record as its qualifier. */
+ * explicit authorization and its other requirements, each part on its own words. Each record is its form over what it
+ * holds, as both editions say the record before its contents. */
 const RECORD = () =>
   L(
     [
@@ -81,10 +82,9 @@ const RECORD = () =>
     [
       { term: ["One clear exchange"], qual: ["conclusion, ", "basis, ", "action"] },
       {
-        term: ["Problem, ", "options, ", "execution path ", "and acceptance"],
-        qual: ["existing work record"],
-        width: 240,
-        noteWidth: Infinity,
+        term: ["Existing work record"],
+        qual: ["problem, ", "options, ", "execution path ", "and acceptance"],
+        noteWidth: 240,
       },
       {
         term: ["A written decision, ", "explicit authorization"],
@@ -100,23 +100,24 @@ const workTimes = (c) => [
   { term: [c.tiers[1]], qual: [c.tierQuals[1]] },
   { term: [c.tiers[2], ...c.tierParts.term], qual: [c.tierQuals[2], ...c.tierParts.qual] },
 ];
-/* When each record's term and qualifier (or its items) arrive, part by part: the second tier's on their words in each
- * edition's order, the contents with their parts. */
+/* When each record's term and qualifier (or its items) arrive, part by part: the second tier's contents on their
+ * words after the record. */
 const recordTimes = (c) => [
   { term: [c.oneClear], qual: [c.clearQual, ...c.clearParts] },
-  {
-    term: L([c.record], [c.recordQual, ...c.recordParts]),
-    qual: L([c.recordQual, ...c.recordParts], [c.record]),
-  },
+  { term: [c.record], qual: [c.recordQual, ...c.recordParts] },
   { term: c.written.slice(0, 2), qual: c.written.slice(2) },
 ];
-/* The spine's names: its name over its top, and in Chinese what it decides at its two sides, how much record and how
- * much process; English names the process at its right. */
+/* The spine's names: its name over its top, and beside its top, over the records' column and on the documents' left
+ * edge, what the risk decides: in Chinese how much record and how much process, one line built on their words; in
+ * English the process. The conditions at the spine's left are named by the spine itself. As one line the Chinese
+ * heading reaches far enough from the spine that the spine and it cover a tenth of the band before the first tier
+ * joins; stacked on the documents they covered a twentieth for three seconds. */
 const HEAD = () =>
   L(
-    { top: "风险", left: "多少记录", right: "多少手续" },
-    { top: "Risk", left: null, right: "Process" },
+    { top: "风险", right: ["多少记录", "、多少手续"] },
+    { top: "Risk", right: ["Process"] },
   );
+const headTimes = (c) => L([c.risk, c.process], [c.process]);
 /* The tiers stand at one pitch down the spine, so the gaps between them read alike. */
 const TIER_Y = [330, 525, 720],
   DOCS = [
@@ -125,8 +126,6 @@ const TIER_Y = [330, 525, 720],
     [112, 144],
   ],
   SPINE = [236, 820],
-  /* The spine's side names stand this far from it, so the spine with its names covers a tenth of the frame. */
-  HEAD_GAP = 70,
   TO_WORK = 40,
   TO_DOC = 64,
   /* The documents stand with their right edges on one line, so the three records begin at one left edge. */
@@ -151,8 +150,8 @@ function spineX(c) {
     parts = [
       [
         c.risk,
-        Math.max(top, head.left ? HEAD_GAP + measure(head.left) : 0),
-        Math.max(top, HEAD_GAP + measure(head.right)),
+        top,
+        Math.max(top, DOC_RIGHT - DOCS[2][0] + measure(head.right.join(""))),
       ],
       ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
       ...RECORD().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)]),
@@ -178,9 +177,11 @@ export function stageLadder(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, L(c.riskWord, c.risk)),
   });
-  if (head.left)
-    nameText(head.left, x - HEAD_GAP, top + 12, { align: "right", alpha: a * named(t, c.risk) });
-  nameText(head.right, x + HEAD_GAP, top + 12, { align: "left", alpha: a * named(t, c.process) });
+  // The records' heading beside the spine's top, on the documents' left edge, each part on its words.
+  growName(t, head.right, headTimes(c), x + DOC_RIGHT - DOCS[2][0], top + 12 - labelSize(LABEL) / 2, {
+    alpha: a,
+    build: true,
+  });
   const works = workTimes(c);
   WORK().forEach(({ term, qual, width = Infinity, noteWidth = width }, k) => {
     // A tier's tick joins the spine with the part of its name that reaches the spine, the last of its first line, so
@@ -244,13 +245,14 @@ export function stageLadder(t, a, c) {
  * builds inside it, and the heavier parts, the tier's work and the review, stand at opposite corners; the stage stands
  * `lean` px right of that centre, toward its lighter half, so its ink centres within the reviewers' 60 px while its
  * box keeps well within their 40 px (80 UHD px). The upper group stands `drop` px below the places above for the whole
- * stage, near the midpoint of the drops that centre it alone on the content centre and with the lower group under it
- * (Chinese 132 and 52 px, English 82 and 14 px, its five lines of work standing taller), so neither state stands far
- * off. */
+ * stage, near the midpoint of the drops that centre it alone on the frame audit's centre (y 500) and with the lower
+ * group under it (Chinese about 122 and 11 px, English about 70 and -38 px, its five lines of work standing taller and
+ * the lower group under them), so neither state stands far off; the next thought's first frames, before its cut,
+ * still show this stage whole. */
 const E = {
     tierY: 350,
     nightY: 330,
-    drop: L(64, 48),
+    drop: L(64, 16),
     lean: 24,
     scale: 0.55,
     hours: [-1, 3],
@@ -263,7 +265,7 @@ const E = {
   NIGHT_REACH = 2 * 99,
   FIX_TURN = 40,
   FIX_STEP = 24,
-  /* The speakers' bubbles rise this far over their line, the review's name 32 px. */
+  /* The speakers' bubbles rise this far over their line. */
   BUBBLE = 39;
 const EXAMINED = () =>
   L(["事实、", "推理、", "变更、", "证据"], ["facts, ", "reasoning, ", "changes, ", "evidence"]);
@@ -306,7 +308,7 @@ export function stageReview(t, a, c) {
       route: "hvh",
       mid: night.left - FIX_TURN - i * FIX_STEP,
       alpha: on,
-      upto: soon(t, c.fixes[i] + 0.05, 0.7),
+      draw: { t, at: c.fixes[i] + 0.05 },
       width: 2.5,
     });
     nameText(v, (tierX + w3 / 2 + 10 + night.left - FIX_TURN - FIX_STEP) / 2, y - NAME_GAP + 6, {
@@ -315,33 +317,35 @@ export function stageReview(t, a, c) {
       set: "fixes",
     });
   });
-  // The lower group's line stands so that the speakers' bubbles over it keep one gap under the tier's work. Its
-  // marks' names hang from one baseline, one gap under the lowest of them: the bar reaches 18 px under the line and
-  // the Agent's diamond 20 px. The refused account centres its words and its cross under the bar (the words' width and
-  // 42 px more, as rejectedName sets them), and the bar stands where the account's words keep two gaps from the Agent's
-  // name and its cross two gaps from the lens.
-  const y = Math.max(660, workBlock.bottom + NAME_GAP + BUBBLE),
-    names = rowNameTop([y + 18, y + 20]),
+  // The lower group's line stands so that the speakers' bubbles over it keep two gaps under the tier's work, so the
+  // work reads with its tier and not with the row. Its marks' names hang from one baseline, one gap under the lowest of
+  // them: the bar reaches 18 px under the line, the Agent's diamond 20 px and the lens's handle 1.35 radii and half its
+  // stroke. The refused account centres its words and its cross under the bar (the words' width and 42 px more, as
+  // rejectedName sets them), and the bar stands where the account's words keep two gaps from the Agent's name and its
+  // cross two gaps from the review's name, which centres under the lens with what it examines under it.
+  const y = Math.max(660, workBlock.bottom + 2 * NAME_GAP + BUBBLE),
     r = E.lens,
+    names = rowNameTop([y + 18, y + 20, y + r * 1.35 + 3]),
     reviewName = L("独立评审", "Independent review"),
     authorName = L("作者", "Author"),
     agentName = L("智能体", "Agent"),
     account = L("自己怎么说", "Own account"),
     refusal = (measure(account) + 42) / 2,
     stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal,
-    lensAt = stop + refusal + 2 * NAME_GAP + r,
-    textAt = lensAt + r * 1.4 + NAME_GAP,
-    reach = textAt + blockWidth({ term: [reviewName], qual: EXAMINED() }),
+    reviewHalf = Math.max(r * 1.35 + 3, blockWidth({ term: [reviewName], qual: EXAMINED() }) / 2),
+    lensAt = stop + refusal + 2 * NAME_GAP + reviewHalf,
+    reach = lensAt + reviewHalf,
     // The lower group ends where the night's rail ends.
     authorX = tierX + nightAt + NIGHT_REACH - reach,
     agentX = authorX + E.agent,
     stopX = authorX + stop,
     lensX = authorX + lensAt;
-  // The independent review: a lens, named with what it examines, built part by part.
+  // The independent review: a lens, named under it like the row's other marks, with what it examines built part by
+  // part under its name.
   const review = a * ramp(t, c.review - 0.15, 0.4);
   lens(lensX, y, r, { alpha: review });
-  termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, authorX + textAt, y - 32, {
-    align: "left",
+  termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, lensX, names, {
+    align: "center",
     inline: false,
     build: true,
     alpha: a,
@@ -354,15 +358,18 @@ export function stageReview(t, a, c) {
   nameText(authorName, authorX, names, { valign: "top", alpha: a * named(t, c.author) });
   speaker(agentX, y, { alpha: agent, agent: true });
   nameText(agentName, agentX, names, { valign: "top", alpha: a * named(t, c.agent) });
-  const own = a * ramp(t, c.own - 0.15, 0.4),
-    way = soon(t, c.own + 0.05, 0.5);
-  link(authorX + 24, y, agentX - 26, y, { alpha: own, upto: way, width: 2.5, end: false });
-  link(agentX + 26, y, stopX - 8, y, { alpha: own, upto: way, width: 2.5, end: false });
-  link(lensX - r - 6, y, stopX + 8, y, { alpha: own, upto: way, width: 2.5, end: false });
+  // The author's and the Agent's own account runs to the stop from just before its words, so the three lines finish
+  // before the English thought, which ends on "own account of them", comes to rest; drawn from its words they rested
+  // part-drawn through the pause.
+  const own = a * ramp(t, c.own - 0.45, 0.4),
+    way = { t, at: c.own - 0.3 };
+  link(authorX + 24, y, agentX - 26, y, { alpha: own, draw: way, width: 2.5, end: false });
+  link(agentX + 26, y, stopX - 8, y, { alpha: own, draw: way, width: 2.5, end: false });
+  link(lensX - r - 6, y, stopX + 8, y, { alpha: own, draw: way, width: 2.5, end: false });
   bar(stopX, y, { alpha: own * ramp(t, c.own + 0.5, 0.3), vertical: true, length: 36 });
   rejectedName(account, stopX, names, {
     valign: "top",
-    alpha: own,
+    alpha: a * ramp(t, c.own - 0.15, 0.4),
     mark: ramp(t, c.own + 0.05, 0.3),
   });
 }

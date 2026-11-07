@@ -32,7 +32,7 @@ export function lanesStage(s, t, c, g0) {
       alpha: g,
       due: 1,
       arrival: 1,
-      lit: soon(t, c.first1 - 0.1, 0.8),
+      lit: { draw: { t, at: c.first1 - 0.1 } },
       names: {
         late: {
           v: L("这种延迟", "This kind of delay"),
@@ -154,7 +154,7 @@ export function aimStage(s, t, c, g) {
     { color: P.muted, alpha: r, width: 12, cap: "butt" },
   );
   L(
-    ["更早被发现", "更容易判断", "更少靠人工抢救"],
+    ["更早被发现", "更容易判断", "少靠人救火"],
     ["Earlier detection", "Easier judgment", "Less manual rescue"],
   ).forEach((v, i) =>
     nameText(v, mid, G.ys[i] + G.drop, {
@@ -190,11 +190,22 @@ export function aimStage(s, t, c, g) {
 
 /* B: early signs. Four nights before last night in a row, named over it from the first words that speak of them; a few
  * of them a few minutes late, their delays lit as one stroke and named under them; a rescue mark over each late night,
- * one stroke, named; under the row two checks, the pattern and the impact, each named. Then a needed safeguard,
- * dashed, stands at the row's right, and the incident it must not wait for is refused under it. The stage never moves:
- * it stands where each state it holds, the row alone, the row with its delays named at the left and the whole with the
- * safeguard at the right, is off the centre by as little as possible. */
-const B = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1470, card: 64 };
+ * one stroke, named under a bracket that joins the two; under the row two checks, the pattern and the impact, each
+ * named, standing midway between the first two nights and the last two. Then a needed safeguard, dashed, stands at the
+ * row's right, and the incident it must not wait for is refused under it. While the row builds, the stage stands where
+ * the row alone stays within the reviewers' 90 px of the centre and the row with its delays named at its left, which
+ * holds for seconds, within their 50 px for a settled picture; when the safeguard comes it glides once (a structural
+ * glide, timing/pauses.js travel) to centre the whole, less `lean`, since the safeguard and its refusal weigh the
+ * right: so the settled weight stands within 60 px of the centre while the settled box stays within 50 px (the English
+ * row stood 156 px off while it built at a lean of 90 held from the cut). */
+const B = {
+  y: 480,
+  xs: [500, 760, 1020, 1280],
+  late: [0, 0.4, 0, 0.35],
+  guard: 1470,
+  card: 64,
+  lean: () => L(30, 44),
+};
 /* The safeguard's name, one line over its mark, clear of the last card. */
 const SAFEGUARD = () => L("该有的防护", "A needed safeguard");
 export function signsStage(s, t, c, g) {
@@ -202,12 +213,9 @@ export function signsStage(s, t, c, g) {
     left = B.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")),
     rowStart = B.xs[0] - 108,
     rowEnd = B.xs[3] + 108,
-    states = [
-      [rowStart, rowEnd],
-      [left, rowEnd],
-      [left, right],
-    ].map(([l, r]) => centring(l, r)),
-    shift = (Math.max(...states) + Math.min(...states)) / 2,
+    // The row alone may stand 90 px off; the row named at its left stands about 8 px left of its box's centre.
+    building = (centring(left, rowEnd) - 42 + centring(rowStart, rowEnd) + 90) / 2,
+    shift = mix(building, centring(left, right) - B.lean(), travel(t, c.guard - 0.15, 0.9)),
     xs = B.xs.map((x) => x + shift),
     cardTop = B.y - 34 - B.card,
     lateIn = g * named(t, c.minutes);
@@ -254,20 +262,33 @@ export function signsStage(s, t, c, g) {
   beats(t, xs[3], B.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
   const runs = flowAt(t, xs[3] + 108 - (xs[0] - 108), { from: c.guard + 1 });
   flowDot(mix(xs[0] - 108, xs[3] + 108, runs?.q ?? 0), B.y, 4, runs, { color: P.ink, alpha: g });
-  nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, B.y + 54 + NAME_GAP, {
+  // The two rescues are named as one: a bracket under their rings, its ends turned up to them, the name under its
+  // middle, so the name never reads as the night between them.
+  const bracketY = B.y + 64;
+  stroke(
+    () => {
+      ctx.moveTo(xs[1], bracketY - 8);
+      ctx.lineTo(xs[1], bracketY);
+      ctx.lineTo(xs[3], bracketY);
+      ctx.lineTo(xs[3], bracketY - 8);
+    },
+    { color: P.line, alpha: rescue, width: 2 },
+  );
+  nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, bracketY + NAME_GAP - 6, {
     valign: "top",
     alpha: rescue,
   });
-  // The pattern and the impact: two checks under the row.
-  const checks = c.look;
+  // The pattern and the impact: two checks under the row, midway between the first two nights and the last two.
+  const checks = c.look,
+    checkXs = [(xs[0] + xs[1]) / 2, (xs[2] + xs[3]) / 2];
   [0, 1].forEach((i) => {
-    const x = mix(xs[0], xs[3], i ? 0.72 : 0.28),
+    const x = checkXs[i],
       a = g * ramp(t, checks[i] - 0.15, 0.4);
     ring(x, B.y + 160, 18, { color: P.evidence, alpha: a, width: 2.5 });
     dot(x, B.y + 160, 5, { color: P.evidence, alpha: a });
   });
   L(["规律", "影响"], ["Pattern", "Impact"]).forEach((v, i) =>
-    nameText(v, mix(xs[0], xs[3], i ? 0.72 : 0.28), B.y + 178 + NAME_GAP, {
+    nameText(v, checkXs[i], B.y + 178 + NAME_GAP, {
       valign: "top",
       alpha: g * listIn(t, checks, i),
       set: "look",

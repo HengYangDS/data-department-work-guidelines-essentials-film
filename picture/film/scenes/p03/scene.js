@@ -114,10 +114,11 @@ function closeCues(s) {
     whoDoes: cue(s, "谁去做", "who does what"),
     byWhen: cue(s, "什么时候做完", "by when"),
     missing: cue(s, "还缺什么", "still missing"),
+    orSay: cue(s, "要么说清", "or say"),
     neither: cue(s, "两种依据不能", "Neither kind"),
     substitute: cue(s, "互相替代", "stands in for"),
     falseTrue: cue(s, "假的变成真的", "false fact"),
-    permission: cue(s, "去做的权限", "permission to act"),
+    permission: cue(s, "动手的权限", "permission to act"),
     conflict: cue(s, "两者冲突时", "When the two conflict"),
     report: cue(s, "讲出冲突和影响", "report the conflict"),
     alter: cue(s, "不改记录", "alter the record"),
@@ -129,8 +130,8 @@ scenes["03"] = function (s, t) {
   const c = cuesOf(s);
   const A = stageOut(t, c.opens),
     B = stageIn(t, c.opens) * stageOut(t, c.another),
-    C1 = stageIn(t, c.another) * stageOut(t, c.observe),
-    C2 = stageIn(t, c.observe) * stageOut(t, c.night),
+    C1 = stageIn(t, c.another) * stageOut(t, c.primary),
+    C2 = stageIn(t, c.primary) * stageOut(t, c.night),
     D = stageIn(t, c.night) * stageOut(t, c.meeting),
     E = stageIn(t, c.meeting) * stageOut(t, c.neither),
     F = stageIn(t, c.neither);

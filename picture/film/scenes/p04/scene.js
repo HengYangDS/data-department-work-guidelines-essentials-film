@@ -14,7 +14,8 @@ import { NAME_GAP, nameText } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue, cueFrom } from "../../timing/cues.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { mix, ramp } from "../../timing/easing.js";
+import { drawShare } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { FIELD, stageCases, stageLines } from "./lines.js";
@@ -164,7 +165,8 @@ const A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
 function stageField(t, a, c) {
   field(A.x, A.y, A.w, A.h, {
     alpha: a,
-    drawn: [0, 1, 2, 3].map((k) => soon(t, c.four - 0.15 + 0.08 * k, 0.3)),
+    // Each side draws on at the tip pace by its own length, a gap short of each corner.
+    drawn: [A.w, A.h, A.w, A.h].map((side, k) => drawShare(t, c.four - 0.15 + 0.08 * k, side - 32)),
     lit: [1, 1, 1, 1],
   });
   nameText(L("四条底线", "Four boundaries"), A.x, A.y - A.h / 2 - NAME_GAP, {

@@ -16,7 +16,7 @@ import { railNames } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
-import { travel, voiceTime } from "../../timing/pauses.js";
+import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
 import { bar, centring, early, openMark } from "../p05/kit.js";
 import { nightPlace, nightWay } from "./night.js";
 
@@ -76,9 +76,9 @@ export function chainStage(s, t, c, g) {
     xs = ats.map((_, i) => x0 + i * C.pitch),
     slim = soon(t, c.lighter + 0.05, 0.8);
   // The whole rail stands in the line tone from the first station; the chain lights along it to each station as it is
-  // said; lower risk slims it; a point runs along it once it is whole.
+  // said, at the tip pace; lower risk slims it; a point runs along it once it is whole.
   const reach = ats.reduce(
-    (v, at, i) => (i ? mix(v, xs[i], soon(t, at - 0.15, 0.5)) : xs[0]),
+    (v, at, i) => (i ? mix(v, xs[i], drawShare(t, at - 0.15, C.pitch)) : xs[0]),
     xs[0],
   );
   line(xs[0] - 30, C.y, xs[n - 1] + 30, C.y, {
@@ -124,7 +124,7 @@ export function chainStage(s, t, c, g) {
   // A way that skips a link: from the third station over the fourth toward the fifth, stopped at a bar over the fourth.
   const skip = g * named(t, c.skip),
     wy = C.icon - 70,
-    run = soon(t, c.skip - 0.1, 0.8);
+    run = drawShare(t, c.skip - 0.1, xs[3] - 10 - xs[2] + C.icon - 24 - wy);
   stroke(
     () => {
       ctx.moveTo(xs[2], C.icon - 24);
@@ -173,7 +173,8 @@ export function stateStage(s, t, c, g) {
   const effort = g * named(t, c.effort),
     ey = E1.y + E1.effort;
   box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: effort, radius: 6, width: 2 });
-  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * soon(t, c.effort, 0.8), 20, {
+  // It fills at the tip pace by its own length.
+  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effort, (E1.x1 - E1.x0 - 8) * 0.9), 20, {
     fill: P.muted,
     alpha: effort * 0.55,
     radius: 4,
@@ -268,7 +269,7 @@ export function verifiedStage(s, t, c, g) {
   });
   person(useX, fy + 8, { alpha: inUse, size: 0.85, color: P.muted });
   nameText(L("在用", "In use"), useX, under, { valign: "top", alpha: inUse });
-  const way = soon(t, c.published + 0.3, 0.7);
+  const way = drawShare(t, c.published + 0.3, useX - fw / 2 - 30 - (pubX + fw / 2 + 10));
   line(pubX + fw / 2 + 10, fy, mix(pubX + fw / 2 + 10, useX - fw / 2 - 30, way), fy, {
     color: P.line,
     alpha: pub,
@@ -449,7 +450,7 @@ export function pairsStage(s, t, c, g) {
       agent(lx, row.y, { alpha: a, size: 2 });
       bubble(lx + 74, row.y - 52, 20, { alpha: a, color: P.ink });
     }
-    line(lx + 80, row.y, mix(lx + 80, rx - r - 34, soon(t, wayAt + 0.2, 0.9)), row.y, {
+    line(lx + 80, row.y, mix(lx + 80, rx - r - 34, drawShare(t, wayAt + 0.2, rx - r - 114 - lx)), row.y, {
       color: P.line,
       alpha: a,
       width: 3,

@@ -1,8 +1,8 @@
-/* C2 (03.4, from 「能重复的观察」/ "repeatable observations"): what can establish a fact, centred. The stage it cuts
- * into has named authority about facts and what it answers under its record (C1, kinds.js), and holds while the primary
- * records are said, so this one names them nowhere else: a primary record and a repeatable observation stand together
- * from the cut at its top, over the outer columns of the leads' row and at the size of C1's record, so the stage opens
- * balanced and the pair covers a tenth of the band on its own until the first lead comes; under them what each must
+/* C2 (03.4, from 「要看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has
+ * named authority about facts and what it answers under its record (C1, kinds.js); this one cuts in on the primary
+ * records' words, so the list's first item is never told over the previous picture: a primary record stands at its top
+ * from the cut and a repeatable observation joins it on its own words, over the outer columns of the leads' row and at
+ * the size of C1's record; under them what each must
  * state builds part by part as one name. The leads build one row at the foot under their common way, at one pitch wide
  * enough for the widest neighbouring names, the middle lead on the frame's axis: the way stands whole with the first
  * lead, on its words, and each lead joins it on its words, with its own way down from it, in its edition's order, at
@@ -106,9 +106,13 @@ export function stageFacts(t, a, c) {
   flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
   // 「线索」/ "leads": a bracket 16 px under the row's names whose ends stand BRACKET_CLEAR past the outer names, drawn
   // on with the name that hangs under its middle.
+  // The bracket stands centred on the row's axis, where the five leads, the state over them and the T-mark stand: its
+  // half-span is the farther outer name's reach plus BRACKET_CLEAR, so its name hangs on that axis too.
   const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16,
     on = a * soon(t, c.onlyLeads - 0.1, 0.5),
-    ends = [xs[0] - widths[0] / 2 - BRACKET_CLEAR, xs.at(-1) + widths.at(-1) / 2 + BRACKET_CLEAR];
+    half =
+      Math.max(960 - (xs[0] - widths[0] / 2), xs.at(-1) + widths.at(-1) / 2 - 960) + BRACKET_CLEAR,
+    ends = [960 - half, 960 + half];
   if (on > 0.01)
     stroke(
       () => {

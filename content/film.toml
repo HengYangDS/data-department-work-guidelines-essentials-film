@@ -16,33 +16,41 @@ concepts = "content/concepts.toml"
 # Each edition's folder of script and cast, its 16:9 cover, and the summary its player shows.
 [editions.zh]
 sources = "content"
-summary = "这部 10 分钟的影片讲数据部门工作指南的精华：从一次价格数据晚到的虚构例子和它引出的四种失败讲起，先说指南是什么、工作的价值在哪里，再讲两种依据、四条底线、让数据名副其实、证据决定结论能说到哪和人与人工智能的协作，最后讲怎样让下一次做得更好。片中情境用于解释工作机制，未据此声称实际部署或团队采用。"
+summary = "这部 10 分钟的影片讲数据部门工作指南的精华：从一次价格数据晚到的例子和它引出的四种失败讲起，先说指南是什么、工作的价值在哪里，再讲两种依据、四条底线、让数据名副其实、证据决定结论能说到哪，以及人与人工智能的协作，最后讲怎样让下一次做得更好。片中的价格延迟是虚构的例子，不声称已部署或已采用。"
 cover = "assets/cover/ddwg-essentials-cover.png"
 
 [editions.en]
 sources = "content/en"
-summary = "A 10-minute film on the essentials of the Data Department Work Guidelines. It starts from a made-up case of price data that arrived late and the four failures it invites, says what the guidelines are and what the work is worth, then covers the two kinds of authority, the four boundaries, data that means what it says, evidence that sets the limit of a claim and human–AI collaboration, and ends with making the next attempt better. The scenarios explain how the work is done; they do not claim actual deployment or team adoption."
+summary = "A 10-minute film on the essentials of the Data Department Work Guidelines. It starts from a case of price data that arrived late and the four failures it invites, says what the guidelines are and what the work is worth, then covers the two kinds of authority, the four boundaries, data that means what it says, evidence that sets the limit of a claim, and human–AI collaboration, and ends with making the next attempt better. The late data is a made-up example; the film does not claim deployment or adoption."
 cover = "assets/cover/ddwg-essentials-cover-en.png"
 # A term that reads as one name stays on one caption line, as do a verb and the object it
-# takes, and a modifier and the noun it qualifies.
+# takes, and a modifier and the noun it qualifies, and a phrase whose break would misread.
+# Each is written in lower case: the captions compare lowercased words.
 caption_terms = [
-  "Data Department Work Guidelines",
+  "data department work guidelines",
   "authority to act",
   "authority about facts",
   "decision owner",
   "source of truth",
-  "human–AI collaboration",
+  "human–ai collaboration",
   "price data",
   "publication time",
   "job log",
   "primary records",
   "repeatable observations",
   "generated views",
-  "Agent output",
+  "agent output",
   "independent review",
   "human acceptance",
   "collection job",
   "chain of trust",
+  "known then",
+  "the vendor was on time",
+  "someone should have said",
+  "the agreed time passes",
+  "patched the data overnight",
+  "responsibility for consequences",
+  "able to recognize",
 ]
 
 # The fonts the picture stages below fonts/, in this order: Noto Sans CJK SC, subset to the

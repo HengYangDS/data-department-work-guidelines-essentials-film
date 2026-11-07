@@ -37,7 +37,7 @@ function theNight(t, a, c) {
   lastNight(960, 250, 0.75, {
     alpha: a,
     card: soon(t, c.collection - 0.15, 0.8),
-    late: soon(t, c.late - 0.15, 0.7),
+    late: { draw: { t, at: c.late - 0.15 } },
     flow: { t },
     names: {
       axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
@@ -112,6 +112,10 @@ function theHypothesis(t, a, c, { checked = true } = {}) {
 
 export function stageCase(t, a, c) {
   theNight(t, a, c);
+  // The statements' rail stands from the stage's first frame. The opening words build only the night in the top band;
+  // with the rail held back to its first member, the log, three seconds later, the picture would stand a quarter of the
+  // frame's height off the content centre at the thought's two-second instant, past the reviewed balance's 12 %. So
+  // the rail is the stage's frame for what will stand on it, in the line tone, as in round 6.
   line(COLUMNS[0] - RAIL.reach, RAIL.y, COLUMNS[2] + RAIL.reach, RAIL.y, {
     color: P.line,
     alpha: a,
@@ -135,7 +139,8 @@ export function stageCase(t, a, c) {
   const refuted = a * ramp(t, c.refute - 0.15, 0.4);
   link(x - r - 8, ROW_Y + 18, COLUMNS[1] + MARK[0] / 2 + 10, ROW_Y + 18, {
     alpha: refuted,
-    upto: soon(t, c.refute + 0.05, 0.6),
+    // Drawn at the tip pace from just before its words, so it reaches the hypothesis before the thought's quiet.
+    draw: { t, at: c.refute - 0.25 },
     width: 2.5,
   });
   // From 「要不要换供应商」/ "Whether to change vendors": the choice in the third column, failure 1's fork, and under it,

@@ -90,5 +90,6 @@ export const travel = (t, at, duration) => ease((voiceTime(t) - voiceTime(at)) /
  * that its tip peaks at DRAW_PACE px/s, under the 900 px/s at which a mark races. Returns the share drawn at t of a
  * stroke `length` px long that sets off at `at`. */
 export const DRAW_PACE = 820;
-export const drawShare = (t, at, length, least = 0.4) =>
-  travel(t, at, Math.max(least, (1.5 * Math.abs(length)) / DRAW_PACE));
+/* How long, in voice time, a stroke `length` px long takes to draw on at that pace. */
+export const drawTime = (length, least = 0.4) => Math.max(least, (1.5 * Math.abs(length)) / DRAW_PACE);
+export const drawShare = (t, at, length, least = 0.4) => travel(t, at, drawTime(length, least));

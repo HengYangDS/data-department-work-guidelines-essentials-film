@@ -14,11 +14,11 @@ import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/st
 import { cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { SECOND, listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, growName, nameText, rejectedName } from "../../naming/names.js";
+import { NAME_GAP, NOTE, TERM_STACK, growName, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { mix, ramp } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
@@ -36,6 +36,9 @@ function cuesOf(s) {
     members: cue(s, "部门成员", "members"),
     delegate: cue(s, "委托", "delegate"),
     agents: cue(s, "智能体", "Agents"),
+    aiWhat: cue(s, "查资料", "AI systems"),
+    aiReason: cue(s, "推理", "AI systems"),
+    aiAct: cue(s, "动手", "AI systems"),
     value: cue(s, "数据工作的价值", "The value of data work"),
     handed: [
       cue(s, "一个文件", "a file"),
@@ -105,7 +108,7 @@ function stageGuide(s, t, a, c) {
     route: "vhv",
     mid,
     alpha: members,
-    upto: soon(t, c.members + 0.05, 0.5),
+    draw: { t, at: c.members + 0.05 },
   });
   nameText(L("部门成员", "Members"), MEMBERS[1], ROW_NAMES, {
     valign: "top",
@@ -116,16 +119,29 @@ function stageGuide(s, t, a, c) {
     route: "vhv",
     mid,
     alpha: agentsOn,
-    upto: soon(t, c.agents + 0.05, 0.5),
+    draw: { t, at: c.agents + 0.05 },
   });
   nameText(L("智能体", "Agents"), agentsX, ROW_NAMES, {
     valign: "top",
     alpha: g * named(t, c.agents),
   });
-  // The delegation runs from the members to the Agents, a point travelling along it once it has reached them.
+  // What an Agent is, as the narration says it: in Chinese the three things it can do, each joining on its words, and
+  // in English the AI systems the Agents are. It stands under the Agents' name as its gloss, so the picture follows
+  // the explanation instead of standing still through it.
+  growName(
+    t,
+    L(["能查资料", "、推理", "和动手"], ["AI systems"]),
+    [c.aiWhat, c.aiReason, c.aiAct],
+    agentsX,
+    ROW_NAMES + labelSize(LABEL) + TERM_STACK,
+    { size: NOTE, color: P.muted, alpha: g, build: true, align: "center" },
+  );
+  // The delegation runs from the members to the Agents, a point travelling along it once it has reached them. It
+  // draws from just before its word, so it has reached the Agents before the English thought, which ends a second
+  // after "delegate", comes to rest.
   link(MEMBERS[2] + 34, ROW, AGENTS[0] - 34, ROW, {
-    alpha: g * ramp(t, c.delegate - 0.15, 0.4),
-    upto: soon(t, c.delegate + 0.05, 0.8),
+    alpha: g * ramp(t, c.delegate - 0.45, 0.4),
+    draw: { t, at: c.delegate - 0.3 },
     width: 2.5,
     flow: { t, from: c.delegate + 0.85 },
   });

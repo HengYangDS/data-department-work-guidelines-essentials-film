@@ -2,7 +2,7 @@
 
 Two short introduction films to the [Data Department Work Guidelines](https://github.com/HengYangDS/data-department-work-guidelines), one in Chinese and one in English, and everything needed to rebuild them from source.
 
-Each film says what the guidelines are for and why they hold before how to follow them, through one made-up incident: price data that arrived two hours late. It is the short companion of the full [DDWG films](https://github.com/HengYangDS/data-department-work-guidelines-film), which explain the seven documents one by one. Each edition lasts exactly 600 seconds: 36,000 native 60 fps frames of 2D picture in 16:9, 48 kHz stereo narration in one synthetic voice, small single-line captions and no music. Each comes as a UHD master and a captioned 1080p film.
+Each film says what the guidelines are for and why they hold before how to follow them, through one made-up incident: price data that arrived two hours late. It is the short companion of the full [DDWG films](https://github.com/HengYangDS/data-department-work-guidelines-film), which explain the seven documents one by one. Each edition lasts exactly 600 seconds: 36,000 native 60 fps frames of 2D picture in 16:9, 48 kHz stereo narration in one synthetic voice, small single-line captions and no music. Each comes as a UHD master and a 1080p film, each with its captions drawn in the picture and again without them; the player's captions control switches between the two.
 
 Author: Yang HENG.
 

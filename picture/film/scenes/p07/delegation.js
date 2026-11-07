@@ -10,7 +10,7 @@ import { agent, check, clock, lock, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
-import { railNames, rowNameTop } from "../../naming/placement.js";
+import { RAIL_CLEAR, railNames, rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
@@ -78,8 +78,8 @@ export function delegationStage(s, t, c, g) {
   );
   // The Agent the delegation is given to, inside its boundary at the top right.
   agent(x1 - 70, D.top + 56, { alpha: g, size: 1.2 });
-  nameText(L("委托", "A delegation"), x0, D.top - NAME_GAP, {
-    align: "left",
+  // A frame is named centred over its top side, as every frame of the film is.
+  nameText(L("委托", "A delegation"), x, D.top - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first4, c.delegation),
   });
@@ -165,14 +165,6 @@ const E = { y: 410, caller: 540, agent: 1380 };
 export function callerStage(s, t, c, g) {
   // The caller and the Agent end one line, so their names hang from one baseline under the lower of the two marks:
   // the figure's shoulders reach 56 px below the line and the Agent's diamond 53 px.
-  const endTop = rowNameTop([E.y + 56, E.y + 53]);
-  person(E.caller, E.y + 14, { alpha: g, size: 1.7 });
-  nameText(L("调用智能体的人", "The caller"), E.caller, endTop, { valign: "top", alpha: g });
-  agent(E.agent, E.y, { alpha: g, size: 2.4 });
-  nameText(L("智能体", "Agent"), E.agent, endTop, {
-    valign: "top",
-    alpha: g * named(t, c.agent5),
-  });
   // What the caller owns, on the way between them.
   const ownNames = L(
       ["信息", "权限", "核验", "结果"],
@@ -181,23 +173,44 @@ export function callerStage(s, t, c, g) {
     // Chinese takes 170 px, so its widest vouched name, 为后果负责, keeps a clear gap from the name beside it.
     pitch = L(170, 196),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch),
-    ats = c.owns;
-  line(E.caller + 50, E.y, E.agent - 50, E.y, { color: P.line, alpha: g, width: 2.5 });
+    ats = c.owns,
+    callerName = L("调用智能体的人", "The caller"),
+    agentName = L("智能体", "Agent"),
+    // Every name of the line shares one baseline, so the ends stand symmetric about the centre, as far out as E sets
+    // them or far enough that their names keep the rail's clearance from the outer stations' names.
+    reach = Math.max(
+      960 - E.caller,
+      E.agent - 960,
+      960 - xs[0] + (measure(callerName) + measure(ownNames[0])) / 2 + RAIL_CLEAR,
+      xs[3] - 960 + (measure(ownNames[3]) + measure(agentName)) / 2 + RAIL_CLEAR,
+    ),
+    callerAt = 960 - reach,
+    agentAt = 960 + reach;
+  const endTop = rowNameTop([E.y + 56, E.y + 53]);
+  person(callerAt, E.y + 14, { alpha: g, size: 1.7 });
+  nameText(callerName, callerAt, endTop, { valign: "top", alpha: g });
+  agent(agentAt, E.y, { alpha: g, size: 2.4 });
+  nameText(agentName, agentAt, endTop, {
+    valign: "top",
+    alpha: g * named(t, c.agent5),
+  });
+  line(callerAt + 50, E.y, agentAt - 50, E.y, { color: P.line, alpha: g, width: 2.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
     dot(x, E.y, 10, { color: P.ground, alpha: a });
     dot(x, E.y, 10, { color: P.authority, alpha: a, hollow: true, width: 3 });
     dot(x, E.y, 4, { color: P.authority, alpha: a });
   });
+  // The stations' names hang from the ends' baseline, so every name of the one line stands on one baseline.
   railNames(ownNames, xs, E.y, {
-    gap: 10 + NAME_GAP,
+    gap: endTop - E.y,
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns",
   });
   // Submitting: the work card leaves the caller for the first station's column, a glide over 0.9 s of voice time, and
   // three checks build under the other three stations.
   const sub = g * named(t, c.submit),
-    wx = mix(E.caller, xs[0], travel(t, c.submit, 0.9)),
+    wx = mix(callerAt, xs[0], travel(t, c.submit, 0.9)),
     wy = E.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });

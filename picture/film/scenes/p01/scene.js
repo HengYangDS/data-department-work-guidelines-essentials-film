@@ -82,7 +82,9 @@ const QUALS = () => [
   [L("事实还没查清", "before the facts are in")],
   [L("机制一点没动", "the mechanism untouched")],
   [],
-  [L("判断和结果", "judgment and outcome")],
+  // The fourth says what did not improve, in the voice's words, as its neighbours say what went wrong; the English, in
+  // two phrases, breaks between them within the name's width, clear of the meeting beside it.
+  L(["判断和结果没变得更可靠"], ["judgment and outcome ", "no more reliable"]),
 ];
 /* The meeting's two empty seats are named apart, one on each side of the pair, each on its words. */
 const SEATS = () => L(["决定", "动手"], ["Decision", "Action"]);
@@ -90,8 +92,10 @@ const SEATS = () => L(["决定", "动手"], ["Decision", "Action"]);
 /* A: last night's timeline, centred with its three names: the night's hours from the first word, the price data on
  * the hour it arrived, the two hours late measured below the rail; then the night runs on. */
 function stageNight(t, a, c) {
+  // The night's name is the film's first word, so it stands whole from the opening cut with the rail and its point,
+  // and the voice's first syllable never meets a frame of fewer than three firm marks.
   const names = {
-    axis: { v: L("昨晚", "Last night"), alpha: named(t, c.night) },
+    axis: { v: L("昨晚", "Last night"), alpha: 1 },
     card: { v: L("价格数据", "Price data"), alpha: named(t, c.data) },
     late: { v: L("晚了两个小时", "Two hours late"), alpha: named(t, c.late) },
   };
@@ -99,7 +103,7 @@ function stageNight(t, a, c) {
   lastNight(960 - (e.left + e.right) / 2, 505 - (e.top + e.bottom) / 2, 1, {
     alpha: a,
     card: soon(t, c.data - 0.15, 0.8),
-    late: soon(t, c.late + 0.05, 0.7),
+    late: { draw: { t, at: c.late + 0.05 } },
     // The night runs on from the first word, so the opening holds its rail, its name and a moving point.
     flow: { t },
     names,
@@ -185,14 +189,14 @@ function stageFailures(t, a, c) {
   const ats = [c.vendor, c.patch, c.meeting, c.agent],
     terms = TERMS(),
     quals = QUALS(),
-    qualAts = [[c.facts], [c.mechanism], [], [c.judgment]],
+    qualAts = [[c.facts], [c.mechanism], [], [c.judgment, c.judgment]],
     seats = [c.decide, c.act];
   ats.forEach((at, k) => {
     const x = XS[k],
       [dx, dy] = TOPS[k];
     link(x + dx, CROSS_Y, x + dx, ROW_Y + dy, {
       alpha: a * ramp(t, at - 0.15, 0.3),
-      upto: soon(t, at + 0.05, 0.4),
+      draw: { t, at: at + 0.05 },
     });
     figure(k, x, t, a, c);
     termRow(t, [terms[k]], [at], quals[k], qualAts[k], x, NAME_TOP, {
@@ -233,10 +237,11 @@ function busyRow(t, a, c) {
 /* A name for the whole row: a bracket under its names, drawn on with the name that hangs under it; its end ticks grow
  * as the bracket reaches them. */
 /* The row's bracket grows from the centre outwards as a stroke's tips draw (drawShare), each at most 820 px/s, so it
- * never stands at firm ink in the frame it appears. */
-function rowName(v, t, at, a) {
+ * never stands at firm ink in the frame it appears; it sets off at `drawAt`, early enough to stand whole before the
+ * thought's quiet, and its name comes on its words. */
+function rowName(v, t, at, a, drawAt = at - 0.1) {
   const y = BRACKET_Y,
-    on = a * drawShare(t, at - 0.1, SPAN, 0.5),
+    on = a * drawShare(t, drawAt, SPAN, 0.5),
     reach = SPAN * on,
     tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
@@ -288,10 +293,14 @@ function stageGuide(t, a, c) {
       route: "vhv",
       mid: CROSS_Y,
       alpha: a,
-      upto: soon(t, c.against + 0.05 + 0.1 * k, 0.6),
+      // Each link draws at the tip pace by its length (up to 785 px), so the four set off with the words before 针对 /
+      // "against" and all have reached the failures by the time the voice names them.
+      draw: { t, at: c.against - 1.2 + 0.1 * k },
     });
   });
-  rowName(L("四种失败", "Four failures"), t, c.four, a);
+  // The bracket spans the row as the links reach it, and stands whole before the thought's quiet (01.5 ends with
+  // 四种失败 / "four failures", and the stage cuts in the quiet after it).
+  rowName(L("四种失败", "Four failures"), t, c.four, a, c.against - 0.6);
 }
 
 scenes["01"] = function (s, t) {

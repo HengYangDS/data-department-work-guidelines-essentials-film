@@ -9,7 +9,8 @@ import { clearOfTitle } from "../../framing/chapters.js";
 import { NAME_GAP, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { mix } from "../../timing/easing.js";
+import { drawShare } from "../../timing/pauses.js";
 import { early } from "../p05/kit.js";
 import { recordMark } from "./marks.js";
 
@@ -52,8 +53,9 @@ export function twoKinds(s, t, a, c, { facts = false } = {}) {
   );
   seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
   recordMark(KINDS.right, KINDS.y, ...RECORD, { alpha: on });
-  // 「分开看」/ "stay apart": a divider rises between the two kinds, under the fork.
-  const rise = facts ? 1 : soon(t, c.apart + 0.05, 0.6);
+  // 「分开看」/ "stay apart": a divider rises between the two kinds, under the fork, at the tip pace, standing whole
+  // before the thought's quiet (the words end the thought).
+  const rise = facts ? 1 : drawShare(t, c.apart - 0.2, 190);
   if (rise > 0)
     line(960, KINDS.y + 110, 960, KINDS.y + 110 - 190 * rise, {
       color: P.line,

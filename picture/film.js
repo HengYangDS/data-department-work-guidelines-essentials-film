@@ -212,7 +212,8 @@ var voiceTime = (t) => {
 };
 var travel = (t, at2, duration) => ease((voiceTime(t) - voiceTime(at2)) / duration);
 var DRAW_PACE = 820;
-var drawShare = (t, at2, length, least = 0.4) => travel(t, at2, Math.max(least, 1.5 * Math.abs(length) / DRAW_PACE));
+var drawTime = (length, least = 0.4) => Math.max(least, 1.5 * Math.abs(length) / DRAW_PACE);
+var drawShare = (t, at2, length, least = 0.4) => travel(t, at2, drawTime(length, least));
 
 // picture/film/framing/camera.js
 var CAMERA = {
@@ -357,8 +358,16 @@ function along(points, q) {
   }
   return { point: kept.at(-1), kept };
 }
-function path(points, { upto = 1, ...o } = {}) {
-  if (points.length < 2 || upto <= 0) return;
+var drawnShare = (draw, length, extent = 1) => extent * drawShare(draw.t, draw.at, length * extent, draw.least ?? 0.4);
+var LANDING = 0.15;
+function landedShare(draw, length, extent = 1) {
+  const time = drawTime(length * extent, draw.least ?? 0.4), landing = Math.min(LANDING, time), elapsed = voiceTime(draw.t) - voiceTime(draw.at);
+  return ease((elapsed - (time - landing)) / landing);
+}
+function path(points, { upto = 1, draw = null, ...o } = {}) {
+  if (points.length < 2) return;
+  if (draw) upto = drawnShare(draw, lengthOf(points), clamp(upto));
+  if (upto <= 0) return;
   const drawn = upto >= 1 ? points : along(points, upto).kept;
   stroke(() => drawn.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)), {
     width: 2.5,
@@ -366,9 +375,19 @@ function path(points, { upto = 1, ...o } = {}) {
     ...o
   });
 }
-function ring(x, y, r, { color = P.evidence, alpha = 1, width = 2, upto = 1, start = -Math.PI / 2, dash = null } = {}) {
+function ring(x, y, r, {
+  color = P.evidence,
+  alpha = 1,
+  width = 2,
+  upto = 1,
+  draw = null,
+  start = -Math.PI / 2,
+  dash = null
+} = {}) {
+  if (draw) upto = drawnShare(draw, 2 * Math.PI * r, clamp(upto));
   if (upto <= 0) return;
-  stroke(() => ctx.arc(x, y, r, start, start + Math.PI * 2 * clamp(upto)), {
+  const turn = 2 * Math.PI, from = (start % turn + turn) % turn;
+  stroke(() => ctx.arc(x, y, r, from, from + turn * clamp(upto)), {
     color,
     alpha,
     width,
@@ -724,13 +743,23 @@ function runningHead(s, t) {
 function partHead(v, t) {
   const parts = film.segments.filter((x2) => x2.chapter === v.chapter);
   if (parts.length < 2) return;
-  const a = 0.72 * ramp(t, cardLanding(parts[0]), 0.3);
+  const a = ramp(t, cardLanding(parts[0]), 0.3);
   if (a <= 0) return;
-  const chapter = film.chapters.find((c) => c.id === v.chapter), x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22;
-  line(x, 61, x, 83, { color: P.line, alpha: a });
-  text(`${parts.indexOf(v) + 1}  ${v.title}`, x + 22, 72, 24, {
-    color: P.muted,
-    alpha: a,
+  const chapter = film.chapters.find((c) => c.id === v.chapter), x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22, first = v.words?.[0]?.start ?? v.voice_start, settle = ramp(t, pauseHold(thoughtEnd(first + 0.01)) + 0.05, 0.5), size = mix(LABEL * TYPE, 24, settle), number = `${parts.indexOf(v) + 1}  `;
+  line(x, 61, x, 83, { color: P.line, alpha: 0.72 * a });
+  ctx.save();
+  ctx.font = font(24, false, `${number}${v.title}`);
+  const gap = ctx.measureText(number).width * size / 24;
+  ctx.restore();
+  const ink = mix(1, 0.72, settle) * a;
+  text(number.trim(), x + 22, 72, size, {
+    color: blend(P.evidence, P.muted, settle),
+    alpha: ink,
+    role: "chapter"
+  });
+  text(v.title, x + 22 + gap, 72, size, {
+    color: blend(P.ink, P.muted, settle),
+    alpha: ink,
     role: "chapter"
   });
 }
@@ -971,6 +1000,7 @@ function link(x1, y1, x2, y2, {
   color = P.line,
   alpha = 1,
   upto = 1,
+  draw = null,
   width = 2,
   dash = null,
   flow = null,
@@ -1007,7 +1037,10 @@ function link(x1, y1, x2, y2, {
       [x2, y2]
     ]
   }[kind];
-  const points = rounded(corners, r), drawn = along(points, upto).kept;
+  const points = rounded(corners, r), extent = clamp(upto);
+  if (draw) upto = drawnShare(draw, lengthOf(points), extent);
+  if (upto <= 0) return;
+  const drawn = along(points, upto).kept;
   if (drawn.length > 1)
     stroke(() => drawn.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)), {
       color,
@@ -1015,7 +1048,7 @@ function link(x1, y1, x2, y2, {
       width,
       dash
     });
-  const grown = ease(clamp((upto - 0.95) / 0.05));
+  const grown = draw && extent >= 1 ? landedShare(draw, lengthOf(points)) : ease(clamp((upto - 0.95) / 0.05));
   if (end && grown > 0) dot(x2, y2, (width + 2.5) * grown, { color, alpha });
   const state = flow ? flowAt(flow.t, lengthOf(points), flow) : null;
   if (state && state.q < upto) {
@@ -1238,7 +1271,7 @@ var RAIL = 3.5;
 var MARK = 7;
 var CARD = [150, 110];
 var STEM = 36;
-var LANDING = 14;
+var LANDING2 = 14;
 var SPAN2 = 44;
 var SPAN_TICK = 10;
 var SPAN_WIDTH = 3;
@@ -1320,7 +1353,15 @@ function lastNight(x, y, scale = 1, {
   names = {}
 } = {}) {
   const g = geometry(x, y, scale, hours, lateBy), placed = {};
-  const [A5, C4, S2, D3, H] = [axis, card, late, due, lit].map(partOf), settle = ease(clamp(C4.upto / 0.6)), lift = LANDING * scale * (1 - settle), reach = clamp((C4.upto - 0.4) / 0.6), R2 = partOf(
+  const [A5, C4, S2, D3, H] = [axis, card, late, due, lit].map(partOf);
+  [
+    [A5, g.right - g.left],
+    [S2, g.span.right - g.span.left],
+    [H, g.arrival - g.due]
+  ].forEach(([part, length]) => {
+    if (part.draw) part.upto = drawnShare(part.draw, length, clamp(part.upto));
+  });
+  const settle = ease(clamp(C4.upto / 0.6)), lift = LANDING2 * scale * (1 - settle), reach = clamp((C4.upto - 0.4) / 0.6), R2 = partOf(
     arrival ?? (C4.upto > 0 ? { upto: 1, alpha: C4.alpha, size: ease(clamp((reach - 0.6) / 0.4)) } : 0)
   );
   if (A5.upto > 0) {
@@ -1727,12 +1768,14 @@ var QUALS = () => [
   [L("事实还没查清", "before the facts are in")],
   [L("机制一点没动", "the mechanism untouched")],
   [],
-  [L("判断和结果", "judgment and outcome")]
+  // The fourth says what did not improve, in the voice's words, as its neighbours say what went wrong; the English, in
+  // two phrases, breaks between them within the name's width, clear of the meeting beside it.
+  L(["判断和结果没变得更可靠"], ["judgment and outcome ", "no more reliable"])
 ];
 var SEATS = () => L(["决定", "动手"], ["Decision", "Action"]);
 function stageNight(t, a, c) {
   const names = {
-    axis: { v: L("昨晚", "Last night"), alpha: named(t, c.night) },
+    axis: { v: L("昨晚", "Last night"), alpha: 1 },
     card: { v: L("价格数据", "Price data"), alpha: named(t, c.data) },
     late: { v: L("晚了两个小时", "Two hours late"), alpha: named(t, c.late) }
   };
@@ -1740,7 +1783,7 @@ function stageNight(t, a, c) {
   lastNight(960 - (e.left + e.right) / 2, 505 - (e.top + e.bottom) / 2, 1, {
     alpha: a,
     card: soon(t, c.data - 0.15, 0.8),
-    late: soon(t, c.late + 0.05, 0.7),
+    late: { draw: { t, at: c.late + 0.05 } },
     // The night runs on from the first word, so the opening holds its rail, its name and a moving point.
     flow: { t },
     names
@@ -1805,12 +1848,12 @@ function stageFailures(t, a, c) {
     ],
     rail
   );
-  const ats = [c.vendor, c.patch, c.meeting, c.agent], terms = TERMS(), quals = QUALS(), qualAts = [[c.facts], [c.mechanism], [], [c.judgment]], seats = [c.decide, c.act];
+  const ats = [c.vendor, c.patch, c.meeting, c.agent], terms = TERMS(), quals = QUALS(), qualAts = [[c.facts], [c.mechanism], [], [c.judgment, c.judgment]], seats = [c.decide, c.act];
   ats.forEach((at2, k) => {
     const x = XS[k], [dx, dy] = TOPS[k];
     link(x + dx, CROSS_Y, x + dx, ROW_Y + dy, {
       alpha: a * ramp(t, at2 - 0.15, 0.3),
-      upto: soon(t, at2 + 0.05, 0.4)
+      draw: { t, at: at2 + 0.05 }
     });
     figure(k, x, t, a, c);
     termRow(t, [terms[k]], [at2], quals[k], qualAts[k], x, NAME_TOP, {
@@ -1844,8 +1887,8 @@ function busyRow(t, a, c) {
     });
   });
 }
-function rowName(v, t, at2, a) {
-  const y = BRACKET_Y, on = a * drawShare(t, at2 - 0.1, SPAN3, 0.5), reach = SPAN3 * on, tick = 10 * ease(clamp((on - 0.85) / 0.15));
+function rowName(v, t, at2, a, drawAt2 = at2 - 0.1) {
+  const y = BRACKET_Y, on = a * drawShare(t, drawAt2, SPAN3, 0.5), reach = SPAN3 * on, tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
   if (tick > 0.5)
     [-SPAN3, SPAN3].forEach(
@@ -1882,10 +1925,12 @@ function stageGuide(t, a, c) {
       route: "vhv",
       mid: CROSS_Y,
       alpha: a,
-      upto: soon(t, c.against + 0.05 + 0.1 * k, 0.6)
+      // Each link draws at the tip pace by its length (up to 785 px), so the four set off with the words before 针对 /
+      // "against" and all have reached the failures by the time the voice names them.
+      draw: { t, at: c.against - 1.2 + 0.1 * k }
     });
   });
-  rowName(L("四种失败", "Four failures"), t, c.four, a);
+  rowName(L("四种失败", "Four failures"), t, c.four, a, c.against - 0.6);
 }
 scenes["01"] = function(s, t) {
   if (t < s.words[0].start - 0.12) {
@@ -2178,10 +2223,10 @@ var COLLEAGUE = () => L("那位同事", "The colleague");
 var ONLY_FIRST = () => L("只做到了第一件", "only the first");
 var OUTCOMES = () => [
   [[L("问题解决掉", "Problem resolved")], []],
-  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "its conditions stated")]],
+  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "when it holds")]],
   [
     [L("系统", "The system")],
-    L(["更早认出来", "，或者处理得更好"], ["sooner recognition,", " better handling"])
+    L(["更早认出来", "，或者处理得更好"], ["recognized sooner,", " handled better"])
   ]
 ];
 var noteWidth = () => L(Infinity, Math.max(...OUTCOMES().map(([term]) => measure(term.join("")))));
@@ -2218,7 +2263,7 @@ function stageOutcomes(s, t, c) {
     const at2 = c.outcomes[k], ox = XS2[k], on = a * ramp(t, at2 - 0.15, 0.4);
     link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
       alpha: on,
-      upto: soon(t, at2 + 0.05, 0.4),
+      draw: { t, at: at2 + 0.05 },
       width: 2.5
     });
     if (k < 2)
@@ -2264,7 +2309,7 @@ function stageOutcomes(s, t, c) {
   people2([bx], y, { size: 1, alpha: C22 });
   link(bx + 30, y, x - r - RING_GAP, y, {
     alpha: C22,
-    upto: soon(t, c.colleague + 0.05, 0.5),
+    draw: { t, at: c.colleague + 0.05 },
     width: 2.5
   });
   const { height } = termRowLayout([COLLEAGUE()], [ONLY_FIRST()], Infinity, false);
@@ -2303,6 +2348,9 @@ function cuesOf2(s) {
     members: cue(s, "部门成员", "members"),
     delegate: cue(s, "委托", "delegate"),
     agents: cue(s, "智能体", "Agents"),
+    aiWhat: cue(s, "查资料", "AI systems"),
+    aiReason: cue(s, "推理", "AI systems"),
+    aiAct: cue(s, "动手", "AI systems"),
     value: cue(s, "数据工作的价值", "The value of data work"),
     handed: [
       cue(s, "一个文件", "a file"),
@@ -2356,7 +2404,7 @@ function stageGuide2(s, t, a, c) {
     route: "vhv",
     mid,
     alpha: members,
-    upto: soon(t, c.members + 0.05, 0.5)
+    draw: { t, at: c.members + 0.05 }
   });
   nameText(L("部门成员", "Members"), MEMBERS[1], ROW_NAMES, {
     valign: "top",
@@ -2367,15 +2415,23 @@ function stageGuide2(s, t, a, c) {
     route: "vhv",
     mid,
     alpha: agentsOn,
-    upto: soon(t, c.agents + 0.05, 0.5)
+    draw: { t, at: c.agents + 0.05 }
   });
   nameText(L("智能体", "Agents"), agentsX, ROW_NAMES, {
     valign: "top",
     alpha: g * named(t, c.agents)
   });
+  growName(
+    t,
+    L(["能查资料", "、推理", "和动手"], ["AI systems"]),
+    [c.aiWhat, c.aiReason, c.aiAct],
+    agentsX,
+    ROW_NAMES + labelSize(LABEL) + TERM_STACK,
+    { size: NOTE, color: P.muted, alpha: g, build: true, align: "center" }
+  );
   link(MEMBERS[2] + 34, ROW, AGENTS[0] - 34, ROW, {
-    alpha: g * ramp(t, c.delegate - 0.15, 0.4),
-    upto: soon(t, c.delegate + 0.05, 0.8),
+    alpha: g * ramp(t, c.delegate - 0.45, 0.4),
+    draw: { t, at: c.delegate - 0.3 },
     width: 2.5,
     flow: { t, from: c.delegate + 0.85 }
   });
@@ -2605,7 +2661,7 @@ function theNight(t, a, c) {
   lastNight(960, 250, 0.75, {
     alpha: a,
     card: soon(t, c.collection - 0.15, 0.8),
-    late: soon(t, c.late - 0.15, 0.7),
+    late: { draw: { t, at: c.late - 0.15 } },
     flow: { t },
     names: {
       axis: { v: NIGHT(), alpha: named(t, c.lastNight) },
@@ -2689,7 +2745,8 @@ function stageCase(t, a, c) {
   const refuted = a * ramp(t, c.refute - 0.15, 0.4);
   link(x - r - 8, ROW_Y2 + 18, COLUMNS[1] + MARK2[0] / 2 + 10, ROW_Y2 + 18, {
     alpha: refuted,
-    upto: soon(t, c.refute + 0.05, 0.6),
+    // Drawn at the tip pace from just before its words, so it reaches the hypothesis before the thought's quiet.
+    draw: { t, at: c.refute - 0.25 },
     width: 2.5
   });
   const cx = COLUMNS[2];
@@ -2727,6 +2784,10 @@ var MEET = { x: 960, y: 470, k: 1.8 };
 var COURSE = [300, 1620];
 var COURSE_Y = MEET.y + 7 * MEET.k;
 var STATION_R = 11;
+var FORK = 64;
+var NODE = 170;
+var DECIDE_X = 1440;
+var MISSING_X = 1720;
 var AGENDA = () => L(["决定什么", "谁决定", "哪些事实"], ["What to decide", "Who decides", "Which facts"]);
 var at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 function stageMeeting(t, a, c) {
@@ -2736,9 +2797,6 @@ function stageMeeting(t, a, c) {
   ctx.scale(k, k);
   ctx.translate(-x, -y);
   meetingMark(x, y, { alpha: a, seats: [0, 0] });
-  ring(x - 40, y + 56, 11, { color: P.authority, alpha: decision, width: 3 });
-  dot(x - 40, y + 56, 3.5, { color: P.authority, alpha: decision });
-  people([x + 40], y + 61, { alpha: doer });
   ctx.restore();
   const top = at(x, y - 10 - 14 - 2.15 * 9)[1], half = at(x + 86, y)[0] - x;
   nameText(L("那场会", "The meeting"), x, top - NAME_GAP, {
@@ -2775,27 +2833,40 @@ function stageMeeting(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.ends)
   });
-  const [dx, dy] = at(x - 40, y + 56), [px] = at(x + 40, y + 61);
-  nameText(L("决定", "A decision"), dx - 11 * k - NAME_GAP, dy, {
-    align: "right",
-    alpha: a * named(t, c.decision)
-  });
-  growName(
-    t,
-    L(["谁去做、", "什么时候做完"], ["Who does what", " by when"]),
-    [c.whoDoes, c.byWhen],
-    px + 14 * k + NAME_GAP,
-    dy,
-    { valign: "middle", build: true, alpha: a }
-  );
-  const missing = a * ramp(t, c.missing - 0.15, 0.4), openY = COURSE_Y + 110;
-  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], openY - 24, {
-    alpha: missing,
-    upto: soon(t, c.missing + 0.05, 0.4),
+  const forkY = COURSE_Y + FORK, nodeY = COURSE_Y + NODE, missing = a * ramp(t, c.missing - 0.15, 0.4);
+  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
+    alpha: decision,
+    draw: { t, at: c.decision - 0.35 },
+    end: false,
     width: 2.5
   });
-  openMark(COURSE[1], openY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(L("还缺什么", "Still missing"), COURSE[1], openY + 20 + NAME_GAP, {
+  link(COURSE[1], forkY, DECIDE_X, nodeY - 22, {
+    route: "hv",
+    alpha: decision,
+    draw: { t, at: c.decision - 0.1 },
+    width: 2.5
+  });
+  ring(DECIDE_X - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
+  dot(DECIDE_X - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
+  people([DECIDE_X + 22], nodeY + 6, { alpha: doer, size: 0.7 });
+  termRow(
+    t,
+    [L("决定", "A decision")],
+    [c.decision],
+    L(["谁去做、", "什么时候做完"], ["who does what", " by when"]),
+    [c.whoDoes, c.byWhen],
+    DECIDE_X,
+    nodeY + 30 + NAME_GAP,
+    { align: "center", inline: false, alpha: a }
+  );
+  link(COURSE[1], forkY, MISSING_X, nodeY - 24, {
+    route: "hv",
+    alpha: missing,
+    draw: { t, at: c.orSay - 0.1 },
+    width: 2.5
+  });
+  openMark(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
+  nameText(L("还缺什么", "Still missing"), MISSING_X, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing)
   });
@@ -2842,7 +2913,7 @@ function stageApart(t, a, c) {
       { align: side < 0 ? "right" : "left", inline: false, alpha: a }
     );
   });
-  const ways = a * ramp(t, c.substitute - 0.15, 0.4), reach = soon(t, c.substitute + 0.05, 0.5), rise = soon(t, c.substitute + 0.05, 0.6);
+  const ways = a * ramp(t, c.substitute - 0.15, 0.4), reach = drawShare(t, c.substitute + 0.05, Math.max(BARS[0] - SIDES2[0] - 52, SIDES2[1] - 50 - BARS[1])), rise = drawShare(t, c.substitute + 0.05, DIVIDER[1] - DIVIDER[0]);
   if (rise > 0)
     line(960, DIVIDER[1], 960, mix(DIVIDER[1], DIVIDER[0], rise), {
       color: P.line,
@@ -2854,13 +2925,13 @@ function stageApart(t, a, c) {
   BARS.forEach(
     (bx) => bar(bx, TOP, { alpha: ways * ramp(t, c.substitute + 0.25, 0.4), vertical: true, length: 34 })
   );
-  rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
+  rejectedName(L("替代", "Stands in for"), 960, DIVIDER[0] - NAME_GAP, {
     valign: "bottom",
     alpha: a * named(t, c.substitute),
     mark: ramp(t, c.substitute + 0.05, 0.3)
   });
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4), [stop, stop2] = STOPS;
-  line(SIDES2[0], TOP + 50, SIDES2[0], mix(TOP + 50, stop - 6, soon(t, c.falseTrue + 0.05, 0.5)), {
+  line(SIDES2[0], TOP + 50, SIDES2[0], mix(TOP + 50, stop - 6, drawShare(t, c.falseTrue + 0.05, stop - 56 - TOP)), {
     alpha: falseOn,
     width: 2.5
   });
@@ -2871,7 +2942,7 @@ function stageApart(t, a, c) {
     alpha: a * named(t, c.falseTrue)
   });
   const actOn = a * ramp(t, c.permission - 0.15, 0.4);
-  line(SIDES2[1], TOP + 60, SIDES2[1], mix(TOP + 60, stop2 - 6, soon(t, c.permission + 0.05, 0.5)), {
+  line(SIDES2[1], TOP + 60, SIDES2[1], mix(TOP + 60, stop2 - 6, drawShare(t, c.permission + 0.05, stop2 - 66 - TOP)), {
     alpha: actOn,
     width: 2.5
   });
@@ -2884,12 +2955,12 @@ function stageApart(t, a, c) {
     flowDot(wx, mix(top, end - 8, runs?.q ?? 0), 4.5, runs, { color: P.line, alpha: a });
   });
   actionMark(SIDES2[1], MID, { alpha: actOn });
-  nameText(L("去做的权限", "Permission to act"), SIDES2[1], MID_NAMES, {
+  nameText(L("动手的权限", "Permission to act"), SIDES2[1], MID_NAMES, {
     valign: "top",
     alpha: a * named(t, c.permission)
   });
   const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
-  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, soon(t, c.conflict + 0.05, 0.4)), {
+  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, drawShare(t, c.conflict + 0.05, CONFLICT_Y - 12 - DIVIDER[1])), {
     alpha: conflict,
     width: 3
   });
@@ -2901,7 +2972,7 @@ function stageApart(t, a, c) {
   const report = a * ramp(t, c.report - 0.15, 0.4);
   link(960, CONFLICT_Y + 12, 960, MID - 36, {
     alpha: report,
-    upto: soon(t, c.report + 0.05, 0.5),
+    draw: { t, at: c.report + 0.05 },
     width: 2.5
   });
   reportMark(960, MID, { alpha: report });
@@ -2984,7 +3055,7 @@ function stageFacts(t, a, c) {
   }
   const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.notPrimary + 0.75 });
   flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
-  const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16, on = a * soon(t, c.onlyLeads - 0.1, 0.5), ends = [xs[0] - widths[0] / 2 - BRACKET_CLEAR, xs.at(-1) + widths.at(-1) / 2 + BRACKET_CLEAR];
+  const under = LEADS_Y + LEAD_HALF + 16 + 25 + 16, on = a * soon(t, c.onlyLeads - 0.1, 0.5), half = Math.max(960 - (xs[0] - widths[0] / 2), xs.at(-1) + widths.at(-1) / 2 - 960) + BRACKET_CLEAR, ends = [960 - half, 960 + half];
   if (on > 0.01)
     stroke(
       () => {
@@ -3116,7 +3187,7 @@ function twoKinds(s, t, a, c, { facts = false } = {}) {
   );
   seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
   recordMark(KINDS.right, KINDS.y, ...RECORD2, { alpha: on });
-  const rise = facts ? 1 : soon(t, c.apart + 0.05, 0.6);
+  const rise = facts ? 1 : drawShare(t, c.apart - 0.2, 190);
   if (rise > 0)
     line(960, KINDS.y + 110, 960, KINDS.y + 110 - 190 * rise, {
       color: P.line,
@@ -3160,7 +3231,7 @@ var RANKS = () => L(
     "工作计划、临时约定、个人偏好"
   ],
   [
-    "Law, regulation, security requirements, mandatory policy",
+    "Law, regulation, security requirements, mandatory company policy",
     "What the decision owner for the matter explicitly decides",
     "Contracts, policies, specifications, decision records in force",
     "Plans, provisional agreements, personal preferences"
@@ -3173,7 +3244,7 @@ function spineX() {
   return (Math.max(...shifts) + Math.min(...shifts)) / 2;
 }
 function stageOrder(t, a, c) {
-  const x = spineX(), grow = soon(t, c.order + 0.05, 0.5), top = HEAD_Y + SEAL_R2 + 4;
+  const x = spineX(), top = HEAD_Y + SEAL_R2 + 4, grow = drawShare(t, c.order + 0.05, ROWS[3] - top);
   seal(x, HEAD_Y, SEAL_R2, { alpha: a });
   termRow(t, [HEAD()], [-Infinity], [QUESTION()], [-Infinity], x + SEAL_R2 + NAME_GAP, HEAD_Y - 32, {
     align: "left",
@@ -3181,7 +3252,7 @@ function stageOrder(t, a, c) {
     alpha: a
   });
   line(x, top, x, top + (ROWS[3] - top) * grow, { color: P.line, alpha: a, width: 4 });
-  const from = c.order + 0.55, span = voiceTime(thoughtEnd(c.ranks.at(-1))) - voiceTime(from), q = (voiceTime(t) - voiceTime(from)) / span;
+  const from = c.order + 0.7, span = voiceTime(thoughtEnd(c.ranks.at(-1))) - voiceTime(from), q = (voiceTime(t) - voiceTime(from)) / span;
   if (q > 0 && q < 1)
     dot(
       x,
@@ -3295,10 +3366,11 @@ function closeCues(s) {
     whoDoes: cue(s, "谁去做", "who does what"),
     byWhen: cue(s, "什么时候做完", "by when"),
     missing: cue(s, "还缺什么", "still missing"),
+    orSay: cue(s, "要么说清", "or say"),
     neither: cue(s, "两种依据不能", "Neither kind"),
     substitute: cue(s, "互相替代", "stands in for"),
     falseTrue: cue(s, "假的变成真的", "false fact"),
-    permission: cue(s, "去做的权限", "permission to act"),
+    permission: cue(s, "动手的权限", "permission to act"),
     conflict: cue(s, "两者冲突时", "When the two conflict"),
     report: cue(s, "讲出冲突和影响", "report the conflict"),
     alter: cue(s, "不改记录", "alter the record"),
@@ -3307,7 +3379,7 @@ function closeCues(s) {
 }
 scenes["03"] = function(s, t) {
   const c = cuesOf3(s);
-  const A5 = stageOut(t, c.opens), B6 = stageIn(t, c.opens) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.observe), C22 = stageIn(t, c.observe) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E4 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
+  const A5 = stageOut(t, c.opens), B6 = stageIn(t, c.opens) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.primary), C22 = stageIn(t, c.primary) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E4 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
   if (A5 > 0) twoKinds(s, t, A5, c);
   if (B6 > 0) stageOrder(t, B6, c);
   if (C1 > 0) twoKinds(s, t, C1, c, { facts: true });
@@ -3493,7 +3565,15 @@ function stageLines(t, a, c) {
     });
   });
 }
-var C = { y: TOP2 + 200, s: 400, pitch: 44, roam: [70, 60], reach: [60, 45], approach: 0.55 };
+var C = {
+  y: TOP2 + 200,
+  s: 400,
+  pitch: 44,
+  roam: [70, 60],
+  reach: [60, 45],
+  approach: 0.55,
+  inset: 62
+};
 var FREE = () => L("自主", "Autonomy");
 var EDGE2 = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
 function stageCases(t, a, c) {
@@ -3512,18 +3592,18 @@ function stageCases(t, a, c) {
     valign: "top",
     alpha: a * listIn(t, cases, 0)
   });
-  const near = a * ramp(t, approach - 0.15, 0.4), halted = travel(t, approach + 0.05, 0.9), hx = mix(x + 40, right - 34, halted), hy = C.y;
+  const near = a * ramp(t, approach - 0.15, 0.4), halted = travel(t, approach + 0.05, 0.9), hx = mix(x + 40, right - C.inset - 12, halted), hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
   ring(hx, hy, 17, {
     color: P.authority,
     alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3
   });
-  const rise = soon(t, edge[2] + 0.05, 0.6);
+  const rise = drawShare(t, edge[2] - 0.2, hy - 25 - top);
   if (rise > 0)
     line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
   EDGE2().forEach(
-    (v, i) => nameText(v, right - NAME_GAP, hy + 17 + NAME_GAP + i * C.pitch, {
+    (v, i) => nameText(v, right - C.inset, hy + 17 + NAME_GAP + i * C.pitch, {
       valign: "top",
       align: "right",
       alpha: a * level(1) * listIn(t, edge, i),
@@ -3576,7 +3656,7 @@ function radialName(v, cx, cy, r, a, { gap = NAME_GAP, ry = r, width = 260, ...o
 var WORK = () => L(
   [
     { term: ["局部、可逆"], qual: ["无对外承诺"] },
-    { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定"] },
+    { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定性"] },
     {
       term: ["生产、", "资金、", "敏感数据、", "安全合规"],
       qual: ["删除覆盖、", "对外承诺、", "不可逆"]
@@ -3606,10 +3686,9 @@ var RECORD3 = () => L(
   [
     { term: ["One clear exchange"], qual: ["conclusion, ", "basis, ", "action"] },
     {
-      term: ["Problem, ", "options, ", "execution path ", "and acceptance"],
-      qual: ["existing work record"],
-      width: 240,
-      noteWidth: Infinity
+      term: ["Existing work record"],
+      qual: ["problem, ", "options, ", "execution path ", "and acceptance"],
+      noteWidth: 240
     },
     {
       term: ["A written decision, ", "explicit authorization"],
@@ -3626,16 +3705,14 @@ var workTimes = (c) => [
 ];
 var recordTimes = (c) => [
   { term: [c.oneClear], qual: [c.clearQual, ...c.clearParts] },
-  {
-    term: L([c.record], [c.recordQual, ...c.recordParts]),
-    qual: L([c.recordQual, ...c.recordParts], [c.record])
-  },
+  { term: [c.record], qual: [c.recordQual, ...c.recordParts] },
   { term: c.written.slice(0, 2), qual: c.written.slice(2) }
 ];
 var HEAD2 = () => L(
-  { top: "风险", left: "多少记录", right: "多少手续" },
-  { top: "Risk", left: null, right: "Process" }
+  { top: "风险", right: ["多少记录", "、多少手续"] },
+  { top: "Risk", right: ["Process"] }
 );
+var headTimes = (c) => L([c.risk, c.process], [c.process]);
 var TIER_Y = [330, 525, 720];
 var DOCS = [
   [52, 66],
@@ -3643,7 +3720,6 @@ var DOCS = [
   [112, 144]
 ];
 var SPINE = [236, 820];
-var HEAD_GAP = 70;
 var TO_WORK = 40;
 var TO_DOC = 64;
 var DOC_RIGHT = TO_DOC + DOCS[2][0];
@@ -3658,8 +3734,8 @@ function spineX2(c) {
   const head = HEAD2(), top = measure(head.top) / 2, records = recordTimes(c), parts = [
     [
       c.risk,
-      Math.max(top, head.left ? HEAD_GAP + measure(head.left) : 0),
-      Math.max(top, HEAD_GAP + measure(head.right))
+      top,
+      Math.max(top, DOC_RIGHT - DOCS[2][0] + measure(head.right.join("")))
     ],
     ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
     ...RECORD3().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
@@ -3681,9 +3757,10 @@ function stageLadder(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, L(c.riskWord, c.risk))
   });
-  if (head.left)
-    nameText(head.left, x - HEAD_GAP, top + 12, { align: "right", alpha: a * named(t, c.risk) });
-  nameText(head.right, x + HEAD_GAP, top + 12, { align: "left", alpha: a * named(t, c.process) });
+  growName(t, head.right, headTimes(c), x + DOC_RIGHT - DOCS[2][0], top + 12 - labelSize(LABEL) / 2, {
+    alpha: a,
+    build: true
+  });
   const works = workTimes(c);
   WORK().forEach(({ term, qual, width = Infinity, noteWidth: noteWidth2 = width }, k) => {
     const y = TIER_Y[k], reaching = growTexts(term, width)[0].at(-1)[0], on = a * ramp(t, (works[k].term[reaching] ?? works[k].term[0]) - 0.15, 0.4);
@@ -3728,7 +3805,7 @@ function stageLadder(t, a, c) {
 var E = {
   tierY: 350,
   nightY: 330,
-  drop: L(64, 48),
+  drop: L(64, 16),
   lean: 24,
   scale: 0.55,
   hours: [-1, 3],
@@ -3766,7 +3843,7 @@ function stageReview(t, a, c) {
       route: "hvh",
       mid: night.left - FIX_TURN - i * FIX_STEP,
       alpha: on,
-      upto: soon(t, c.fixes[i] + 0.05, 0.7),
+      draw: { t, at: c.fixes[i] + 0.05 },
       width: 2.5
     });
     nameText(v, (tierX + w3 / 2 + 10 + night.left - FIX_TURN - FIX_STEP) / 2, y2 - NAME_GAP + 6, {
@@ -3775,11 +3852,11 @@ function stageReview(t, a, c) {
       set: "fixes"
     });
   });
-  const y = Math.max(660, workBlock.bottom + NAME_GAP + BUBBLE), names = rowNameTop([y + 18, y + 20]), r = E.lens, reviewName = L("独立评审", "Independent review"), authorName = L("作者", "Author"), agentName = L("智能体", "Agent"), account = L("自己怎么说", "Own account"), refusal = (measure(account) + 42) / 2, stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal, lensAt = stop + refusal + 2 * NAME_GAP + r, textAt = lensAt + r * 1.4 + NAME_GAP, reach = textAt + blockWidth({ term: [reviewName], qual: EXAMINED() }), authorX = tierX + nightAt + NIGHT_REACH - reach, agentX = authorX + E.agent, stopX = authorX + stop, lensX = authorX + lensAt;
+  const y = Math.max(660, workBlock.bottom + 2 * NAME_GAP + BUBBLE), r = E.lens, names = rowNameTop([y + 18, y + 20, y + r * 1.35 + 3]), reviewName = L("独立评审", "Independent review"), authorName = L("作者", "Author"), agentName = L("智能体", "Agent"), account = L("自己怎么说", "Own account"), refusal = (measure(account) + 42) / 2, stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal, reviewHalf = Math.max(r * 1.35 + 3, blockWidth({ term: [reviewName], qual: EXAMINED() }) / 2), lensAt = stop + refusal + 2 * NAME_GAP + reviewHalf, reach = lensAt + reviewHalf, authorX = tierX + nightAt + NIGHT_REACH - reach, agentX = authorX + E.agent, stopX = authorX + stop, lensX = authorX + lensAt;
   const review = a * ramp(t, c.review - 0.15, 0.4);
   lens(lensX, y, r, { alpha: review });
-  termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, authorX + textAt, y - 32, {
-    align: "left",
+  termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, lensX, names, {
+    align: "center",
     inline: false,
     build: true,
     alpha: a
@@ -3789,14 +3866,14 @@ function stageReview(t, a, c) {
   nameText(authorName, authorX, names, { valign: "top", alpha: a * named(t, c.author) });
   speaker(agentX, y, { alpha: agent2, agent: true });
   nameText(agentName, agentX, names, { valign: "top", alpha: a * named(t, c.agent) });
-  const own = a * ramp(t, c.own - 0.15, 0.4), way = soon(t, c.own + 0.05, 0.5);
-  link(authorX + 24, y, agentX - 26, y, { alpha: own, upto: way, width: 2.5, end: false });
-  link(agentX + 26, y, stopX - 8, y, { alpha: own, upto: way, width: 2.5, end: false });
-  link(lensX - r - 6, y, stopX + 8, y, { alpha: own, upto: way, width: 2.5, end: false });
+  const own = a * ramp(t, c.own - 0.45, 0.4), way = { t, at: c.own - 0.3 };
+  link(authorX + 24, y, agentX - 26, y, { alpha: own, draw: way, width: 2.5, end: false });
+  link(agentX + 26, y, stopX - 8, y, { alpha: own, draw: way, width: 2.5, end: false });
+  link(lensX - r - 6, y, stopX + 8, y, { alpha: own, draw: way, width: 2.5, end: false });
   bar(stopX, y, { alpha: own * ramp(t, c.own + 0.5, 0.3), vertical: true, length: 36 });
   rejectedName(account, stopX, names, {
     valign: "top",
-    alpha: own,
+    alpha: a * ramp(t, c.own - 0.15, 0.4),
     mark: ramp(t, c.own + 0.05, 0.3)
   });
 }
@@ -3936,7 +4013,8 @@ var A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
 function stageField(t, a, c) {
   field(A.x, A.y, A.w, A.h, {
     alpha: a,
-    drawn: [0, 1, 2, 3].map((k) => soon(t, c.four - 0.15 + 0.08 * k, 0.3)),
+    // Each side draws on at the tip pace by its own length, a gap short of each corner.
+    drawn: [A.w, A.h, A.w, A.h].map((side, k) => drawShare(t, c.four - 0.15 + 0.08 * k, side - 32)),
     lit: [1, 1, 1, 1]
   });
   nameText(L("四条底线", "Four boundaries"), A.x, A.y - A.h / 2 - NAME_GAP, {
@@ -3988,13 +4066,14 @@ var ROW_Y4 = 676;
 var ROW_XS = [700, 960, 1220];
 var UNKNOWN_XS = () => L([630, 850, 1070, 1290], [600, 840, 1080, 1320]);
 function evidenceStage(s, t, c, g) {
-  const [cw, ch] = A2.card, cardX = A2.cardX, page = g * named(t, c.evidence), mid = A2.top + ch / 2;
+  const lead = c.evidence - 0.2, [cw, ch] = A2.card, cardX = mix(960, A2.cardX, travel(t, lead - 0.15, 0.9)), page = g * named(t, lead), mid = A2.top + ch / 2;
   tableIcon(cardX - cw / 2, A2.top, cw, ch, { alpha: g });
   missingPage(A2.pageX - A2.page[0] / 2, A2.top, A2.page[0], A2.page[1], { alpha: page });
   link(A2.pageX + A2.page[0] / 2 + 12, mid, cardX - cw / 2 - 12, mid, {
     alpha: g,
     dash: [8, 8],
-    width: 2.5
+    width: 2.5,
+    draw: { t, at: lead + 0.45 }
   });
   nameText(L("数据", "Data"), cardX, A2.top - NAME_GAP, {
     valign: "bottom",
@@ -4010,7 +4089,7 @@ function evidenceStage(s, t, c, g) {
     alpha: (i) => g * listIn(t, rowAt, i),
     set: "non-proofs"
   });
-  const rise = soon(t, c.refuse - 0.1, 0.5), join = ease(clamp((rise - 0.8) / 0.2)), up = soon(t, c.refuse + 0.25, 0.45), shut = g * ramp(t, c.refuse + 0.55, 0.3);
+  const riseLength = ROW_Y4 - 40 - BUS_Y, joinLength = Math.abs(ROW_XS[1] - ROW_XS[0]), riseAt = c.refuse - 0.1, joinAt = riseAt + drawTime(riseLength), upAt = joinAt + drawTime(joinLength), rise = drawShare(t, riseAt, riseLength), join = drawShare(t, joinAt, joinLength), up = drawShare(t, upAt, BUS_Y - BAR_Y2 - 2), shut = g * ramp(t, upAt + drawTime(BUS_Y - BAR_Y2 - 2) - 0.1, 0.3);
   stroke(
     () => {
       for (const x of ROW_XS) {
@@ -4076,12 +4155,21 @@ function fitStage(s, t, c, g) {
 }
 var B2 = { x: 960, y: 505, rx: 400, ry: 245, card: [200, 128] };
 var GAP = 0.09;
-function ringArcs(upto, alpha) {
-  if (alpha < 0.01 || upto <= 0) return;
+var ARC_LENGTHS = [0, 1, 2, 3, 4, 5].map((k) => {
+  const a0 = -Math.PI / 2 + k * Math.PI / 3 + GAP, a1 = a0 + Math.PI / 3 - 2 * GAP;
+  let length = 0;
+  for (let j = 1; j <= 16; j++) {
+    const [p, q] = [a0 + (a1 - a0) * (j - 1) / 16, a0 + (a1 - a0) * j / 16];
+    length += Math.hypot(B2.rx * (Math.cos(q) - Math.cos(p)), B2.ry * (Math.sin(q) - Math.sin(p)));
+  }
+  return length;
+});
+function ringArcs(t, at2, alpha) {
+  if (alpha < 0.01) return;
   stroke(
     () => {
       for (let k = 0; k < 6; k++) {
-        const q = Math.min(1, Math.max(0, upto * 6 - k));
+        const q = drawShare(t, at2 + 0.12 * k, ARC_LENGTHS[k]);
         if (q <= 0) break;
         const a0 = -Math.PI / 2 + k * Math.PI / 3 + GAP, a1 = a0 + (Math.PI / 3 - 2 * GAP) * q;
         for (let j = 0; j <= 16; j++) {
@@ -4099,7 +4187,7 @@ function questionsStage(s, t, c, g) {
   tableIcon(B2.x - cw / 2, top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), B2.x, top - NAME_GAP, { valign: "bottom", alpha: g });
   const six = g * early(t, c.sixClause, c.six);
-  ringArcs(soon(t, c.sixClause - 0.2, 1.1), six);
+  ringArcs(t, c.sixClause - 0.2, six);
   nameText(L("六个问题", "Six questions"), B2.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   const names = L(
     ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
@@ -4146,15 +4234,14 @@ function scopeStage(s, t, c, g) {
     alpha: g * named(t, c.first2b)
   });
   stroke(() => ctx.roundRect(left, top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
-  nameText(L("授权范围", "Authorized scope"), left, top - NAME_GAP, {
-    align: "left",
+  nameText(L("授权范围", "Authorized scope"), 960, top - NAME_GAP, {
     valign: "bottom",
     alpha: scope
   });
   const out = g * ramp(t, c.staysOut - 0.15, 0.3);
   link(960, data.bottom + 10, 960, bottom - 4, {
     alpha: out,
-    upto: soon(t, c.staysOut - 0.1, 0.6),
+    draw: { t, at: c.staysOut - 0.1 },
     end: false
   });
   bar2(960, bottom, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), length: 60 });
@@ -4296,7 +4383,7 @@ function nightStage(s, t, c, g) {
     alpha: g,
     card: soon(t, c.first3 - 0.15, 0.8),
     due: soon(t, c.usual - 0.1, 0.4),
-    late: soon(t, c.measure + 0.05, 0.7),
+    late: { draw: { t, at: c.measure + 0.05 } },
     flow: { t, from: c.later + 0.6 },
     names
   });
@@ -4454,14 +4541,16 @@ function backStage(s, t, c, g) {
   const names = nightNames2(t, c), e = lastNightExtent(1, { late: 1, names }), pageTop = 551 - 36 - 110 - NAME_GAP - 30, x = 960 - (e.left + e.right) / 2, y = 505 - (Math.min(e.top, pageTop - 551) + e.bottom) / 2;
   const m = lastNight(x, y, 1, {
     alpha: g,
-    late: soon(t, c.lateJob - 0.15, 0.7),
+    // The late measure draws at the tip pace from 「自己的任务」/ "own job", so it stands whole before the quiet that
+    // ends the stage.
+    late: { draw: { t, at: c.lateJob - 0.4 } },
     // The job's start stands on the rail as its log's stem touches down, by a fade a viewer sees.
     arrival: { upto: ramp(t, c.log + 0.35, 0.4), alpha: 1 },
     flow: { t },
     names
   });
   const page = (h, shown, at2, rows) => {
-    const b = m.above(h), a = g * shown(t), reach = soon(t, at2 + 0.1, 0.5), cx = (b.left + b.right) / 2;
+    const b = m.above(h), a = g * shown(t), cx = (b.left + b.right) / 2, reach = drawShare(t, at2 + 0.1, m.y - b.bottom);
     documentIcon(b.left + 20, b.top, b.right - b.left - 40, b.bottom - b.top, { alpha: a, rows });
     line(cx, b.bottom, cx, mix(b.bottom, m.y, reach), { color: P.line, alpha: a, width: 2 });
     return b;
@@ -4558,7 +4647,7 @@ function layersStage(s, t, c, g) {
     alpha: guard
   });
   const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35), toBracket = B3.slab[1] + NAME_GAP + L(170, 190), left = B3.spine - NAME_GAP - measure(THREE2()), reach = toBracket + NAME_GAP + measure(REFUSED()) + 42, shift = centring(left, reach), spine = B3.spine + shift, [x0, x1] = B3.slab.map((x) => x + shift), ats = c.layers, top = B3.ys[0] - B3.h / 2, bottom = B3.ys[2] + B3.h / 2, count = g * early(t, c.first2, c.three);
-  line(spine, top, spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
+  line(spine, top, spine, mix(top, bottom, drawShare(t, c.three - 0.1, bottom - top)), {
     color: P.ink,
     alpha: count,
     width: 3
@@ -4602,7 +4691,7 @@ function layersStage(s, t, c, g) {
       [bx, by],
       [bx - 14, by]
     ],
-    { upto: soon(t, refusedAt - 0.4, 0.6), color: P.ink, alpha: a, width: 2.5 }
+    { draw: { t, at: refusedAt - 0.4 }, color: P.ink, alpha: a, width: 2.5 }
   );
   rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
     align: "left",
@@ -4657,7 +4746,7 @@ function chainStage(s, t, c, g) {
   });
   const ats = c.stations, n = ats.length, x0 = 960 - (n - 1) * C2.pitch / 2, xs = ats.map((_, i) => x0 + i * C2.pitch), slim = soon(t, c.lighter + 0.05, 0.8);
   const reach = ats.reduce(
-    (v, at2, i) => i ? mix(v, xs[i], soon(t, at2 - 0.15, 0.5)) : xs[0],
+    (v, at2, i) => i ? mix(v, xs[i], drawShare(t, at2 - 0.15, C2.pitch)) : xs[0],
     xs[0]
   );
   line(xs[0] - 30, C2.y, xs[n - 1] + 30, C2.y, {
@@ -4696,7 +4785,7 @@ function chainStage(s, t, c, g) {
     align: "left",
     alpha: g * named(t, c.lighter)
   });
-  const skip = g * named(t, c.skip), wy = C2.icon - 70, run = soon(t, c.skip - 0.1, 0.8);
+  const skip = g * named(t, c.skip), wy = C2.icon - 70, run = drawShare(t, c.skip - 0.1, xs[3] - 10 - xs[2] + C2.icon - 24 - wy);
   stroke(
     () => {
       ctx.moveTo(xs[2], C2.icon - 24);
@@ -4736,7 +4825,7 @@ function stateStage(s, t, c, g) {
   nameText(L("哪一步", "The state"), reached, E1.y + 7 + NAME_GAP, { valign: "top", alpha: state });
   const effort = g * named(t, c.effort), ey = E1.y + E1.effort;
   box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: effort, radius: 6, width: 2 });
-  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * soon(t, c.effort, 0.8), 20, {
+  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effort, (E1.x1 - E1.x0 - 8) * 0.9), 20, {
     fill: P.muted,
     alpha: effort * 0.55,
     radius: 4
@@ -4813,7 +4902,7 @@ function verifiedStage(s, t, c, g) {
   });
   person(useX, fy + 8, { alpha: inUse, size: 0.85, color: P.muted });
   nameText(L("在用", "In use"), useX, under, { valign: "top", alpha: inUse });
-  const way = soon(t, c.published + 0.3, 0.7);
+  const way = drawShare(t, c.published + 0.3, useX - fw / 2 - 30 - (pubX + fw / 2 + 10));
   line(pubX + fw / 2 + 10, fy, mix(pubX + fw / 2 + 10, useX - fw / 2 - 30, way), fy, {
     color: P.line,
     alpha: pub,
@@ -4942,7 +5031,7 @@ function pairsStage(s, t, c, g) {
       agent(lx, row.y, { alpha: a, size: 2 });
       bubble(lx + 74, row.y - 52, 20, { alpha: a, color: P.ink });
     }
-    line(lx + 80, row.y, mix(lx + 80, rx - r - 34, soon(t, wayAt + 0.2, 0.9)), row.y, {
+    line(lx + 80, row.y, mix(lx + 80, rx - r - 34, drawShare(t, wayAt + 0.2, rx - r - 114 - lx)), row.y, {
       color: P.line,
       alpha: a,
       width: 3
@@ -5096,8 +5185,7 @@ function delegationStage(s, t, c, g) {
     { color: P.line, alpha: g, width: 3.5 }
   );
   agent(x1 - 70, D2.top + 56, { alpha: g, size: 1.2 });
-  nameText(L("委托", "A delegation"), x0, D2.top - NAME_GAP, {
-    align: "left",
+  nameText(L("委托", "A delegation"), x, D2.top - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first4, c.delegation)
   });
@@ -5165,19 +5253,24 @@ function delegationStage(s, t, c, g) {
 }
 var E3 = { y: 410, caller: 540, agent: 1380 };
 function callerStage(s, t, c, g) {
-  const endTop = rowNameTop([E3.y + 56, E3.y + 53]);
-  person(E3.caller, E3.y + 14, { alpha: g, size: 1.7 });
-  nameText(L("调用智能体的人", "The caller"), E3.caller, endTop, { valign: "top", alpha: g });
-  agent(E3.agent, E3.y, { alpha: g, size: 2.4 });
-  nameText(L("智能体", "Agent"), E3.agent, endTop, {
-    valign: "top",
-    alpha: g * named(t, c.agent5)
-  });
   const ownNames = L(
     ["信息", "权限", "核验", "结果"],
     ["Context", "Permissions", "Verification", "Result"]
-  ), pitch = L(170, 196), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns;
-  line(E3.caller + 50, E3.y, E3.agent - 50, E3.y, { color: P.line, alpha: g, width: 2.5 });
+  ), pitch = L(170, 196), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns, callerName = L("调用智能体的人", "The caller"), agentName = L("智能体", "Agent"), reach = Math.max(
+    960 - E3.caller,
+    E3.agent - 960,
+    960 - xs[0] + (measure(callerName) + measure(ownNames[0])) / 2 + RAIL_CLEAR,
+    xs[3] - 960 + (measure(ownNames[3]) + measure(agentName)) / 2 + RAIL_CLEAR
+  ), callerAt = 960 - reach, agentAt = 960 + reach;
+  const endTop = rowNameTop([E3.y + 56, E3.y + 53]);
+  person(callerAt, E3.y + 14, { alpha: g, size: 1.7 });
+  nameText(callerName, callerAt, endTop, { valign: "top", alpha: g });
+  agent(agentAt, E3.y, { alpha: g, size: 2.4 });
+  nameText(agentName, agentAt, endTop, {
+    valign: "top",
+    alpha: g * named(t, c.agent5)
+  });
+  line(callerAt + 50, E3.y, agentAt - 50, E3.y, { color: P.line, alpha: g, width: 2.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
     dot(x, E3.y, 10, { color: P.ground, alpha: a });
@@ -5185,11 +5278,11 @@ function callerStage(s, t, c, g) {
     dot(x, E3.y, 4, { color: P.authority, alpha: a });
   });
   railNames(ownNames, xs, E3.y, {
-    gap: 10 + NAME_GAP,
+    gap: endTop - E3.y,
     alpha: (i) => g * listIn(t, ats, i),
     set: "owns"
   });
-  const sub = g * named(t, c.submit), wx = mix(E3.caller, xs[0], travel(t, c.submit, 0.9)), wy = E3.y + 200;
+  const sub = g * named(t, c.submit), wx = mix(callerAt, xs[0], travel(t, c.submit, 0.9)), wy = E3.y + 200;
   box(wx - 40, wy - 30, 80, 60, { fill: P.row, stroke: P.ink, alpha: sub, radius: 6, width: 2.5 });
   line(wx - 24, wy - 8, wx + 24, wy - 8, { color: P.muted, alpha: sub, width: 2 });
   line(wx - 24, wy + 8, wx + 10, wy + 8, { color: P.muted, alpha: sub, width: 2 });
@@ -5241,45 +5334,31 @@ var GROUP = [
   [-31, 34],
   [31, 34]
 ];
-var FAINT = 0.3;
-var OVER_BOUNDARY = 14;
-var BRACKET_TICK = 8;
 function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = travel(t, c.extend - 0.6, 0.6), deep = travel(t, c.refusals[0] - 0.6, 0.6), halfW = mix(110, wide, grow), y = A3.y, ax = A3.ax, px = A3.px, size = 1.05;
-  const peopleIn = en ? early(t, c.first1, c.people) : named(t, c.people);
+  const peopleIn = named(t, c.people);
   people3(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
-    { alpha: g * (en ? mix(FAINT, 1, peopleIn) : 1), size }
+    { alpha: g, size }
   );
   nameText(L("人", "People"), px, y + 96 + NAME_GAP, {
     valign: "top",
     alpha: g * peopleIn
   });
-  const agentIn = g * (en ? early(t, c.first1, c.agent) : named(t, c.agent));
+  const agentIn = g * named(t, c.agent);
   agent(ax, y, { alpha: g, size: 2 });
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
   link(px + 110, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
-  const top = y - 76, bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow), inBoundary = g * early(t, c.boundaryClause, c.boundary);
-  boundary(ax - halfW, top, ax + halfW, bottom, { alpha: inBoundary });
-  const boundaryName = nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
+  const top = y - 76, bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow), inBoundary = g * (en ? named(t, c.boundary) : early(t, c.boundaryClause, c.boundary));
+  boundary(ax - halfW, top, ax + halfW, bottom, { alpha: en ? agentIn : inBoundary });
+  nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
     valign: "bottom",
     alpha: inBoundary
   });
-  const collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab)), from = px + GROUP[0][0] - 15 * size * 1.55, to = ax + wide, by = boundaryName.top - OVER_BOUNDARY, middle = (from + to) / 2, spread = collab * (to - from) / 2, tick = BRACKET_TICK * ease(clamp((collab - 0.85) / 0.15));
-  if (collab > 0.01) {
-    line(middle - spread, by, middle + spread, by, {
-      color: P.line,
-      alpha: Math.min(1, collab * 3),
-      width: 2
-    });
-    if (tick > 0.5)
-      [from, to].forEach(
-        (x) => line(x, by, x, by + tick, { color: P.line, alpha: collab, width: 2 })
-      );
-  }
-  nameText(L("人与人工智能的协作", "Human–AI collaboration"), middle, by - NAME_GAP, {
+  const right = px - GROUP[0][0] + 15 * size * 1.55;
+  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (right + ax - wide) / 2, y - NAME_GAP, {
     valign: "bottom",
-    alpha: collab
+    alpha: g * (en ? named(t, c.collab) : early(t, c.first1, c.collab))
   });
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach(
@@ -5328,9 +5407,9 @@ function pagesStage(s, t, c, g) {
     valign: "bottom",
     alpha: decided
   });
-  link(dx, dy + 60, dx, B4.y - 78, {
+  link(dx, dy + 60, dx, B4.y - 84, {
     alpha: decided,
-    upto: soon(t, c.decision - 0.1, 0.55),
+    draw: { t, at: c.decision - 0.1 },
     flow: { t, from: c.decision + 0.8 }
   });
 }
@@ -5340,11 +5419,11 @@ function boundaryStage(s, t, c, g) {
   const ats = c.five, items = L(
     ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
     ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"]
-  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(105, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, nameLeft = -half - NAME_GAP - measure(name), x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2, grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
+  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(120, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, x = (centring(-half, half) + centring(-toPile - pileHalf, half)) / 2, grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
   boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
-  nameText(name, x - half - NAME_GAP, top, {
-    align: "right",
+  nameText(name, x, top - NAME_GAP, {
+    valign: "bottom",
     alpha: g * early(t, c.first3, c.clear)
   });
   items.forEach(
@@ -5451,7 +5530,7 @@ function lanesStage(s, t, c, g0) {
     alpha: g,
     due: 1,
     arrival: 1,
-    lit: soon(t, c.first1 - 0.1, 0.8),
+    lit: { draw: { t, at: c.first1 - 0.1 } },
     names: {
       late: {
         v: L("这种延迟", "This kind of delay"),
@@ -5541,7 +5620,7 @@ function aimStage(s, t, c, g) {
     { color: P.muted, alpha: r, width: 12, cap: "butt" }
   );
   L(
-    ["更早被发现", "更容易判断", "更少靠人工抢救"],
+    ["更早被发现", "更容易判断", "少靠人救火"],
     ["Earlier detection", "Easier judgment", "Less manual rescue"]
   ).forEach(
     (v, i) => nameText(v, mid, G.ys[i] + G.drop, {
@@ -5569,14 +5648,17 @@ function aimStage(s, t, c, g) {
     mark: ramp(t, c.notFiles + 0.05, 0.4)
   });
 }
-var B5 = { y: 480, xs: [500, 760, 1020, 1280], late: [0, 0.4, 0, 0.35], guard: 1470, card: 64 };
+var B5 = {
+  y: 480,
+  xs: [500, 760, 1020, 1280],
+  late: [0, 0.4, 0, 0.35],
+  guard: 1470,
+  card: 64,
+  lean: () => L(30, 44)
+};
 var SAFEGUARD = () => L("该有的防护", "A needed safeguard");
 function signsStage(s, t, c, g) {
-  const right = B5.guard + measure(SAFEGUARD()) / 2, left = B5.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")), rowStart = B5.xs[0] - 108, rowEnd = B5.xs[3] + 108, states = [
-    [rowStart, rowEnd],
-    [left, rowEnd],
-    [left, right]
-  ].map(([l, r]) => centring(l, r)), shift = (Math.max(...states) + Math.min(...states)) / 2, xs = B5.xs.map((x) => x + shift), cardTop = B5.y - 34 - B5.card, lateIn = g * named(t, c.minutes);
+  const right = B5.guard + measure(SAFEGUARD()) / 2, left = B5.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")), rowStart = B5.xs[0] - 108, rowEnd = B5.xs[3] + 108, building = (centring(left, rowEnd) - 42 + centring(rowStart, rowEnd) + 90) / 2, shift = mix(building, centring(left, right) - B5.lean(), travel(t, c.guard - 0.15, 0.9)), xs = B5.xs.map((x) => x + shift), cardTop = B5.y - 34 - B5.card, lateIn = g * named(t, c.minutes);
   nights(xs, B5.y, 0.3, { alpha: g, arrival: 1, lit: lateIn, lateBy: B5.late });
   stroke(
     () => xs.forEach((x) => {
@@ -5616,18 +5698,28 @@ function signsStage(s, t, c, g) {
   beats(t, xs[3], B5.y + 40, 20, [c.changes], { color: P.authority, alpha: g });
   const runs = flowAt(t, xs[3] + 108 - (xs[0] - 108), { from: c.guard + 1 });
   flowDot(mix(xs[0] - 108, xs[3] + 108, runs?.q ?? 0), B5.y, 4, runs, { color: P.ink, alpha: g });
-  nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, B5.y + 54 + NAME_GAP, {
+  const bracketY = B5.y + 64;
+  stroke(
+    () => {
+      ctx.moveTo(xs[1], bracketY - 8);
+      ctx.lineTo(xs[1], bracketY);
+      ctx.lineTo(xs[3], bracketY);
+      ctx.lineTo(xs[3], bracketY - 8);
+    },
+    { color: P.line, alpha: rescue, width: 2 }
+  );
+  nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, bracketY + NAME_GAP - 6, {
     valign: "top",
     alpha: rescue
   });
-  const checks = c.look;
+  const checks = c.look, checkXs = [(xs[0] + xs[1]) / 2, (xs[2] + xs[3]) / 2];
   [0, 1].forEach((i) => {
-    const x = mix(xs[0], xs[3], i ? 0.72 : 0.28), a = g * ramp(t, checks[i] - 0.15, 0.4);
+    const x = checkXs[i], a = g * ramp(t, checks[i] - 0.15, 0.4);
     ring(x, B5.y + 160, 18, { color: P.evidence, alpha: a, width: 2.5 });
     dot(x, B5.y + 160, 5, { color: P.evidence, alpha: a });
   });
   L(["规律", "影响"], ["Pattern", "Impact"]).forEach(
-    (v, i) => nameText(v, mix(xs[0], xs[3], i ? 0.72 : 0.28), B5.y + 178 + NAME_GAP, {
+    (v, i) => nameText(v, checkXs[i], B5.y + 178 + NAME_GAP, {
       valign: "top",
       alpha: g * listIn(t, checks, i),
       set: "look"
@@ -5707,9 +5799,9 @@ function monitorStage(s, t, c, g) {
     alpha: asks
   });
 }
-var R = { x: 960, y: 420, rail: 640, half: 520, pitch: 300 };
+var R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
 function retireStage(s, t, c, g) {
-  const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
+  const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
   nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
@@ -5720,19 +5812,19 @@ function retireStage(s, t, c, g) {
     alpha: g * named(t, c.retired)
   });
   line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
-  line(R.x - R.half, R.rail, R.x + R.half, R.rail, {
+  line(R.x - R.half(), R.rail, R.x + R.half(), R.rail, {
     color: P.line,
     alpha: g * carried,
     width: 3.5
   });
   [-1, 1].forEach(
-    (side) => dot(R.x + side * R.half, R.rail, 6, { color: P.line, alpha: g * carried })
+    (side) => dot(R.x + side * R.half(), R.rail, 6, { color: P.line, alpha: g * carried })
   );
   xs.forEach((x, i) => openMark2(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(
     L(
       ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
-      ["No subject", "No user", "Duplicates a source of truth", "Net cost"]
+      ["No subject", "No user", "Duplicates a source of truth", "Costs more than it returns"]
     ),
     xs,
     R.rail,
@@ -5773,10 +5865,14 @@ function aimsStage(s, t, c, g) {
     alpha: judged
   });
   line(px + 62, y, ox - 40, y, { color: P.line, alpha: judged, width: 3 });
+  const nameTop = rowNameTop([y + 34, y + 62]);
   person(ox, y + 6, { alpha: other, size: 1.2 });
-  nameText(L("别人", "Someone else"), ox, y + 62 + NAME_GAP, { valign: "top", alpha: other });
-  const reach = ats.reduce((v, at2, i) => mix(v, xs[i], soon(t, at2 - 0.1, 0.6)), px + 62);
-  if (t > ats[0] - 0.1) line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
+  nameText(L("别人", "Someone else"), ox, nameTop, { valign: "top", alpha: other });
+  const reach = ats.reduce(
+    (v, at2, i) => mix(v, xs[i], drawShare(t, at2 - 0.2, xs[i] - (i ? xs[i - 1] : px + 62))),
+    px + 62
+  );
+  if (reach > px + 62 + 0.5) line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
     dot(x, y, 34, { color: P.ground, alpha: a });
@@ -5784,7 +5880,7 @@ function aimsStage(s, t, c, g) {
     dot(x, y, 9, { color: P.evidence, alpha: a });
   });
   L(["信", "达", "雅"], ["Faithful", "Clear", "Elegant"]).forEach(
-    (v, i) => nameText(v, xs[i], y + 34 + NAME_GAP, {
+    (v, i) => nameText(v, xs[i], nameTop, {
       valign: "top",
       alpha: g * listIn(t, ats, i, Infinity, { whole: ats.at(-1) - 0.1 }),
       set: "aims"
@@ -5809,7 +5905,7 @@ function cuesOf8(s) {
     gains: cues(s, [
       ["更早被发现", "find the next failure earlier"],
       ["更容易判断", "judge it more easily"],
-      ["更少靠人工抢救", "need less manual rescue"]
+      ["少靠人救火", "need less manual rescue"]
     ]),
     notFiles: cue(s, "不是让", "not to increase"),
     files: cue(s, "文件变多", "the file count"),

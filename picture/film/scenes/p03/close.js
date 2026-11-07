@@ -1,8 +1,8 @@
 /* E and F (03.7-03.8). E, the made-up case, from 「前面说的那场会」/ "The meeting at the start": failure 3's meeting
  * returns at the centre, larger, on the line of its own course; before it, a station from which what is to be decided,
- * who decides and which facts are needed hang as one list; when it ends, a station from which, either, the two empty
- * seats of failure 3 fill with a decision and with the person who does what by when, or a branch ends in an open
- * question, what is still missing. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for its one
+ * who decides and which facts are needed hang as one list; when it ends, a station from which one fork offers its two
+ * endings: one branch reaches a decision, under it who does what by when, the other an open question, what is still
+ * missing, each branch drawn on its own words. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for its one
  * thought: the two kinds apart at the top, each named with what it answers; a divider rises between the two kinds,
  * each one's way toward the other stopping at a bar beside it; the seal's way to a false fact and the record's way to
  * an action each stop at a bar, over a rail drawn with the false fact on which the outcomes stand; when the two
@@ -14,27 +14,26 @@ import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
-import {
-  NAME_GAP,
-  growName,
-  nameText,
-  rejectedName,
-  termRow,
-  termRowLayout,
-} from "../../naming/names.js";
+import { NAME_GAP, nameText, rejectedName, termRow, termRowLayout } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
-import { voiceTime } from "../../timing/pauses.js";
+import { mix, ramp } from "../../timing/easing.js";
+import { drawShare, voiceTime } from "../../timing/pauses.js";
 import { meetingMark, openMark, people } from "../p01/failures.js";
 import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } from "./marks.js";
 
 /* E: the meeting drawn at K times failure 3's size about its centre, so that with its course it covers a tenth of the
- * frame from its first words. Its seats stand only once they fill. */
+ * frame from its first words; its seats stay empty, as in failure 3. The end station's fork drops FORK under it and
+ * branches to its two endings, the decision at DECIDE_X and the open question at MISSING_X, both NODE under the station;
+ * the branches' names keep a gap apart. */
 const MEET = { x: 960, y: 470, k: 1.8 },
   COURSE = [300, 1620],
   COURSE_Y = MEET.y + 7 * MEET.k,
-  STATION_R = 11;
+  STATION_R = 11,
+  FORK = 64,
+  NODE = 170,
+  DECIDE_X = 1440,
+  MISSING_X = 1720;
 const AGENDA = () =>
   L(["决定什么", "谁决定", "哪些事实"], ["What to decide", "Who decides", "Which facts"]);
 /* The meeting's point (x, y) on the screen, from a point of failure 3's mark. */
@@ -49,10 +48,6 @@ export function stageMeeting(t, a, c) {
   ctx.scale(k, k);
   ctx.translate(-x, -y);
   meetingMark(x, y, { alpha: a, seats: [0, 0] });
-  // The seats fill: the decision, a ring with its point, and the person who does the work.
-  ring(x - 40, y + 56, 11, { color: P.authority, alpha: decision, width: 3 });
-  dot(x - 40, y + 56, 3.5, { color: P.authority, alpha: decision });
-  people([x + 40], y + 61, { alpha: doer });
   ctx.restore();
   const top = at(x, y - 10 - 14 - 2.15 * 9)[1],
     half = at(x + 86, y)[0] - x;
@@ -89,36 +84,51 @@ export function stageMeeting(t, a, c) {
       set: "agenda",
     }),
   );
-  // When it ends: the station; the seats' names; or the other branch, an open question.
+  // When it ends: the station and its fork, one stem down from it and two branches, each drawn at the tip pace on
+  // its own words: to a decision, a ring with its point in the colour of authority beside the person who does the
+  // work, named with who does what by when under it; or to an open question, what is still missing.
   const ends = a * ramp(t, c.ends - 0.15, 0.4);
   station(COURSE[1], COURSE_Y, ends);
   nameText(L("散会时", "When it ends"), COURSE[1], over, {
     valign: "bottom",
     alpha: a * named(t, c.ends),
   });
-  const [dx, dy] = at(x - 40, y + 56),
-    [px] = at(x + 40, y + 61);
-  nameText(L("决定", "A decision"), dx - 11 * k - NAME_GAP, dy, {
-    align: "right",
-    alpha: a * named(t, c.decision),
-  });
-  growName(
-    t,
-    L(["谁去做、", "什么时候做完"], ["Who does what", " by when"]),
-    [c.whoDoes, c.byWhen],
-    px + 14 * k + NAME_GAP,
-    dy,
-    { valign: "middle", build: true, alpha: a },
-  );
-  const missing = a * ramp(t, c.missing - 0.15, 0.4),
-    openY = COURSE_Y + 110;
-  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], openY - 24, {
-    alpha: missing,
-    upto: soon(t, c.missing + 0.05, 0.4),
+  const forkY = COURSE_Y + FORK,
+    nodeY = COURSE_Y + NODE,
+    missing = a * ramp(t, c.missing - 0.15, 0.4);
+  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
+    alpha: decision,
+    draw: { t, at: c.decision - 0.35 },
+    end: false,
     width: 2.5,
   });
-  openMark(COURSE[1], openY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(L("还缺什么", "Still missing"), COURSE[1], openY + 20 + NAME_GAP, {
+  link(COURSE[1], forkY, DECIDE_X, nodeY - 22, {
+    route: "hv",
+    alpha: decision,
+    draw: { t, at: c.decision - 0.1 },
+    width: 2.5,
+  });
+  ring(DECIDE_X - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
+  dot(DECIDE_X - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
+  people([DECIDE_X + 22], nodeY + 6, { alpha: doer, size: 0.7 });
+  termRow(
+    t,
+    [L("决定", "A decision")],
+    [c.decision],
+    L(["谁去做、", "什么时候做完"], ["who does what", " by when"]),
+    [c.whoDoes, c.byWhen],
+    DECIDE_X,
+    nodeY + 30 + NAME_GAP,
+    { align: "center", inline: false, alpha: a },
+  );
+  link(COURSE[1], forkY, MISSING_X, nodeY - 24, {
+    route: "hv",
+    alpha: missing,
+    draw: { t, at: c.orSay - 0.1 },
+    width: 2.5,
+  });
+  openMark(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
+  nameText(L("还缺什么", "Still missing"), MISSING_X, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing),
   });
@@ -179,9 +189,10 @@ export function stageApart(t, a, c) {
   });
   // Neither stands in for the other: on 「互相替代」/ "stands in for" a divider rises between them, named over itself as
   // the substitution refused, and each kind's way toward the other stops at a bar beside it.
+  // Every way and divider draws at the tip pace by its own length.
   const ways = a * ramp(t, c.substitute - 0.15, 0.4),
-    reach = soon(t, c.substitute + 0.05, 0.5),
-    rise = soon(t, c.substitute + 0.05, 0.6);
+    reach = drawShare(t, c.substitute + 0.05, Math.max(BARS[0] - SIDES[0] - 52, SIDES[1] - 50 - BARS[1])),
+    rise = drawShare(t, c.substitute + 0.05, DIVIDER[1] - DIVIDER[0]);
   if (rise > 0)
     line(960, DIVIDER[1], 960, mix(DIVIDER[1], DIVIDER[0], rise), {
       color: P.line,
@@ -194,7 +205,7 @@ export function stageApart(t, a, c) {
   BARS.forEach((bx) =>
     bar(bx, TOP, { alpha: ways * ramp(t, c.substitute + 0.25, 0.4), vertical: true, length: 34 }),
   );
-  rejectedName(L("替代", "Substitution"), 960, DIVIDER[0] - NAME_GAP, {
+  rejectedName(L("替代", "Stands in for"), 960, DIVIDER[0] - NAME_GAP, {
     valign: "bottom",
     alpha: a * named(t, c.substitute),
     mark: ramp(t, c.substitute + 0.05, 0.3),
@@ -202,7 +213,7 @@ export function stageApart(t, a, c) {
   // Authority to act cannot make a false fact true: the seal's way down to it stops at a bar.
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4),
     [stop, stop2] = STOPS;
-  line(SIDES[0], TOP + 50, SIDES[0], mix(TOP + 50, stop - 6, soon(t, c.falseTrue + 0.05, 0.5)), {
+  line(SIDES[0], TOP + 50, SIDES[0], mix(TOP + 50, stop - 6, drawShare(t, c.falseTrue + 0.05, stop - 56 - TOP)), {
     alpha: falseOn,
     width: 2.5,
   });
@@ -215,7 +226,7 @@ export function stageApart(t, a, c) {
   // A fact does not grant permission to act: the record's way down to the action stops at a bar.
   const actOn = a * ramp(t, c.permission - 0.15, 0.4);
   // The record's way is shorter than the seal's, its bar nearer the record: two refusals, not one repeated shape.
-  line(SIDES[1], TOP + 60, SIDES[1], mix(TOP + 60, stop2 - 6, soon(t, c.permission + 0.05, 0.5)), {
+  line(SIDES[1], TOP + 60, SIDES[1], mix(TOP + 60, stop2 - 6, drawShare(t, c.permission + 0.05, stop2 - 66 - TOP)), {
     alpha: actOn,
     width: 2.5,
   });
@@ -229,14 +240,14 @@ export function stageApart(t, a, c) {
     flowDot(wx, mix(top, end - 8, runs?.q ?? 0), 4.5, runs, { color: P.line, alpha: a });
   });
   actionMark(SIDES[1], MID, { alpha: actOn });
-  nameText(L("去做的权限", "Permission to act"), SIDES[1], MID_NAMES, {
+  nameText(L("动手的权限", "Permission to act"), SIDES[1], MID_NAMES, {
     valign: "top",
     alpha: a * named(t, c.permission),
   });
   // When the two conflict: the divider runs on down to the conflict between them, named beside it, and its way runs
   // down to the report.
   const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
-  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, soon(t, c.conflict + 0.05, 0.4)), {
+  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, drawShare(t, c.conflict + 0.05, CONFLICT_Y - 12 - DIVIDER[1])), {
     alpha: conflict,
     width: 3,
   });
@@ -248,7 +259,7 @@ export function stageApart(t, a, c) {
   const report = a * ramp(t, c.report - 0.15, 0.4);
   link(960, CONFLICT_Y + 12, 960, MID - 36, {
     alpha: report,
-    upto: soon(t, c.report + 0.05, 0.5),
+    draw: { t, at: c.report + 0.05 },
     width: 2.5,
   });
   reportMark(960, MID, { alpha: report });

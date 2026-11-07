@@ -14,8 +14,8 @@ import { beats, listIn } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { ease, mix, ramp, soon } from "../../timing/easing.js";
-import { thoughtEnd, voiceTime } from "../../timing/pauses.js";
+import { ease, mix, ramp } from "../../timing/easing.js";
+import { drawShare, thoughtEnd, voiceTime } from "../../timing/pauses.js";
 
 const HEAD_Y = 300,
   SEAL_R = 46,
@@ -32,7 +32,7 @@ const RANKS = () =>
       "工作计划、临时约定、个人偏好",
     ],
     [
-      "Law, regulation, security requirements, mandatory policy",
+      "Law, regulation, security requirements, mandatory company policy",
       "What the decision owner for the matter explicitly decides",
       "Contracts, policies, specifications, decision records in force",
       "Plans, provisional agreements, personal preferences",
@@ -53,8 +53,9 @@ function spineX() {
 }
 export function stageOrder(t, a, c) {
   const x = spineX(),
-    grow = soon(t, c.order + 0.05, 0.5),
-    top = HEAD_Y + SEAL_R + 4;
+    top = HEAD_Y + SEAL_R + 4,
+    // The spine draws down at the tip pace by its own length.
+    grow = drawShare(t, c.order + 0.05, ROWS[3] - top);
   seal(x, HEAD_Y, SEAL_R, { alpha: a });
   termRow(t, [HEAD()], [-Infinity], [QUESTION()], [-Infinity], x + SEAL_R + NAME_GAP, HEAD_Y - 32, {
     align: "left",
@@ -65,7 +66,7 @@ export function stageOrder(t, a, c) {
   // A point descends the order once, from the seal once the spine has grown to the last rank as the thought ends,
   // easing in and out in voice time, so it reads the ranks with the voice rather than looping past ranks already
   // named, and keeps the picture moving between them; it enters and leaves by its size.
-  const from = c.order + 0.55,
+  const from = c.order + 0.7,
     span = voiceTime(thoughtEnd(c.ranks.at(-1))) - voiceTime(from),
     q = (voiceTime(t) - voiceTime(from)) / span;
   if (q > 0 && q < 1)

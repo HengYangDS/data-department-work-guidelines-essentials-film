@@ -11,10 +11,11 @@ import { HOUR, lastNight } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
-import { railNames } from "../../naming/placement.js";
+import { railNames, rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
+import { drawShare } from "../../timing/pauses.js";
 import { early, openMark } from "../p05/kit.js";
 
 /* A rule: a page with its seal on the lower right. */
@@ -77,10 +78,11 @@ export function monitorStage(s, t, c, g) {
  * under it, joined to it, stands whole with the first reason, on its words, and the reasons take the rail's stations
  * on their words, open marks named under them, one list. As the sentence closes the page fades where it stands while
  * its names and the reasons stay. */
-const R = { x: 960, y: 420, rail: 640, half: 520, pitch: 300 };
+/* The English reasons are longer, so their stations stand wider apart on a longer rail. */
+const R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
 export function retireStage(s, t, c, g) {
   const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)),
-    xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch),
+    xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()),
     ats = c.retire,
     carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
@@ -93,21 +95,21 @@ export function retireStage(s, t, c, g) {
     alpha: g * named(t, c.retired),
   });
   line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
-  line(R.x - R.half, R.rail, R.x + R.half, R.rail, {
+  line(R.x - R.half(), R.rail, R.x + R.half(), R.rail, {
     color: P.line,
     alpha: g * carried,
     width: 3.5,
   });
   [-1, 1].forEach((side) =>
-    dot(R.x + side * R.half, R.rail, 6, { color: P.line, alpha: g * carried }),
+    dot(R.x + side * R.half(), R.rail, 6, { color: P.line, alpha: g * carried }),
   );
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
-  // Each reason stands on one line: the rail's pitch leaves the longest, "Duplicates a source of truth", room beside
-  // its neighbours, and a break there would leave its first line ending on "a".
+  // Each reason stands on one line: the rail's pitch leaves the longest, "Duplicates a source of truth" and "Costs more
+  // than it returns", room beside their neighbours, and a break there would leave a first line ending on "a".
   railNames(
     L(
       ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
-      ["No subject", "No user", "Duplicates a source of truth", "Net cost"],
+      ["No subject", "No user", "Duplicates a source of truth", "Costs more than it returns"],
     ),
     xs,
     R.rail,
@@ -174,10 +176,18 @@ export function aimsStage(s, t, c, g) {
     alpha: judged,
   });
   line(px + 62, y, ox - 40, y, { color: P.line, alpha: judged, width: 3 });
+  // Every name of the way hangs from one baseline, under its lowest mark: the person reaches 62 px below the line, the
+  // aims' rings 34 px.
+  const nameTop = rowNameTop([y + 34, y + 62]);
   person(ox, y + 6, { alpha: other, size: 1.2 });
-  nameText(L("别人", "Someone else"), ox, y + 62 + NAME_GAP, { valign: "top", alpha: other });
-  const reach = ats.reduce((v, at, i) => mix(v, xs[i], soon(t, at - 0.1, 0.6)), px + 62);
-  if (t > ats[0] - 0.1) line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
+  nameText(L("别人", "Someone else"), ox, nameTop, { valign: "top", alpha: other });
+  // The rail reaches each station on its words at the tip pace, by the length of its own step.
+  const reach = ats.reduce(
+    (v, at, i) => mix(v, xs[i], drawShare(t, at - 0.2, xs[i] - (i ? xs[i - 1] : px + 62))),
+    px + 62,
+  );
+  // The evidence line grows from the judgment as a tip, from the moment it has length, so no stub of it appears whole.
+  if (reach > px + 62 + 0.5) line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
     dot(x, y, 34, { color: P.ground, alpha: a });
@@ -186,7 +196,7 @@ export function aimsStage(s, t, c, g) {
   });
   // The three aims return to full ink on the last one's words, so the film's last diagram stands whole.
   L(["信", "达", "雅"], ["Faithful", "Clear", "Elegant"]).forEach((v, i) =>
-    nameText(v, xs[i], y + 34 + NAME_GAP, {
+    nameText(v, xs[i], nameTop, {
       valign: "top",
       alpha: g * listIn(t, ats, i, Infinity, { whole: ats.at(-1) - 0.1 }),
       set: "aims",

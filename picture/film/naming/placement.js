@@ -12,7 +12,7 @@ export const CONTENT_CY = 500;
 export const rowNameTop = (bottoms, gap = NAME_GAP) => Math.max(...bottoms) + gap;
 /* Names along a rail: all on one side, on one baseline, each centred on its station; a name too wide to keep a gap from
  * its neighbours wraps onto a second line instead of stepping off the baseline. */
-const RAIL_CLEAR = 30;
+export const RAIL_CLEAR = 30;
 const widestLine = (v, size) =>
   Math.max(
     ...(Array.isArray(v) ? v : String(v).split("\n")).map((line) => measure(line, size)),

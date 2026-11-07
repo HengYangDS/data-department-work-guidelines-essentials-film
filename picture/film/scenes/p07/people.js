@@ -1,18 +1,18 @@
-/* Part 07, stages A, B and C: human-AI collaboration. A: people and an Agent joined by one relationship, named as the
- * whole over both; the Agent works inside a delegated boundary that grows with what it holds, extends what people can
+/* Part 07, stages A, B and C: human-AI collaboration. A: people and an Agent joined by one relationship, the link
+ * between them, named on it as the whole; the Agent works inside a delegated boundary that grows with what it holds, extends what people can
  * do, gives no organizational authorization and makes no commitments; what stays with people builds under them. B: the
  * ten pages return, and the decision they should have served comes before them. C: a clear boundary, not a pile of
  * context; the five things a consequential delegation states build inside it. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, fill, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, fill, measure, ring, stroke } from "../../drawing/strokes.js";
 import { agent, documentIcon } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
-import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
+import { mix, ramp } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 import { centring, early } from "../p05/kit.js";
 
@@ -61,11 +61,6 @@ const GROUP = [
   [-31, 34],
   [31, 34],
 ];
-/* The ink of the English people before their name: faint, below the ink of a mark that waits for a name. */
-const FAINT = 0.3;
-/* The bracket over both groups stands this far over the boundary's name, its ticks this long. */
-const OVER_BOUNDARY = 14,
-  BRACKET_TICK = 8;
 export function collaborationStage(s, t, c, g) {
   const term = L("调查、推理和动手", "Investigation, reasoning, action"),
     wide = Math.max(measure(term) / 2 + 34, L(150, 230)),
@@ -76,57 +71,38 @@ export function collaborationStage(s, t, c, g) {
     ax = A.ax,
     px = A.px,
     size = 1.05;
-  // The Chinese says 人 first; the English says "people" only after the Agent and its boundary. There the group
-  // stands faint, the human side of the collaboration, and comes to full ink with its name as its word nears, so it
-  // never waits in its place for a name the narration has not reached.
-  const peopleIn = en ? early(t, c.first1, c.people) : named(t, c.people);
+  // Both sides stand whole from the cut: the collaboration's name on the link between them names both. Each side's own
+  // name comes on its own words; the English says "people" only after the Agent and its boundary.
+  const peopleIn = named(t, c.people);
   people(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
-    { alpha: g * (en ? mix(FAINT, 1, peopleIn) : 1), size },
+    { alpha: g, size },
   );
   nameText(L("人", "People"), px, y + 96 + NAME_GAP, {
     valign: "top",
     alpha: g * peopleIn,
   });
-  // The Agent's name may lead its words within its clause: in English the clause opens the thought.
-  const agentIn = g * (en ? early(t, c.first1, c.agent) : named(t, c.agent));
+  const agentIn = g * named(t, c.agent);
   agent(ax, y, { alpha: g, size: 2 });
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
   // The link between them carries the delegation and reaches the Agent across the boundary's side.
   link(px + 110, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
-  // The delegated boundary round the Agent, growing as it holds more.
+  // The delegated boundary round the Agent, growing as it holds more. In Chinese it stands with its clause; in English
+  // the Agent comes with the boundary it works within, named on its own words.
   const top = y - 76,
     bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow),
-    inBoundary = g * early(t, c.boundaryClause, c.boundary);
-  boundary(ax - halfW, top, ax + halfW, bottom, { alpha: inBoundary });
-  const boundaryName = nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
+    inBoundary = g * (en ? named(t, c.boundary) : early(t, c.boundaryClause, c.boundary));
+  boundary(ax - halfW, top, ax + halfW, bottom, { alpha: en ? agentIn : inBoundary });
+  nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
     valign: "bottom",
     alpha: inBoundary,
   });
-  // The relationship, named over both groups: the English waits for its caption line to pass, so the name does not
-  // repeat the line that says it. The bracket spans from the people's outer edge to the grown boundary's and draws out
-  // from its middle with the name.
-  const collab = g * (en ? named(t, c.agent - 0.05) : early(t, c.first1, c.collab)),
-    from = px + GROUP[0][0] - 15 * size * 1.55,
-    to = ax + wide,
-    by = boundaryName.top - OVER_BOUNDARY,
-    middle = (from + to) / 2,
-    spread = (collab * (to - from)) / 2,
-    tick = BRACKET_TICK * ease(clamp((collab - 0.85) / 0.15));
-  if (collab > 0.01) {
-    line(middle - spread, by, middle + spread, by, {
-      color: P.line,
-      alpha: Math.min(1, collab * 3),
-      width: 2,
-    });
-    if (tick > 0.5)
-      [from, to].forEach((x) =>
-        line(x, by, x, by + tick, { color: P.line, alpha: collab, width: 2 }),
-      );
-  }
-  nameText(L("人与人工智能的协作", "Human–AI collaboration"), middle, by - NAME_GAP, {
+  // The relationship is the link between the two groups, named on it, centred between the people and the grown
+  // boundary, so the one name stands at both sides of the collaboration from its words.
+  const right = px - GROUP[0][0] + 15 * size * 1.55;
+  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (right + ax - wide) / 2, y - NAME_GAP, {
     valign: "bottom",
-    alpha: collab,
+    alpha: g * (en ? named(t, c.collab) : early(t, c.first1, c.collab)),
   });
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach((v, i) =>
@@ -193,20 +169,20 @@ export function pagesStage(s, t, c, g) {
     alpha: decided,
   });
   // The link draws on as the decision is named and settles before the thought's quiet, which in Chinese begins about
-  // half a second after 「哪个决定」.
-  link(dx, dy + 60, dx, B.y - 78, {
+  // half a second after 「哪个决定」. Its quiet point lands just clear of the Agent's top, which names neither.
+  link(dx, dy + 60, dx, B.y - 84, {
     alpha: decided,
-    upto: soon(t, c.decision - 0.1, 0.55),
+    draw: { t, at: c.decision - 0.1 },
     flow: { t, from: c.decision + 0.8 },
   });
 }
 
 /* C: a clear boundary round the Agent, as wide from the first as the five things it will hold need, with even room
- * above and below the Agent, and named at the left of its top edge; the pile of context at its left, lower, by where
- * the list builds, refused; and the five things a consequential delegation states build as one list in a column inside
- * the boundary, which deepens just before each is said, down from a top edge that stays. The stage stands once at the
- * midpoint of the places that centre the boundary alone and the boundary with the pile: the boundary's name already
- * reaches toward where the pile comes. */
+ * above and below the Agent, and named centred over its top edge, as every frame of the film is; the pile of context
+ * at its left, lower, by where the list builds, refused; and the five things a consequential delegation states build
+ * as one list in a column inside the boundary, which deepens just before each is said, down from a top edge that
+ * stays. The stage stands once at the midpoint of the places that centre the boundary alone and the boundary with the
+ * pile. */
 const C = { y: 425, pile: 170, clear: 34 };
 const PILE = () => L("一堆背景材料", "A pile of context");
 export function boundaryStage(s, t, c, g) {
@@ -218,13 +194,13 @@ export function boundaryStage(s, t, c, g) {
     half = Math.max(...items.map((v) => measure(v) / 2 + 36)),
     name = L("边界", "A clear boundary"),
     // The Chinese boundary, narrower as its names are, takes more room round the Agent, so its first picture is not a
-    // sliver; the English one stays smaller than a frame that holds a group, which must be half filled.
-    room = L(105, 72),
+    // sliver (with its name it covers more than the frame gate's 4% of the band while only it stands); the English one
+    // stays smaller than a frame that holds a group, which must be half filled.
+    room = L(120, 72),
     // The pile's words and their cross centre under it, `C.clear` from the boundary's side.
     pileHalf = Math.max(60, (measure(PILE()) + 42) / 2),
     toPile = half + C.clear + pileHalf,
-    nameLeft = -half - NAME_GAP - measure(name),
-    x = (centring(nameLeft, half) + centring(Math.min(nameLeft, -toPile - pileHalf), half)) / 2,
+    x = (centring(-half, half) + centring(-toPile - pileHalf, half)) / 2,
     grown = ats.reduce((v, at) => v + travel(t, at - 0.6, 0.6), 0),
     y = C.y,
     top = y - room,
@@ -233,8 +209,8 @@ export function boundaryStage(s, t, c, g) {
     bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
   boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
-  nameText(name, x - half - NAME_GAP, top, {
-    align: "right",
+  nameText(name, x, top - NAME_GAP, {
+    valign: "bottom",
     alpha: g * early(t, c.first3, c.clear),
   });
   items.forEach((v, i) =>

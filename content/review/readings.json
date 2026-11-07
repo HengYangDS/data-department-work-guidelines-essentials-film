@@ -22,6 +22,13 @@
         "weak": [1]
       }
     },
+    "contract": {
+      "noun": {
+        "phones": "K AA1 N T R AE2 K T",
+        "primary": 1,
+        "secondary": [2]
+      }
+    },
     "contracts": {
       "noun": {
         "phones": "K AA1 N T R AE2 K T S",
@@ -53,6 +60,20 @@
         "weak": [2]
       }
     },
+    "impact": {
+      "noun": {
+        "phones": "IH1 M P AE2 K T",
+        "primary": 1,
+        "secondary": [2]
+      }
+    },
+    "increase": {
+      "verb": {
+        "phones": "IH0 N K R IY1 S",
+        "primary": 2,
+        "weak": [1]
+      }
+    },
     "leads": {
       "noun": {
         "phones": "L IY1 D Z",
@@ -61,6 +82,13 @@
       "verb": {
         "phones": "L IY1 D Z",
         "primary": 1
+      }
+    },
+    "minutes": {
+      "noun": {
+        "phones": "M IH1 N AH0 T S",
+        "primary": 1,
+        "weak": [2]
       }
     },
     "read": {
@@ -101,11 +129,14 @@
       "03:1442": "verb",
       "03:1463": "noun"
     },
+    "contract": {
+      "02:36": "noun"
+    },
     "contracts": {
       "03:286": "noun"
     },
     "delegate": {
-      "02:132": "verb",
+      "02:148": "verb",
       "07:449": "verb"
     },
     "delegated": {
@@ -114,8 +145,18 @@
     "duplicates": {
       "08:721": "verb"
     },
+    "impact": {
+      "03:1480": "noun",
+      "08:468": "noun"
+    },
+    "increase": {
+      "08:296": "verb"
+    },
     "leads": {
       "03:718": "noun"
+    },
+    "minutes": {
+      "08:360": "noun"
     },
     "read": {
       "07:691": "present",
@@ -123,7 +164,7 @@
     },
     "record": {
       "03:1504": "noun",
-      "04:991": "noun"
+      "04:937": "noun"
     },
     "records": {
       "03:335": "noun",

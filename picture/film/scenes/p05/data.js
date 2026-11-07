@@ -14,8 +14,8 @@ import { NAME_GAP, nameText } from "../../naming/names.js";
 import { radialName, railNames } from "../../naming/placement.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
-import { thoughtEnd, voiceTime } from "../../timing/pauses.js";
+import { clamp, mix, ramp, soon } from "../../timing/easing.js";
+import { drawShare, drawTime, thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
 import {
   bar,
   chartMark,
@@ -32,9 +32,10 @@ import {
  * at the middle of the stage; the three things that establish nothing build in a row at the foot, their ways rising,
  * joining and stopping at a bar under the pair; and what none of them establishes stands over the pair as a row of
  * open marks. The pair holds the stage's centre while the rows above and below it arrive, so each state stays near the
- * content centre. The card stands at its place from the stage's first frame with the dashed relation that reaches
- * from it to the page's place, so the picture spans the pair before the page is named at the relation's far end and
- * nothing moves when it is. */
+ * content centre. The card stands alone on the frame's axis from the stage's first frame; on 「证据」/ "evidence" it
+ * glides to its place in the pair as the page arrives at the other side (a structural glide over 0.9 s of voice time,
+ * at most about 420 px/s), and the dashed relation then draws on from the page to the data, so no way stands before
+ * its far end is named. */
 const A = { top: 388, card: [300, 170], page: [120, 170], pageX: 620, cardX: 1210 },
   UNKNOWN_Y = 241,
   BAR_Y = 568,
@@ -44,18 +45,21 @@ const A = { top: 388, card: [300, 170], page: [120, 170], pageX: 620, cardX: 121
   // English names are longer, so the open marks stand at a wider pitch there.
   UNKNOWN_XS = () => L([630, 850, 1070, 1290], [600, 840, 1080, 1320]);
 export function evidenceStage(s, t, c, g) {
-  const [cw, ch] = A.card,
-    cardX = A.cardX,
-    page = g * named(t, c.evidence),
+  // The page and the card's glide lead 「证据」/ "evidence" by 0.2 s, so the card does not stand alone for two seconds
+  // when the part opens slowly (the frame gate's thin run).
+  const lead = c.evidence - 0.2,
+    [cw, ch] = A.card,
+    cardX = mix(960, A.cardX, travel(t, lead - 0.15, 0.9)),
+    page = g * named(t, lead),
     mid = A.top + ch / 2;
   tableIcon(cardX - cw / 2, A.top, cw, ch, { alpha: g });
   missingPage(A.pageX - A.page[0] / 2, A.top, A.page[0], A.page[1], { alpha: page });
-  // The evidence the data's use takes: a dashed relation from the page's place to the data, whole with the card and
-  // wide enough to count in the picture's lit extent.
+  // The evidence the data's use takes: a dashed relation drawn on from the page to the data once both stand.
   link(A.pageX + A.page[0] / 2 + 12, mid, cardX - cw / 2 - 12, mid, {
     alpha: g,
     dash: [8, 8],
     width: 2.5,
+    draw: { t, at: lead + 0.45 },
   });
   nameText(L("数据", "Data"), cardX, A.top - NAME_GAP, {
     valign: "bottom",
@@ -74,11 +78,17 @@ export function evidenceStage(s, t, c, g) {
     set: "non-proofs",
   });
   // None of them establishes: their ways rise from each, join, and stop at a bar under the open marks. The way that
-  // joins them draws on from the outer two toward the middle one as they arrive, rather than standing at once.
-  const rise = soon(t, c.refuse - 0.1, 0.5),
-    join = ease(clamp((rise - 0.8) / 0.2)),
-    up = soon(t, c.refuse + 0.25, 0.45),
-    shut = g * ramp(t, c.refuse + 0.55, 0.3);
+  // joins them draws on from the outer two toward the middle one as they arrive, rather than standing at once. Each
+  // stroke draws at the tip pace by its own length, one after the other.
+  const riseLength = ROW_Y - 40 - BUS_Y,
+    joinLength = Math.abs(ROW_XS[1] - ROW_XS[0]),
+    riseAt = c.refuse - 0.1,
+    joinAt = riseAt + drawTime(riseLength),
+    upAt = joinAt + drawTime(joinLength),
+    rise = drawShare(t, riseAt, riseLength),
+    join = drawShare(t, joinAt, joinLength),
+    up = drawShare(t, upAt, BUS_Y - BAR_Y - 2),
+    shut = g * ramp(t, upAt + drawTime(BUS_Y - BAR_Y - 2) - 0.1, 0.3);
   stroke(
     () => {
       for (const x of ROW_XS) {
@@ -172,12 +182,25 @@ const B = { x: 960, y: 505, rx: 400, ry: 245, card: [200, 128] };
 /* The ring is six arcs, one between each pair of stations, leaving each station's place open: it reads as one cycle of
  * questions and never as a closed frame waiting to be filled. The arcs are drawn as one stroke, on in turn. */
 const GAP = 0.09;
-function ringArcs(upto, alpha) {
-  if (alpha < 0.01 || upto <= 0) return;
+/* Each arc's length on the ellipse, sampled as it is drawn. */
+const ARC_LENGTHS = [0, 1, 2, 3, 4, 5].map((k) => {
+  const a0 = -Math.PI / 2 + (k * Math.PI) / 3 + GAP,
+    a1 = a0 + Math.PI / 3 - 2 * GAP;
+  let length = 0;
+  for (let j = 1; j <= 16; j++) {
+    const [p, q] = [a0 + ((a1 - a0) * (j - 1)) / 16, a0 + ((a1 - a0) * j) / 16];
+    length += Math.hypot(B.rx * (Math.cos(q) - Math.cos(p)), B.ry * (Math.sin(q) - Math.sin(p)));
+  }
+  return length;
+});
+/* The arcs count in one after another, 0.12 s apart, each drawn at the tip pace by its own length, so the ring
+ * forms in about a second and no tip races. */
+function ringArcs(t, at, alpha) {
+  if (alpha < 0.01) return;
   stroke(
     () => {
       for (let k = 0; k < 6; k++) {
-        const q = Math.min(1, Math.max(0, upto * 6 - k));
+        const q = drawShare(t, at + 0.12 * k, ARC_LENGTHS[k]);
         if (q <= 0) break;
         const a0 = -Math.PI / 2 + (k * Math.PI) / 3 + GAP,
           a1 = a0 + (Math.PI / 3 - 2 * GAP) * q;
@@ -199,7 +222,7 @@ export function questionsStage(s, t, c, g) {
   tableIcon(B.x - cw / 2, top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), B.x, top - NAME_GAP, { valign: "bottom", alpha: g });
   const six = g * early(t, c.sixClause, c.six);
-  ringArcs(soon(t, c.sixClause - 0.2, 1.1), six);
+  ringArcs(t, c.sixClause - 0.2, six);
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   const names = L(
     ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
@@ -277,8 +300,8 @@ export function scopeStage(s, t, c, g) {
     });
   // The scope, a thin solid frame round the data.
   stroke(() => ctx.roundRect(left, top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
-  nameText(L("授权范围", "Authorized scope"), left, top - NAME_GAP, {
-    align: "left",
+  // A frame is named centred over its top side, as every frame of the film is.
+  nameText(L("授权范围", "Authorized scope"), 960, top - NAME_GAP, {
     valign: "bottom",
     alpha: scope,
   });
@@ -286,7 +309,7 @@ export function scopeStage(s, t, c, g) {
   const out = g * ramp(t, c.staysOut - 0.15, 0.3);
   link(960, data.bottom + 10, 960, bottom - 4, {
     alpha: out,
-    upto: soon(t, c.staysOut - 0.1, 0.6),
+    draw: { t, at: c.staysOut - 0.1 },
     end: false,
   });
   bar(960, bottom, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), length: 60 });

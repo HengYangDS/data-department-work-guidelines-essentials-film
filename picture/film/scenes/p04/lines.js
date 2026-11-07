@@ -14,8 +14,8 @@ import { listIn, listLevel, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, termRow, termRowLayout } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
-import { travel, voiceTime } from "../../timing/pauses.js";
+import { mix, ramp } from "../../timing/easing.js";
+import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
 import { field, fieldIcon } from "./marks.js";
 
 /* The centre line and height of A's field (scene.js). B's and C's fields keep its top, so the name over each stands
@@ -100,9 +100,18 @@ export function stageLines(t, a, c) {
  * moves freely about the field's upper left, named 自主 / "Autonomy" just under where it moves. A second point comes to
  * a halt short of the right side, the edge point, and the three things done there hang under it as one list, each on
  * its own words, as its mark acts: it stops, its ring lights as it is made visible, and its way rises to the field's
- * top as it is escalated. The case being said stands at full ink. The edge list keeps the right side's gap, so it never
- * stands on or past the boundary it names the stop at. */
-const C = { y: TOP + 200, s: 400, pitch: 44, roam: [70, 60], reach: [60, 45], approach: 0.55 };
+ * top as it is escalated. The case being said stands at full ink. The edge list keeps the inset the film's frames keep
+ * inside every side (`inset`, as the four boundaries' field keeps 60-64 px), so it never stands on or past the
+ * boundary it names the stop at, and the edge point stops 12 px inside the list's right edge. */
+const C = {
+  y: TOP + 200,
+  s: 400,
+  pitch: 44,
+  roam: [70, 60],
+  reach: [60, 45],
+  approach: 0.55,
+  inset: 62,
+};
 const FREE = () => L("自主", "Autonomy");
 /* The English names begin alike in case, as the names of one list do. */
 const EDGE = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
@@ -137,7 +146,7 @@ export function stageCases(t, a, c) {
   // rises to the field's top as it is escalated.
   const near = a * ramp(t, approach - 0.15, 0.4),
     halted = travel(t, approach + 0.05, 0.9),
-    hx = mix(x + 40, right - 34, halted),
+    hx = mix(x + 40, right - C.inset - 12, halted),
     hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
   ring(hx, hy, 17, {
@@ -145,11 +154,13 @@ export function stageCases(t, a, c) {
     alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3,
   });
-  const rise = soon(t, edge[2] + 0.05, 0.6);
+  // The way rises at the tip pace while 「往上报」/ "escalate" is said, the thought's last words, so it stands whole
+  // before the quiet.
+  const rise = drawShare(t, edge[2] - 0.2, hy - 25 - top);
   if (rise > 0)
     line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
   EDGE().forEach((v, i) =>
-    nameText(v, right - NAME_GAP, hy + 17 + NAME_GAP + i * C.pitch, {
+    nameText(v, right - C.inset, hy + 17 + NAME_GAP + i * C.pitch, {
       valign: "top",
       align: "right",
       alpha: a * level(1) * listIn(t, edge, i),

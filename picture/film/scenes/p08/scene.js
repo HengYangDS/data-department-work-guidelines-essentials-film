@@ -26,7 +26,7 @@ function cuesOf(s) {
     gains: cues(s, [
       ["更早被发现", "find the next failure earlier"],
       ["更容易判断", "judge it more easily"],
-      ["更少靠人工抢救", "need less manual rescue"],
+      ["少靠人救火", "need less manual rescue"],
     ]),
     notFiles: cue(s, "不是让", "not to increase"),
     files: cue(s, "文件变多", "the file count"),

@@ -1,7 +1,7 @@
 /* Drawn relations: orthogonal links that end in a quiet point. From ddwg-film v1.0.0 (c4e8aac), picture/film.js. */
 
 import { ctx } from "../canvas.js";
-import { along, dot, flowAt, flowDot, lengthOf, stroke } from "./strokes.js";
+import { along, dot, drawnShare, flowAt, flowDot, landedShare, lengthOf, stroke } from "./strokes.js";
 import { P } from "../palette.js";
 import { clamp, ease } from "../timing/easing.js";
 
@@ -11,8 +11,9 @@ export { along };
  * route whose corners are quarter turns of radius `r` (never a diagonal). It draws on from its source along its length
  * and ends in a quiet point rather than an arrowhead, which grows by its size as the stroke lands on it. `flow`, the
  * time and flowAt's options ({t, from, until}), runs one dot along it at the film's even flow pace to show the way the
- * relation runs, so it rests in the quiet between thoughts. Routes: "vhv" leaves vertically, crosses at `mid` and
- * arrives vertically; "hvh" the reverse; "vh" and "hv" turn once. */
+ * relation runs, so it rests in the quiet between thoughts. `draw` ({t, at, least}) draws it on from `at` over `upto`
+ * of its length at the film's tip pace (drawnShare), so no tip races. Routes: "vhv"
+ * leaves vertically, crosses at `mid` and arrives vertically; "hvh" the reverse; "vh" and "hv" turn once. */
 export function rounded(corners, r) {
   const out = [corners[0]];
   for (let i = 1; i < corners.length - 1; i++) {
@@ -48,6 +49,7 @@ export function link(
     color = P.line,
     alpha = 1,
     upto = 1,
+    draw = null,
     width = 2,
     dash = null,
     flow = null,
@@ -86,7 +88,10 @@ export function link(
     ],
   }[kind];
   const points = rounded(corners, r),
-    drawn = along(points, upto).kept;
+    extent = clamp(upto);
+  if (draw) upto = drawnShare(draw, lengthOf(points), extent);
+  if (upto <= 0) return;
+  const drawn = along(points, upto).kept;
   if (drawn.length > 1)
     stroke(() => drawn.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))), {
       color,
@@ -94,8 +99,9 @@ export function link(
       width,
       dash,
     });
-  // The end point grows by its size as the stroke lands on it, over the last twentieth of its length.
-  const grown = ease(clamp((upto - 0.95) / 0.05));
+  // The end point grows by its size as the stroke lands on it: over the last twentieth of its length, or, drawn at the
+  // tip pace, over its last LANDING seconds (landedShare), so a short link's point does not appear whole in a frame.
+  const grown = draw && extent >= 1 ? landedShare(draw, lengthOf(points)) : ease(clamp((upto - 0.95) / 0.05));
   if (end && grown > 0) dot(x2, y2, (width + 2.5) * grown, { color, alpha });
   const state = flow ? flowAt(flow.t, lengthOf(points), flow) : null;
   if (state && state.q < upto) {

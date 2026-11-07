@@ -5,9 +5,10 @@ import { blend } from "../drawing/colour.js";
 import { font, line, measure, text } from "../drawing/strokes.js";
 import { pill } from "../drawing/symbols.js";
 import { cameraOf } from "./camera.js";
-import { P, TYPE } from "../palette.js";
+import { LABEL, P, TYPE } from "../palette.js";
 import { L, en, film } from "../timeline.js";
-import { clamp, ease, mix, ramp } from "../timing/easing.js";
+import { mix, ramp } from "../timing/easing.js";
+import { pauseHold, thoughtEnd } from "../timing/pauses.js";
 
 const chapterOrder = film.chapters.map((c) => c.id);
 const chapterNumber = (id) => String(chapterOrder.indexOf(id) + 1).padStart(2, "0");
@@ -158,18 +159,34 @@ export function runningHead(s, t) {
 
 /* The part being shown, when its chapter holds more than one: after the running head and a short rule, its number in
  * the chapter and its title, so the five essentials are counted and named while each is explained. It arrives with the
- * running head and changes at the scene's own cut. */
+ * running head and changes at the scene's own cut. Each part is announced as it begins: its number, in the colour of
+ * evidence, and its title stand at the stage labels' size and full ink through the part's first thought, and settle to
+ * the running head's size and tone over 0.5 s from its second thought's first words, so no change falls in a quiet. */
 export function partHead(v, t) {
   const parts = film.segments.filter((x) => x.chapter === v.chapter);
   if (parts.length < 2) return;
-  const a = 0.72 * ramp(t, cardLanding(parts[0]), 0.3);
+  const a = ramp(t, cardLanding(parts[0]), 0.3);
   if (a <= 0) return;
   const chapter = film.chapters.find((c) => c.id === v.chapter),
-    x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22;
-  line(x, 61, x, 83, { color: P.line, alpha: a });
-  text(`${parts.indexOf(v) + 1}  ${v.title}`, x + 22, 72, 24, {
-    color: P.muted,
-    alpha: a,
+    x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22,
+    first = v.words?.[0]?.start ?? v.voice_start,
+    settle = ramp(t, pauseHold(thoughtEnd(first + 0.01)) + 0.05, 0.5),
+    size = mix(LABEL * TYPE, 24, settle),
+    number = `${parts.indexOf(v) + 1}  `;
+  line(x, 61, x, 83, { color: P.line, alpha: 0.72 * a });
+  ctx.save();
+  ctx.font = font(24, false, `${number}${v.title}`);
+  const gap = (ctx.measureText(number).width * size) / 24;
+  ctx.restore();
+  const ink = mix(1, 0.72, settle) * a;
+  text(number.trim(), x + 22, 72, size, {
+    color: blend(P.evidence, P.muted, settle),
+    alpha: ink,
+    role: "chapter",
+  });
+  text(v.title, x + 22 + gap, 72, size, {
+    color: blend(P.ink, P.muted, settle),
+    alpha: ink,
     role: "chapter",
   });
 }

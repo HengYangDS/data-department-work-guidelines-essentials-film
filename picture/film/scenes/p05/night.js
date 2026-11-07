@@ -89,7 +89,7 @@ export function nightStage(s, t, c, g) {
     alpha: g,
     card: soon(t, c.first3 - 0.15, 0.8),
     due: soon(t, c.usual - 0.1, 0.4),
-    late: soon(t, c.measure + 0.05, 0.7),
+    late: { draw: { t, at: c.measure + 0.05 } },
     flow: { t, from: c.later + 0.6 },
     names,
   });

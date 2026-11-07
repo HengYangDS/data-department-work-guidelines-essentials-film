@@ -13,7 +13,7 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
-import { thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
+import { drawShare, thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
 import { centring, early, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
@@ -51,7 +51,9 @@ export function backStage(s, t, c, g) {
     y = 505 - (Math.min(e.top, pageTop - 551) + e.bottom) / 2;
   const m = lastNight(x, y, 1, {
     alpha: g,
-    late: soon(t, c.lateJob - 0.15, 0.7),
+    // The late measure draws at the tip pace from 「自己的任务」/ "own job", so it stands whole before the quiet that
+    // ends the stage.
+    late: { draw: { t, at: c.lateJob - 0.4 } },
     // The job's start stands on the rail as its log's stem touches down, by a fade a viewer sees.
     arrival: { upto: ramp(t, c.log + 0.35, 0.4), alpha: 1 },
     flow: { t },
@@ -61,8 +63,9 @@ export function backStage(s, t, c, g) {
   const page = (h, shown, at, rows) => {
     const b = m.above(h),
       a = g * shown(t),
-      reach = soon(t, at + 0.1, 0.5),
-      cx = (b.left + b.right) / 2;
+      cx = (b.left + b.right) / 2,
+      // The stem reaches down at the tip pace by its own length.
+      reach = drawShare(t, at + 0.1, m.y - b.bottom);
     documentIcon(b.left + 20, b.top, b.right - b.left - 40, b.bottom - b.top, { alpha: a, rows });
     line(cx, b.bottom, cx, mix(b.bottom, m.y, reach), { color: P.line, alpha: a, width: 2 });
     return b;
@@ -204,7 +207,7 @@ export function layersStage(s, t, c, g) {
     top = B.ys[0] - B.h / 2,
     bottom = B.ys[2] + B.h / 2,
     count = g * early(t, c.first2, c.three);
-  line(spine, top, spine, mix(top, bottom, soon(t, c.three - 0.1, 0.8)), {
+  line(spine, top, spine, mix(top, bottom, drawShare(t, c.three - 0.1, bottom - top)), {
     color: P.ink,
     alpha: count,
     width: 3,
@@ -256,7 +259,7 @@ export function layersStage(s, t, c, g) {
       [bx, by],
       [bx - 14, by],
     ],
-    { upto: soon(t, refusedAt - 0.4, 0.6), color: P.ink, alpha: a, width: 2.5 },
+    { draw: { t, at: refusedAt - 0.4 }, color: P.ink, alpha: a, width: 2.5 },
   );
   rejectedName(REFUSED(), bx + NAME_GAP, (ty + by) / 2, {
     align: "left",

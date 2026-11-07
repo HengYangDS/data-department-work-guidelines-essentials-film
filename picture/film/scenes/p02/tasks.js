@@ -77,10 +77,10 @@ const TASK_NAME = () => L("一项任务", "A task"),
  * short of the engine's wrapping rule, and the columns leave it room. */
 const OUTCOMES = () => [
   [[L("问题解决掉", "Problem resolved")], []],
-  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "its conditions stated")]],
+  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "when it holds")]],
   [
     [L("系统", "The system")],
-    L(["更早认出来", "，或者处理得更好"], ["sooner recognition,", " better handling"]),
+    L(["更早认出来", "，或者处理得更好"], ["recognized sooner,", " handled better"]),
   ],
 ];
 const noteWidth = () =>
@@ -133,7 +133,7 @@ export function stageOutcomes(s, t, c) {
       on = a * ramp(t, at - 0.15, 0.4);
     link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
       alpha: on,
-      upto: soon(t, at + 0.05, 0.4),
+      draw: { t, at: at + 0.05 },
       width: 2.5,
     });
     if (k < 2)
@@ -185,7 +185,7 @@ export function stageOutcomes(s, t, c) {
   people([bx], y, { size: 1, alpha: C2 });
   link(bx + 30, y, x - r - RING_GAP, y, {
     alpha: C2,
-    upto: soon(t, c.colleague + 0.05, 0.5),
+    draw: { t, at: c.colleague + 0.05 },
     width: 2.5,
   });
   const { height } = termRowLayout([COLLEAGUE()], [ONLY_FIRST()], Infinity, false);
