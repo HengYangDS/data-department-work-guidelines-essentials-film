@@ -147,6 +147,21 @@
           "seed": 258088,
           "text_sha256": "954f0c78e2dcedb26571462378edc4f4fbda350b618c6e6a9e991d7e9f11078d",
           "spoken_sha256": "954f0c78e2dcedb26571462378edc4f4fbda350b618c6e6a9e991d7e9f11078d"
+        },
+        "2": {
+          "seed": 1081664,
+          "text_sha256": "75a104080da48a966bc7c1b7de8b04ff33c22fe24ab261a72a799552254da279",
+          "spoken_sha256": "75a104080da48a966bc7c1b7de8b04ff33c22fe24ab261a72a799552254da279"
+        },
+        "4": {
+          "seed": 1113340,
+          "text_sha256": "9792d76b8bbefa7d24ece0b7f2cb87f2b26f2d8533343158198c91ec9ba5ca9e",
+          "spoken_sha256": "9792d76b8bbefa7d24ece0b7f2cb87f2b26f2d8533343158198c91ec9ba5ca9e"
+        },
+        "8": {
+          "seed": 1137097,
+          "text_sha256": "91963e867df7cff14e31c05ba87ab2486bf2996aaeb5856dd11eb3c546a59e15",
+          "spoken_sha256": "91963e867df7cff14e31c05ba87ab2486bf2996aaeb5856dd11eb3c546a59e15"
         }
       }
     },

@@ -6,7 +6,8 @@
  * below it, one thing on each one's words; on its words a signal from the world runs in at the way's left. From
  * 「变成」/ "into judgments" the refused things stand on at the list's second level, their crosses at full ink, and what
  * the signal becomes hangs from the way under them, judgments, data assets and actions, carried along the way to the
- * others at its end, with the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by tasks.js. */
+ * others at its end, in English with the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by
+ * tasks.js. */
 
 import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
@@ -15,7 +16,7 @@ import { clearOfTitle } from "../../framing/chapters.js";
 import { SECOND, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, growName, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
-import { L } from "../../timeline.js";
+import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
@@ -138,9 +139,9 @@ function stageGuide(s, t, a, c) {
  * on the way (the signal at its left, the others beyond its end) are named over or under themselves; the things below
  * it stand in two rows, each named under itself on its row's one baseline: the refused things under the way, and what
  * the signal becomes under them, each hanging from the way by a stem that passes between the refused things. The
- * others stand beyond the way's end, named under themselves, with the qualities they rely on under their name. The
- * stage stands SHIFT px left of the frame's axis in Chinese, whose qualities take a line as wide as their first two
- * and whose signal's name is short, so the settled stage keeps within the reviewers' 50 px of the centre. */
+ * others stand beyond the way's end, named under themselves, in English with the qualities they rely on under their
+ * name. The stage stands SHIFT px left of the frame's axis in Chinese, whose signal's name is short, so the settled
+ * stage keeps within the reviewers' 50 px of the centre. */
 const SHIFT = L(-20, 0),
   WAY_Y = 450,
   WAY = [360 + SHIFT, 1560 + SHIFT],
@@ -229,9 +230,11 @@ function stageWay(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.others),
   });
-  // The qualities the others rely on, under their name: one name of parts, each joining it on its words, so the way's
-  // twelve-name limit holds with the refused things standing. The first two share a line and the third takes the next,
-  // so each line spans enough of the other's width to read as one block at rest.
+  // The qualities the others rely on, under their name in English: one name of parts, each joining it on its words, so
+  // the way's twelve-name limit holds with the refused things standing. The first two share a line and the third takes
+  // the next, so each line spans enough of the other's width to read as one block at rest. The Chinese caption says the
+  // qualities word for word (讲得清、经得起查，能用到哪里也清楚), so there the others stand named alone.
+  if (!en) return;
   growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
     width: measure(QUALITIES().slice(0, 2).join(""), NOTE),
     size: NOTE,

@@ -106,7 +106,7 @@ export function retireStage(s, t, c, g) {
   // its neighbours, and a break there would leave its first line ending on "a".
   railNames(
     L(
-      ["对象没了", "没人用", "与权威来源重复", "得不偿失"],
+      ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
       ["No subject", "No user", "Duplicates a source of truth", "Net cost"],
     ),
     xs,
@@ -144,12 +144,14 @@ export function nextUserStage(s, t, c, g) {
     valign: "bottom",
     alpha: user,
   });
+  // The needs, in the voice's words, return to full ink on the last one's words, so the four stand whole before the
+  // stage leaves.
   L(
-    ["清楚的含义", "当时能拿到的事实", "对得上的证据", "获准、有边界的用途"],
+    ["清楚的含义", "当时能拿到的事实", "对得上说法的证据", "获准的、有边界的用途"],
     ["Clear meaning", "Facts available then", "Matching evidence", "A permitted, bounded use"],
   ).forEach((v, i) =>
     nameText(v, 960, y + E1.needs + i * E1.pitch, {
-      alpha: g * listIn(t, c.needs, i),
+      alpha: g * listIn(t, c.needs, i, Infinity, { whole: c.needs.at(-1) - 0.1 }),
       set: "needs",
     }),
   );
@@ -182,10 +184,11 @@ export function aimsStage(s, t, c, g) {
     ring(x, y, 34, { color: P.evidence, alpha: a, width: 3.5 });
     dot(x, y, 9, { color: P.evidence, alpha: a });
   });
+  // The three aims return to full ink on the last one's words, so the film's last diagram stands whole.
   L(["信", "达", "雅"], ["Faithful", "Clear", "Elegant"]).forEach((v, i) =>
     nameText(v, xs[i], y + 34 + NAME_GAP, {
       valign: "top",
-      alpha: g * listIn(t, ats, i),
+      alpha: g * listIn(t, ats, i, Infinity, { whole: ats.at(-1) - 0.1 }),
       set: "aims",
     }),
   );

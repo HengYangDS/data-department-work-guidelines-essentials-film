@@ -23,6 +23,7 @@ import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
+import { drawShare } from "../../timing/pauses.js";
 import { bar } from "./kit.js";
 
 /* The backtest's height and how far it stands below the measure's name, and the room its marker's name takes under it:
@@ -130,12 +131,13 @@ export function hindsightStage(s, t, c, g) {
   const seen = g * named(t, c.hindsight);
   dot(today, y, m.mark, { color: P.ink, alpha: seen });
   nameText(later, today, under, { valign: "top", alpha: seen });
-  // The correction, only supposed: a dashed way over the stretch to where today's series stands.
+  // The correction, only supposed: a dashed way over the stretch to where today's series stands, drawing on as every
+  // stroke's tip does, at most 820 px/s.
   const fix = g * named(t, c.corrected);
   link(m.card.right + 10, midY, box.left - 10, midY, {
     alpha: fix,
     dash: [9, 9],
-    upto: soon(t, c.corrected - 0.1, 0.9),
+    upto: drawShare(t, c.corrected - 0.1, box.left - m.card.right - 20, 0.9),
     color: P.muted,
   });
   nameText(L("修正", "Corrected"), (m.card.right + box.left) / 2, midY - NAME_GAP, {

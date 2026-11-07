@@ -211,6 +211,8 @@ var voiceTime = (t) => {
   return t - before - down / 2 - (resume - rest) - up / 2;
 };
 var travel = (t, at2, duration) => ease((voiceTime(t) - voiceTime(at2)) / duration);
+var DRAW_PACE = 820;
+var drawShare = (t, at2, length, least = 0.4) => travel(t, at2, Math.max(least, 1.5 * Math.abs(length) / DRAW_PACE));
 
 // picture/film/framing/camera.js
 var CAMERA = {
@@ -1843,7 +1845,7 @@ function busyRow(t, a, c) {
   });
 }
 function rowName(v, t, at2, a) {
-  const y = BRACKET_Y, on = a * soon(t, at2 - 0.1, 0.5), reach = SPAN3 * on, tick = 10 * ease(clamp((on - 0.85) / 0.15));
+  const y = BRACKET_Y, on = a * drawShare(t, at2 - 0.1, SPAN3, 0.5), reach = SPAN3 * on, tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
   if (tick > 0.5)
     [-SPAN3, SPAN3].forEach(
@@ -2455,6 +2457,7 @@ function stageWay(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.others)
   });
+  if (!en) return;
   growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
     width: measure(QUALITIES().slice(0, 2).join(""), NOTE),
     size: NOTE,
@@ -2907,7 +2910,7 @@ function stageApart(t, a, c) {
     alpha: a * named(t, c.report)
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach(
+  L(["改记录", "悄悄照一边做"], ["Altering the record", "Acting as if one side had won"]).forEach(
     (v, i) => rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
       valign: "top",
       alpha: a * listIn(t, refused, i),
@@ -4322,7 +4325,7 @@ function hindsightStage(s, t, c, g) {
   link(m.card.right + 10, midY, box2.left - 10, midY, {
     alpha: fix,
     dash: [9, 9],
-    upto: soon(t, c.corrected - 0.1, 0.9),
+    upto: drawShare(t, c.corrected - 0.1, box2.left - m.card.right - 20, 0.9),
     color: P.muted
   });
   nameText(L("修正", "Corrected"), (m.card.right + box2.left) / 2, midY - NAME_GAP, {
@@ -5461,7 +5464,8 @@ function lanesStage(s, t, c, g0) {
   lastNight(A4.x, A4.low, A4.scale, {
     alpha: recur,
     due: 1,
-    lit: { upto: soon(t, c.recur, 0.8), dash: true },
+    // The supposed delay's two dashed hours draw on as every stroke's tip does, at most 820 px/s.
+    lit: { upto: drawShare(t, c.recur, 2 * HOUR * A4.scale, 0.8), dash: true },
     flow: { t, from: c.warns },
     names: {
       late: { v: L("还会出现", "Recurrence"), side: "top", alpha: 1 },
@@ -5727,7 +5731,7 @@ function retireStage(s, t, c, g) {
   xs.forEach((x, i) => openMark2(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(
     L(
-      ["对象没了", "没人用", "与权威来源重复", "得不偿失"],
+      ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
       ["No subject", "No user", "Duplicates a source of truth", "Net cost"]
     ),
     xs,
@@ -5752,11 +5756,11 @@ function nextUserStage(s, t, c, g) {
     alpha: user
   });
   L(
-    ["清楚的含义", "当时能拿到的事实", "对得上的证据", "获准、有边界的用途"],
+    ["清楚的含义", "当时能拿到的事实", "对得上说法的证据", "获准的、有边界的用途"],
     ["Clear meaning", "Facts available then", "Matching evidence", "A permitted, bounded use"]
   ).forEach(
     (v, i) => nameText(v, 960, y + E12.needs + i * E12.pitch, {
-      alpha: g * listIn(t, c.needs, i),
+      alpha: g * listIn(t, c.needs, i, Infinity, { whole: c.needs.at(-1) - 0.1 }),
       set: "needs"
     })
   );
@@ -5782,7 +5786,7 @@ function aimsStage(s, t, c, g) {
   L(["信", "达", "雅"], ["Faithful", "Clear", "Elegant"]).forEach(
     (v, i) => nameText(v, xs[i], y + 34 + NAME_GAP, {
       valign: "top",
-      alpha: g * listIn(t, ats, i),
+      alpha: g * listIn(t, ats, i, Infinity, { whole: ats.at(-1) - 0.1 }),
       set: "aims"
     })
   );

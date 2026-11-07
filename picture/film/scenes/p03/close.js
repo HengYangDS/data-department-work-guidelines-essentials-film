@@ -257,7 +257,7 @@ export function stageApart(t, a, c) {
     alpha: a * named(t, c.report),
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "悄悄照一边做"], ["Altering the record", "Silently acting for one side"]).forEach(
+  L(["改记录", "悄悄照一边做"], ["Altering the record", "Acting as if one side had won"]).forEach(
     (v, i) =>
       rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
         valign: "top",

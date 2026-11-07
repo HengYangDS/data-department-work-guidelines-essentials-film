@@ -7,7 +7,7 @@
 import { ctx } from "../../canvas.js";
 import { dot, flowAt, flowDot, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, seal } from "../../drawing/symbols.js";
-import { lastNight, nights } from "../../drawing/timeline.js";
+import { HOUR, lastNight, nights } from "../../drawing/timeline.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { beats, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.js";
@@ -15,7 +15,7 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
-import { travel } from "../../timing/pauses.js";
+import { drawShare, travel } from "../../timing/pauses.js";
 import { centring, early, openMark } from "../p05/kit.js";
 
 /* A: two lanes at 0.8 sharing the agreed time. The upper lane is last night, its two hours lit and named over them;
@@ -45,7 +45,8 @@ export function lanesStage(s, t, c, g0) {
   lastNight(A.x, A.low, A.scale, {
     alpha: recur,
     due: 1,
-    lit: { upto: soon(t, c.recur, 0.8), dash: true },
+    // The supposed delay's two dashed hours draw on as every stroke's tip does, at most 820 px/s.
+    lit: { upto: drawShare(t, c.recur, 2 * HOUR * A.scale, 0.8), dash: true },
     flow: { t, from: c.warns },
     names: {
       late: { v: L("还会出现", "Recurrence"), side: "top", alpha: 1 },

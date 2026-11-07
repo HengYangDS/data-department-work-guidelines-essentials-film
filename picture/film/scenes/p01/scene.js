@@ -19,7 +19,7 @@ import { P } from "../../palette.js";
 import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { clamp, ease, ramp, soon } from "../../timing/easing.js";
-import { travel, voiceTime } from "../../timing/pauses.js";
+import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { forkMark, meetingMark, openMark, pagesMark, patchMark } from "./failures.js";
@@ -232,9 +232,11 @@ function busyRow(t, a, c) {
 }
 /* A name for the whole row: a bracket under its names, drawn on with the name that hangs under it; its end ticks grow
  * as the bracket reaches them. */
+/* The row's bracket grows from the centre outwards as a stroke's tips draw (drawShare), each at most 820 px/s, so it
+ * never stands at firm ink in the frame it appears. */
 function rowName(v, t, at, a) {
   const y = BRACKET_Y,
-    on = a * soon(t, at - 0.1, 0.5),
+    on = a * drawShare(t, at - 0.1, SPAN, 0.5),
     reach = SPAN * on,
     tick = 10 * ease(clamp((on - 0.85) / 0.15));
   line(960 - reach, y, 960 + reach, y, { color: P.line, alpha: a * clamp(on * 3), width: 2 });
