@@ -19,6 +19,30 @@ import { twoKinds } from "./kinds.js";
 import { LEAD_ORDER, LEADS } from "./marks.js";
 import { stageOrder } from "./order.js";
 
+/* The parts of each rank said as a list, one beat each over its station, from the rank's own words: a part the
+ * segment says earlier is taken there (制度 / "policies"). The second rank is one decision, said as one part. */
+const PARTS = [
+  [
+    ["法律", "Law"],
+    ["监管", "regulation"],
+    ["安全要求", "security"],
+    ["公司的强制性", "mandatory"],
+  ],
+  [],
+  [
+    ["契约", "contracts"],
+    ["制度", "policies"],
+    ["规范", "specifications"],
+    ["决策记录", "decision records"],
+  ],
+  [
+    ["工作计划", "Plans"],
+    ["临时约定", "provisional"],
+    ["个人偏好", "personal"],
+  ],
+];
+const partsOf = (s, ranks) =>
+  PARTS.map((parts, k) => parts.map(([zh, en]) => cueFrom(s, zh, en, ranks[k])));
 /* 「观察」/ "observation" is first said of the facts' observations; 03.5's is said after the publication time. */
 const checked = (s) => cue(s, "查过发布时间", "checks the publication time");
 
@@ -55,7 +79,7 @@ function cuesOf(s) {
     notPrimary: cue(s, "都不是原始记录", "are not primary records"),
     onlyLeads: cue(s, "线索", "leads"),
   };
-  return { ...c, ...caseCues(s), ...closeCues(s) };
+  return { ...c, parts: partsOf(s, c.ranks), ...caseCues(s), ...closeCues(s) };
 }
 function caseCues(s) {
   const choice = cue(s, "要不要换供应商", "Whether to change vendors");

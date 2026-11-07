@@ -2,14 +2,15 @@
  * with its name and what it answers; on 「有先后」, the order announced (in English, which announces it in 03.2, with
  * the first rank), a spine runs down from the seal the whole length of the order, and a point descends it once over
  * the thought. The four ranks join it one by one, each a station on the spine with its name, whole from its first
- * words, the rank being said at full ink and those before it at the list's second level. The decision owner of the
- * second rank stands as a small figure in the colour of authority beside its station: the rank is what the owner
- * decides, never the person alone. The column stands at one place while the ranks arrive, so no name moves once
- * shown. */
+ * words, the rank being said at full ink and those before it at the list's second level; a rank said as a list beats
+ * once on its station for each part it names, so a long rank still shows each part arriving while its name stands
+ * whole. The decision owner of the second rank stands as a small figure in the colour of authority beside its station:
+ * the rank is what the owner decides, never the person alone. The column stands at one place while the ranks arrive,
+ * so no name moves once shown. */
 
 import { EDGE, dot, line, measure } from "../../drawing/strokes.js";
 import { person, seal } from "../../drawing/symbols.js";
-import { listIn } from "../../naming/lists.js";
+import { beats, listIn } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
@@ -80,6 +81,7 @@ export function stageOrder(t, a, c) {
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
     dot(x, ROWS[k], 7, { color: P.ink, alpha: on });
+    beats(t, x, ROWS[k], 16, c.parts[k], { alpha: on });
     nameText(v, x + TO_NAMES, ROWS[k], {
       align: "left",
       alpha: a * listIn(t, c.ranks, k),

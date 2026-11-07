@@ -3192,6 +3192,7 @@ function stageOrder(t, a, c) {
   RANKS().forEach((v, k) => {
     const on = a * ramp(t, c.ranks[k] - 0.15, 0.4);
     dot(x, ROWS[k], 7, { color: P.ink, alpha: on });
+    beats(t, x, ROWS[k], 16, c.parts[k], { alpha: on });
     nameText(v, x + TO_NAMES, ROWS[k], {
       align: "left",
       alpha: a * listIn(t, c.ranks, k),
@@ -3203,6 +3204,27 @@ function stageOrder(t, a, c) {
 }
 
 // picture/film/scenes/p03/scene.js
+var PARTS = [
+  [
+    ["法律", "Law"],
+    ["监管", "regulation"],
+    ["安全要求", "security"],
+    ["公司的强制性", "mandatory"]
+  ],
+  [],
+  [
+    ["契约", "contracts"],
+    ["制度", "policies"],
+    ["规范", "specifications"],
+    ["决策记录", "decision records"]
+  ],
+  [
+    ["工作计划", "Plans"],
+    ["临时约定", "provisional"],
+    ["个人偏好", "personal"]
+  ]
+];
+var partsOf = (s, ranks) => PARTS.map((parts, k) => parts.map(([zh, en2]) => cueFrom(s, zh, en2, ranks[k])));
 var checked = (s) => cue(s, "查过发布时间", "checks the publication time");
 function cuesOf3(s) {
   const c = {
@@ -3235,7 +3257,7 @@ function cuesOf3(s) {
     notPrimary: cue(s, "都不是原始记录", "are not primary records"),
     onlyLeads: cue(s, "线索", "leads")
   };
-  return { ...c, ...caseCues(s), ...closeCues(s) };
+  return { ...c, parts: partsOf(s, c.ranks), ...caseCues(s), ...closeCues(s) };
 }
 function caseCues(s) {
   const choice = cue(s, "要不要换供应商", "Whether to change vendors");
