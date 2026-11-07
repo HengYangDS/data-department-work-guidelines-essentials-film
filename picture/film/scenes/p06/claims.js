@@ -102,7 +102,7 @@ export function chainStage(s, t, c, g) {
   });
   const stations = L(
     ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
-    ["Decision owner", "Limits", "Change", "Current runs", "The claim", "Acceptance", "Learning"],
+    ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"],
   );
   railNames(stations, xs, C.y, {
     gap: NAME_GAP,

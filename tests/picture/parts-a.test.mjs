@@ -48,7 +48,7 @@ const STAGES = {
   ],
   "03": [
     ["两种依据", "Two kinds of authority"],
-    ["它有先后", "Law"],
+    ["它有先后", "It comes in a fixed order"],
     ["另一种", "Authority about facts"],
     ["要看原始记录", "primary records"],
     ["拿昨晚的事来说", "Take last night"],

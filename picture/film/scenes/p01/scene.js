@@ -35,7 +35,7 @@ function cuesOf(s) {
     vendor: cue(s, "换供应商", "change the vendor"),
     facts: cue(s, "事实还没查清", "before the facts"),
     patch: cue(s, "手工把数据补上", "patches the data"),
-    again: cue(s, "下个月照样出错", "next month it fails again"),
+    again: cue(s, "下个月照样出错", "next month the collection fails again"),
     mechanism: cue(s, "机制", "the mechanism"),
     meeting: cue(s, "开了个会", "A meeting"),
     speaks: cue(s, "人人都发了言", "everyone speaks"),

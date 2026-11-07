@@ -48,7 +48,7 @@ function cuesOf(s) {
       ["决策负责人批准", "The decision owner approves"],
       ["也划定了范围", "and sets its limits"],
       ["改动只在这个范围里做", "The job is changed"],
-      ["当前的运行", "Current runs"],
+      ["当前的运行", "The runs since the change"],
       ["话只说到", "The claim stays"],
       ["最后验收", "Then come acceptance"],
       ["从中学习", "and learning"],

@@ -72,9 +72,10 @@ export function titleSignature(alpha, signed = alpha) {
 export function credits(t) {
   const start = film.duration - film.credits_duration;
   const last = titleSignature(ramp(t, start, 0.5), ramp(t, start + 0.2, 0.5));
+  // The note follows the author's name, which inks in from 0.2 s, so the credits read title, author, note (M8-03).
   titled(L("旁白为合成语音", "Narration: synthetic voice"), RIGHT, last + NOTE_STEP, NOTE_SIZE, {
     end: true,
     color: P.muted,
-    alpha: ramp(t, start + 0.1, 0.35),
+    alpha: ramp(t, start + 0.45, 0.35),
   });
 }

@@ -54,10 +54,9 @@ function cuesOf(s) {
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    // The order opens on 03.3's first words. Its span grows on 「有先后」, where the Chinese announces the order; the
-    // English announces it in 03.2, so there the span grows on the first rank.
-    opens: cue(s, "它有先后", "Law"),
-    order: cue(s, "有先后", "Law"),
+    // The order opens on 03.3's first words, which announce it, and its span grows on 「有先后」/ "a fixed order".
+    opens: cue(s, "它有先后", "It comes in a fixed order"),
+    order: cue(s, "有先后", "a fixed order"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "才是这件事", "what the decision owner"),

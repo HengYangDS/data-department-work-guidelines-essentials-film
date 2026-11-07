@@ -1,12 +1,11 @@
-/* B (03.3, from its first words, 「它有先后」/ "Law"): authority to act's order of sources, centred. The seal heads it,
- * with its name and what it answers; on 「有先后」, the order announced (in English, which announces it in 03.2, with
- * the first rank), a spine runs down from the seal the whole length of the order, and a point descends it once over
- * the thought. The four ranks join it one by one, each a station on the spine with its name, whole from its first
- * words, the rank being said at full ink and those before it at the list's second level; a rank said as a list beats
- * once on its station for each part it names, so a long rank still shows each part arriving while its name stands
- * whole. The decision owner of the second rank stands as a small figure in the colour of authority beside its station:
- * the rank is what the owner decides, never the person alone. The column stands at one place while the ranks arrive,
- * so no name moves once shown. */
+/* B (03.3, from its first words, 「它有先后」/ "It comes in a fixed order"): authority to act's order of sources, centred.
+ * The seal heads it, with its name and what it answers; on 「有先后」/ "a fixed order", the order announced, a spine runs
+ * down from the seal the whole length of the order, and a point descends it once over the thought. The four ranks join
+ * it one by one, each a station on the spine with its name, whole from its first words, the rank being said at full ink
+ * and those before it at the list's second level; a rank said as a list beats once on its station for each part it
+ * names, so a long rank still shows each part arriving while its name stands whole. The decision owner of the second
+ * rank stands as a small figure in the colour of authority beside its station: the rank is what the owner decides,
+ * never the person alone. The column stands at one place while the ranks arrive, so no name moves once shown. */
 
 import { EDGE, dot, line, measure } from "../../drawing/strokes.js";
 import { person, seal } from "../../drawing/symbols.js";
@@ -43,7 +42,7 @@ const HEAD = () => L("行动依据", "Authority to act"),
 /* The spine's x: it never moves. Each state the column holds once the first rank is said has the head and one rank or
  * more, and its box runs from the owner's shoulders to the widest name standing; the spine stands at the midpoint of
  * the shifts that would centre those states, so the most off-centre of them is off by as little as possible. Only the
- * head with its spine, for the second of 「它有先后」 before the first rank in Chinese, stands further off. */
+ * head with its spine, while 「它有先后」/ "It comes in a fixed order" is said before the first rank, stands further off. */
 function spineX() {
   const left = OWNER.dx - 1.55 * 15 * OWNER.size,
     head = SEAL_R + NAME_GAP + Math.max(measure(HEAD()), measure(QUESTION(), NOTE)),

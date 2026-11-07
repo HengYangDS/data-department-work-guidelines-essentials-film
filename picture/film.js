@@ -387,7 +387,7 @@ function ring(x, y, r, {
   if (draw) upto = drawnShare(draw, 2 * Math.PI * r, clamp(upto));
   if (upto <= 0) return;
   const turn = 2 * Math.PI, from = (start % turn + turn) % turn;
-  stroke(() => ctx.arc(x, y, r, from, from + turn * clamp(upto)), {
+  stroke(() => ctx.ellipse(x, y, r, r, from, 0, turn * clamp(upto)), {
     color,
     alpha,
     width,
@@ -970,7 +970,7 @@ function credits(t) {
   titled(L("旁白为合成语音", "Narration: synthetic voice"), RIGHT, last + NOTE_STEP, NOTE_SIZE, {
     end: true,
     color: P.muted,
-    alpha: ramp(t, start + 0.1, 0.35)
+    alpha: ramp(t, start + 0.45, 0.35)
   });
 }
 
@@ -1727,7 +1727,7 @@ function cuesOf(s) {
     vendor: cue(s, "换供应商", "change the vendor"),
     facts: cue(s, "事实还没查清", "before the facts"),
     patch: cue(s, "手工把数据补上", "patches the data"),
-    again: cue(s, "下个月照样出错", "next month it fails again"),
+    again: cue(s, "下个月照样出错", "next month the collection fails again"),
     mechanism: cue(s, "机制", "the mechanism"),
     meeting: cue(s, "开了个会", "A meeting"),
     speaks: cue(s, "人人都发了言", "everyone speaks"),
@@ -3306,10 +3306,9 @@ function cuesOf3(s) {
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    // The order opens on 03.3's first words. Its span grows on 「有先后」, where the Chinese announces the order; the
-    // English announces it in 03.2, so there the span grows on the first rank.
-    opens: cue(s, "它有先后", "Law"),
-    order: cue(s, "有先后", "Law"),
+    // The order opens on 03.3's first words, which announce it, and its span grows on 「有先后」/ "a fixed order".
+    opens: cue(s, "它有先后", "It comes in a fixed order"),
+    order: cue(s, "有先后", "a fixed order"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "才是这件事", "what the decision owner"),
@@ -3588,8 +3587,9 @@ function stageCases(t, a, c) {
     color: P.ink,
     alpha: free * level(0)
   });
-  nameText(FREE(), rx, ry + C.reach[1] + 8 + NAME_GAP, {
+  nameText(FREE(), x - C.s / 2 + C.inset, ry + C.reach[1] + 8 + NAME_GAP, {
     valign: "top",
+    align: "left",
     alpha: a * listIn(t, cases, 0)
   });
   const near = a * ramp(t, approach - 0.15, 0.4), halted = travel(t, approach + 0.05, 0.9), hx = mix(x + 40, right - C.inset - 12, halted), hy = C.y;
@@ -4769,7 +4769,7 @@ function chainStage(s, t, c, g) {
   });
   const stations = L(
     ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
-    ["Decision owner", "Limits", "Change", "Current runs", "The claim", "Acceptance", "Learning"]
+    ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"]
   );
   railNames(stations, xs, C2.y, {
     gap: NAME_GAP,
@@ -5080,7 +5080,7 @@ function cuesOf6(s) {
       ["决策负责人批准", "The decision owner approves"],
       ["也划定了范围", "and sets its limits"],
       ["改动只在这个范围里做", "The job is changed"],
-      ["当前的运行", "Current runs"],
+      ["当前的运行", "The runs since the change"],
       ["话只说到", "The claim stays"],
       ["最后验收", "Then come acceptance"],
       ["从中学习", "and learning"]

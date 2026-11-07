@@ -102,7 +102,8 @@ export function stageLines(t, a, c) {
  * its own words, as its mark acts: it stops, its ring lights as it is made visible, and its way rises to the field's
  * top as it is escalated. The case being said stands at full ink. The edge list keeps the inset the film's frames keep
  * inside every side (`inset`, as the four boundaries' field keeps 60-64 px), so it never stands on or past the
- * boundary it names the stop at, and the edge point stops 12 px inside the list's right edge. */
+ * boundary it names the stop at, and the edge point stops 12 px inside the list's right edge. The free point's name
+ * keeps the same inset from the left side, so the two names stand as far in from their sides in both editions. */
 const C = {
   y: TOP + 200,
   s: 400,
@@ -138,8 +139,9 @@ export function stageCases(t, a, c) {
     color: P.ink,
     alpha: free * level(0),
   });
-  nameText(FREE(), rx, ry + C.reach[1] + 8 + NAME_GAP, {
+  nameText(FREE(), x - C.s / 2 + C.inset, ry + C.reach[1] + 8 + NAME_GAP, {
     valign: "top",
+    align: "left",
     alpha: a * listIn(t, cases, 0),
   });
   // Near a side: a point comes to a halt short of the right side; it is ringed as it is made visible, and its way

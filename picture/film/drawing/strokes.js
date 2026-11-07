@@ -210,11 +210,14 @@ export function ring(
 ) {
   if (draw) upto = drawnShare(draw, 2 * Math.PI * r, clamp(upto));
   if (upto <= 0) return;
-  // The start is brought into one turn first: from a large start angle (a ring turning with voice time) the canvas
-  // reads a whole turn as almost none and draws nothing for that frame.
+  // The ring is stroked as an ellipse turned by its start, from 0 to its share of a whole turn. The canvas takes an
+  // arc's angles in single precision, so an arc from a start to that start plus a whole turn can sweep a hair under the
+  // turn and draw nothing for that frame: in the renderer's browser, 52 of 2304 starts that a turning ring passes
+  // through drew no ink (essentials round 2, M6-02). From 0 the whole turn is exact, and the dashes still begin at the
+  // ring's start.
   const turn = 2 * Math.PI,
     from = ((start % turn) + turn) % turn;
-  stroke(() => ctx.arc(x, y, r, from, from + turn * clamp(upto)), {
+  stroke(() => ctx.ellipse(x, y, r, r, from, 0, turn * clamp(upto)), {
     color,
     alpha,
     width,
