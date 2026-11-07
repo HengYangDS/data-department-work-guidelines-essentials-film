@@ -78,7 +78,7 @@ export function collaborationStage(s, t, c, g) {
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
     { alpha: g, size },
   );
-  nameText(L("人", "Humans"), px, y + 96 + NAME_GAP, {
+  nameText(L("人", "People"), px, y + 96 + NAME_GAP, {
     valign: "top",
     alpha: g * named(t, c.people),
   });
