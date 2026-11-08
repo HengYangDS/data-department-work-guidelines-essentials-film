@@ -148,7 +148,8 @@ const blockHeight = (lines, size = LABEL) => labelSize(size) * (1 + LEADING * (l
  * units onto lines no wider than `width`, and the lines share one left edge. */
 /* The texts of each line of a name of parts, as [part, text] pairs. A part that wraps to a new line starts that line
  * without its leading separator, and the separator's mark hangs at the end of the line before: no line starts with a
- * comma and no comma is lost. */
+ * comma and no comma is lost. A line ends on its last mark: the space a part keeps before the next part's words is
+ * dropped where the name wraps after it, so a right or centred line keeps the edge or centre of the others. */
 export function growTexts(parts, width = Infinity, size = LABEL) {
   const lines = growLines(parts, width, size).map((line) => line.map((k) => [k, parts[k]]));
   lines.forEach((line, r) => {
@@ -158,6 +159,10 @@ export function growTexts(parts, width = Infinity, size = LABEL) {
     line[0] = [k, v.slice(lead.length)];
     const mark = lead.replace(/\s+/gu, "");
     if (mark) lines[r - 1].push([k, mark]);
+  });
+  lines.forEach((line) => {
+    const [k, v] = line.at(-1);
+    line[line.length - 1] = [k, v.trimEnd()];
   });
   return lines;
 }
@@ -260,7 +265,8 @@ export function termRow(
   // A row centred or ended on x sets its qualifier under the term unless `inline` says otherwise, so the term stands on
   // x from its first word and does not move when the qualifier joins. When the two share a line, they centre or end on
   // x together; when the qualifier stands under the term, each line centres or ends on x.
-  const whole = [...term, ...qual].join(" "),
+  // The row's whole text joins its term and its qualifier with one space; their parts carry their own separators.
+  const whole = [term.join(""), qual.join("")].filter((v) => v).join(" "),
     { one } = termRowLayout(term, qual, width, inline ?? (align === "left" ? null : false)),
     shared = one && qual.length,
     span = measure(term.join(""), LABEL) + TERM_GAP + measure(qual.join(""), NOTE),

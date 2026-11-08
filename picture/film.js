@@ -1148,6 +1148,10 @@ function growTexts(parts, width = Infinity, size = LABEL) {
     const mark = lead.replace(/\s+/gu, "");
     if (mark) lines[r - 1].push([k, mark]);
   });
+  lines.forEach((line2) => {
+    const [k, v] = line2.at(-1);
+    line2[line2.length - 1] = [k, v.trimEnd()];
+  });
   return lines;
 }
 function growName(t, parts, ats, x, y, {
@@ -1204,7 +1208,7 @@ function termRow(t, term, termAts, qual, qualAts, x, y, {
   noteWidth: noteWidth2 = width,
   buildTerm = false
 } = {}) {
-  const whole = [...term, ...qual].join(" "), { one } = termRowLayout(term, qual, width, inline ?? (align === "left" ? null : false)), shared = one && qual.length, span = measure(term.join(""), LABEL) + TERM_GAP + measure(qual.join(""), NOTE), left = shared ? align === "center" ? x - span / 2 : align === "right" ? x - span : x : x, head = growName(t, term, termAts, left, y, {
+  const whole = [term.join(""), qual.join("")].filter((v) => v).join(" "), { one } = termRowLayout(term, qual, width, inline ?? (align === "left" ? null : false)), shared = one && qual.length, span = measure(term.join(""), LABEL) + TERM_GAP + measure(qual.join(""), NOTE), left = shared ? align === "center" ? x - span / 2 : align === "right" ? x - span : x : x, head = growName(t, term, termAts, left, y, {
     width,
     alpha,
     color,
@@ -1883,7 +1887,7 @@ function busyRow(t, a, c) {
       width: 300,
       set: "failures",
       alpha: a,
-      whole: [terms[k], ...quals[k]].join(" ")
+      whole: [terms[k], quals[k].join("")].filter((v) => v).join(" ")
     });
   });
 }
@@ -2196,7 +2200,7 @@ function taskCues(s) {
     outcomes: [
       cue(s, "问题解决掉", "resolve the problem"),
       cue(s, "判断检验过", "test the judgment"),
-      cue(s, "系统", "the system")
+      cue(s, "系统", "the system", { last: true })
     ],
     holds: cue(s, "说清", "say when it holds"),
     sooner: cue(s, "更早认出来", "recognize"),

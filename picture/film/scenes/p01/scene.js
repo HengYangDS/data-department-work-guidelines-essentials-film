@@ -230,7 +230,7 @@ function busyRow(t, a, c) {
       width: 300,
       set: "failures",
       alpha: a,
-      whole: [terms[k], ...quals[k]].join(" "),
+      whole: [terms[k], quals[k].join("")].filter((v) => v).join(" "),
     });
   });
 }

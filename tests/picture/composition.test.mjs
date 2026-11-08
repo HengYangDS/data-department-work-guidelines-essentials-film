@@ -90,7 +90,8 @@ test("the pinned timeline engine seeks a paused timeline as the composition driv
   gsap.ticker.sleep();
 });
 
-async function wrapInComposition(film) {
+/* A caller of the composition's own functions, by name, with JSON arguments. */
+async function inComposition(film) {
   const window = { FILM: film },
     ctx = canvasStandIn(() => {}),
     elements = { picture: { getContext: () => ctx }, film: { dataset: { width: "1920" } } };
@@ -99,12 +100,13 @@ async function wrapInComposition(film) {
     document: { getElementById: (id) => elements[id] },
   });
   vm.runInContext(await readFile(COMPOSITION, "utf8"), context, { filename: COMPOSITION });
-  return (v, width, size) =>
-    vm.runInContext(`wrapName(${JSON.stringify(v)}, ${width}, ${size})`, context);
+  return (name, ...args) =>
+    vm.runInContext(`${name}(${args.map((v) => JSON.stringify(v)).join(", ")})`, context);
 }
 
 test("a Chinese name breaks only after a list or clause mark, and keeps every character", async () => {
-  const wrapName = await wrapInComposition(await authoredTimeline("zh"));
+  const call = await inComposition(await authoredTimeline("zh"));
+  const wrapName = (v, width, size) => call("wrapName", v, width, size);
   const joint = /[、，。；：,]$/u;
   for (const [v, width] of [
     ["代码、数据和实际使用，一次次给出的答案", 300],
@@ -122,4 +124,14 @@ test("a Chinese name breaks only after a list or clause mark, and keeps every ch
     plain.every((line) => line.length <= 9),
     plain.join("|"),
   );
+});
+
+test("a name of parts ends each line on its last mark, so right and centred lines keep one edge", async () => {
+  const call = await inComposition(await authoredTimeline("en"));
+  const parts = ["deletion or overwrite, ", "an external commitment ", "or anything irreversible"];
+  // A width under any part's sets each part on its own line, the case in which a part's space would end a line.
+  const lines = call("growTexts", parts, 1, 22);
+  assert.equal(lines.length, parts.length, JSON.stringify(lines));
+  for (const line of lines) assert.doesNotMatch(line.at(-1)[1], /\s$/u, JSON.stringify(lines));
+  assert.equal(lines.map((line) => line.map(([, v]) => v).join("")).join(" "), parts.join(""));
 });

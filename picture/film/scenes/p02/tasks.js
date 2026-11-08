@@ -28,7 +28,8 @@ import { voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { mechanism, outcome, people, reports } from "./marks.js";
 
-/* The spoken cues of 02.3-02.4. */
+/* The spoken cues of 02.3-02.4. 系统 is said first in 02.1 (人工智能系统), so the third outcome takes its last
+ * occurrence, 02.3's 让系统下次再碰到这类事 (ZH7-1); "the system" is said once. */
 export function taskCues(s) {
   return {
     task: cue(s, "一项任务", "a task"),
@@ -36,7 +37,7 @@ export function taskCues(s) {
     outcomes: [
       cue(s, "问题解决掉", "resolve the problem"),
       cue(s, "判断检验过", "test the judgment"),
-      cue(s, "系统", "the system"),
+      cue(s, "系统", "the system", { last: true }),
     ],
     holds: cue(s, "说清", "say when it holds"),
     sooner: cue(s, "更早认出来", "recognize"),
