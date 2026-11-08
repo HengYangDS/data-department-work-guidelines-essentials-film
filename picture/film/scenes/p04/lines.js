@@ -103,15 +103,18 @@ export function stageLines(t, a, c) {
  * top as it is escalated. The case being said stands at full ink. The edge list keeps the inset the film's frames keep
  * inside every side (`inset`, as the four boundaries' field keeps 60-64 px), so it never stands on or past the
  * boundary it names the stop at, and the edge point stops 12 px inside the list's right edge. The free point's name
- * keeps the same inset from the left side, so the two names stand as far in from their sides in both editions. */
+ * keeps the same inset from the left side and stands on the edge list's first line, so the two names stand as far in
+ * from their sides and share one baseline in both editions; the free point roams just above its name, its lowest
+ * reach as far over the name as the halted point's ring stands over the list. */
 const C = {
   y: TOP + 200,
   s: 400,
   pitch: 44,
-  roam: [70, 60],
+  roam: 70,
   reach: [60, 45],
   approach: 0.55,
   inset: 62,
+  ring: 17,
 };
 const FREE = () => L("自主", "Autonomy");
 /* The English names begin alike in case, as the names of one list do. */
@@ -132,14 +135,16 @@ export function stageCases(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.inside),
   });
-  // Inside these boundaries: a point moving freely about the field's upper left, named under where it moves.
-  const free = a * ramp(t, c.inside - 0.15, 0.4),
-    [rx, ry] = [x - C.roam[0], C.y - C.roam[1]];
+  // Inside these boundaries: a point moving freely about the field's upper left, named under where it moves, its name
+  // on the first line of the edge list, which hangs under the halted point's ring.
+  const row = C.y + C.ring + NAME_GAP,
+    free = a * ramp(t, c.inside - 0.15, 0.4),
+    [rx, ry] = [x - C.roam, row - NAME_GAP - 8 - C.reach[1]];
   dot(rx + C.reach[0] * Math.sin(vt * 0.9), ry + C.reach[1] * Math.sin(vt * 1.3), 8, {
     color: P.ink,
     alpha: free * level(0),
   });
-  nameText(FREE(), x - C.s / 2 + C.inset, ry + C.reach[1] + 8 + NAME_GAP, {
+  nameText(FREE(), x - C.s / 2 + C.inset, row, {
     valign: "top",
     align: "left",
     alpha: a * listIn(t, cases, 0),
@@ -151,7 +156,7 @@ export function stageCases(t, a, c) {
     hx = mix(x + 40, right - C.inset - 12, halted),
     hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
-  ring(hx, hy, 17, {
+  ring(hx, hy, C.ring, {
     color: P.authority,
     alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3,
@@ -160,9 +165,12 @@ export function stageCases(t, a, c) {
   // before the quiet.
   const rise = drawShare(t, edge[2] - 0.2, hy - 25 - top);
   if (rise > 0)
-    line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
+    line(hx, hy - C.ring, hx, mix(hy - C.ring, top + 8, rise), {
+      alpha: near * level(1),
+      width: 2.5,
+    });
   EDGE().forEach((v, i) =>
-    nameText(v, right - C.inset, hy + 17 + NAME_GAP + i * C.pitch, {
+    nameText(v, right - C.inset, row + i * C.pitch, {
       valign: "top",
       align: "right",
       alpha: a * level(1) * listIn(t, edge, i),

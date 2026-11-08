@@ -40,10 +40,11 @@ function fork(x, y, { alpha = 1 } = {}) {
 
 /* D: the delegation. Its boundary stands whole from the first words, four sides in one stroke, the delegation's
  * scope named at its corner; each part takes its place inside on its words, centred on the boundary's axis: the
- * purpose with failure 1's fork, the limits with a lock, then the deliverable, the compact timeline with an open mark
- * on each time to find, a source under each and an open mark for what could not be verified. The schedule stands
- * outside at the right, and the way to it stops at a bar on the boundary's edge. The stage stands once at the midpoint
- * of the places that centre it before and after the stop and the schedule come at its right. */
+ * purpose with failure 1's fork and the limits with a lock, one list whose icons stand in one column and whose names
+ * start on one line, then the deliverable, the compact timeline with an open mark on each time to find, a source under
+ * each and an open mark for what could not be verified. The schedule stands outside at the right, and the way to it
+ * stops at a bar on the boundary's edge. The stage stands once at the midpoint of the places that centre it before and
+ * after the stop and the schedule come at its right. */
 const D = {
   top: 280,
   bottom: 700,
@@ -54,6 +55,10 @@ const D = {
   scale: 0.7,
   out: 120,
 };
+/* The list's offsets from its left edge: the fork's dot (radius 4.5) reaches 38.5 px left of its point, the lock's
+ * frame at size 0.9 (30.6 px wide, a 2.5 px stroke) 16.55 px left of its centre, and the names start 10 px clear of the
+ * fork's tip, 26 px right of its point. */
+const ROW = { fork: 38.5, lock: 16.55, name: 38.5 + 26 + 10 };
 export function delegationStage(s, t, c, g) {
   // What comes at the right: the stop's name beside the bar, and the schedule's clock with its name under it.
   const reach = Math.max(
@@ -83,16 +88,21 @@ export function delegationStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * early(t, c.first4, c.delegation),
   });
-  // The purpose and the limits.
+  // The purpose and the limits, one list centred on the boundary's axis: its icons stand in one column on the list's
+  // left edge, and its names start on one line clear of the wider fork (`ROW`).
   const purpose = g * early(t, c.purposeClause, c.purpose),
     purposeName = L("要不要换供应商", "Whether to change vendors"),
-    pw = measure(purposeName) + 70;
-  fork(x - pw / 2 + 34, D.rows[0], { alpha: purpose });
-  nameText(purposeName, x - pw / 2 + 70, D.rows[0], { align: "left", alpha: purpose });
-  const ro = g * named(t, c.readOnly),
-    rw = measure(L("只查不改", "Read-only")) + 60;
-  lock(x - rw / 2 + 17, D.rows[1], { alpha: ro, size: 0.9 });
-  nameText(L("只查不改", "Read-only"), x - rw / 2 + 60, D.rows[1], { align: "left", alpha: ro });
+    roName = L("只查不改", "Read-only"),
+    ro = g * named(t, c.readOnly),
+    left = x - (ROW.name + Math.max(measure(purposeName), measure(roName))) / 2;
+  fork(left + ROW.fork, D.rows[0], { alpha: purpose });
+  nameText(purposeName, left + ROW.name, D.rows[0], {
+    align: "left",
+    alpha: purpose,
+    set: "limits",
+  });
+  lock(left + ROW.lock, D.rows[1], { alpha: ro, size: 0.9 });
+  nameText(roName, left + ROW.name, D.rows[1], { align: "left", alpha: ro, set: "limits" });
   // The deliverable: the compact timeline with the two times to find, each an open mark named over it.
   const tl = g * ramp(t, c.find - 0.15, 0.4),
     m = lastNight(x, D.rail, D.scale, {

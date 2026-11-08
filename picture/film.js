@@ -3569,10 +3569,11 @@ var C = {
   y: TOP2 + 200,
   s: 400,
   pitch: 44,
-  roam: [70, 60],
+  roam: 70,
   reach: [60, 45],
   approach: 0.55,
-  inset: 62
+  inset: 62,
+  ring: 17
 };
 var FREE = () => L("自主", "Autonomy");
 var EDGE2 = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
@@ -3583,28 +3584,31 @@ function stageCases(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.inside)
   });
-  const free = a * ramp(t, c.inside - 0.15, 0.4), [rx, ry] = [x - C.roam[0], C.y - C.roam[1]];
+  const row = C.y + C.ring + NAME_GAP, free = a * ramp(t, c.inside - 0.15, 0.4), [rx, ry] = [x - C.roam, row - NAME_GAP - 8 - C.reach[1]];
   dot(rx + C.reach[0] * Math.sin(vt * 0.9), ry + C.reach[1] * Math.sin(vt * 1.3), 8, {
     color: P.ink,
     alpha: free * level(0)
   });
-  nameText(FREE(), x - C.s / 2 + C.inset, ry + C.reach[1] + 8 + NAME_GAP, {
+  nameText(FREE(), x - C.s / 2 + C.inset, row, {
     valign: "top",
     align: "left",
     alpha: a * listIn(t, cases, 0)
   });
   const near = a * ramp(t, approach - 0.15, 0.4), halted = travel(t, approach + 0.05, 0.9), hx = mix(x + 40, right - C.inset - 12, halted), hy = C.y;
   dot(hx, hy, 8, { color: P.ink, alpha: near * level(1) });
-  ring(hx, hy, 17, {
+  ring(hx, hy, C.ring, {
     color: P.authority,
     alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3
   });
   const rise = drawShare(t, edge[2] - 0.2, hy - 25 - top);
   if (rise > 0)
-    line(hx, hy - 17, hx, mix(hy - 17, top + 8, rise), { alpha: near * level(1), width: 2.5 });
+    line(hx, hy - C.ring, hx, mix(hy - C.ring, top + 8, rise), {
+      alpha: near * level(1),
+      width: 2.5
+    });
   EDGE2().forEach(
-    (v, i) => nameText(v, right - C.inset, hy + 17 + NAME_GAP + i * C.pitch, {
+    (v, i) => nameText(v, right - C.inset, row + i * C.pitch, {
       valign: "top",
       align: "right",
       alpha: a * level(1) * listIn(t, edge, i),
@@ -5168,6 +5172,7 @@ var D2 = {
   scale: 0.7,
   out: 120
 };
+var ROW2 = { fork: 38.5, lock: 16.55, name: 38.5 + 26 + 10 };
 function delegationStage(s, t, c, g) {
   const reach = Math.max(
     D2.half + NAME_GAP + measure(L("停下来问我", "Stop and ask")),
@@ -5190,12 +5195,15 @@ function delegationStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * early(t, c.first4, c.delegation)
   });
-  const purpose = g * early(t, c.purposeClause, c.purpose), purposeName = L("要不要换供应商", "Whether to change vendors"), pw = measure(purposeName) + 70;
-  fork(x - pw / 2 + 34, D2.rows[0], { alpha: purpose });
-  nameText(purposeName, x - pw / 2 + 70, D2.rows[0], { align: "left", alpha: purpose });
-  const ro = g * named(t, c.readOnly), rw = measure(L("只查不改", "Read-only")) + 60;
-  lock(x - rw / 2 + 17, D2.rows[1], { alpha: ro, size: 0.9 });
-  nameText(L("只查不改", "Read-only"), x - rw / 2 + 60, D2.rows[1], { align: "left", alpha: ro });
+  const purpose = g * early(t, c.purposeClause, c.purpose), purposeName = L("要不要换供应商", "Whether to change vendors"), roName = L("只查不改", "Read-only"), ro = g * named(t, c.readOnly), left = x - (ROW2.name + Math.max(measure(purposeName), measure(roName))) / 2;
+  fork(left + ROW2.fork, D2.rows[0], { alpha: purpose });
+  nameText(purposeName, left + ROW2.name, D2.rows[0], {
+    align: "left",
+    alpha: purpose,
+    set: "limits"
+  });
+  lock(left + ROW2.lock, D2.rows[1], { alpha: ro, size: 0.9 });
+  nameText(roName, left + ROW2.name, D2.rows[1], { align: "left", alpha: ro, set: "limits" });
   const tl = g * ramp(t, c.find - 0.15, 0.4), m = lastNight(x, D2.rail, D2.scale, {
     alpha: tl,
     hours: [-1, 3],
