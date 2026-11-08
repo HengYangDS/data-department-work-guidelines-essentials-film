@@ -3075,6 +3075,7 @@ function stageFacts(t, a, c) {
 // picture/film/scenes/p05/kit.js
 var early = (t, clause, at2) => named(t, Math.max(clause - 0.2, at2 - 1.35));
 var centring = (x0, x1) => 960 - (x0 + x1) / 2;
+var glide = (t, first, steps) => steps.reduce((x, [at2, to]) => mix(x, to, travel(t, at2 + 0.05, 0.9)), first);
 function fileMark(x, y, { alpha = 1, w = 64, h = 80 } = {}) {
   documentIcon(x - w / 2, y - h / 2, w, h, { alpha, rows: 3 });
 }
@@ -5419,7 +5420,7 @@ function boundaryStage(s, t, c, g) {
   const ats = c.five, items = L(
     ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
     ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"]
-  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(120, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, x = (centring(-half, half) + centring(-toPile - pileHalf, half)) / 2, grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
+  ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(120, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, x = glide(t, centring(-half, half), [[c.pile, centring(-toPile - pileHalf, half)]]), grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
   boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
   nameText(name, x, top - NAME_GAP, {

@@ -14,7 +14,7 @@ import { P } from "../../palette.js";
 import { en, L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
-import { centring, early } from "../p05/kit.js";
+import { centring, early, glide } from "../p05/kit.js";
 
 /* People drawn as one mark: their heads one fill and their shoulders one stroke, so a group named once does not read
  * as members that each wait for a name. Each person is [x, y]. */
@@ -181,8 +181,9 @@ export function pagesStage(s, t, c, g) {
  * above and below the Agent, and named centred over its top edge, as every frame of the film is; the pile of context
  * at its left, lower, by where the list builds, refused; and the five things a consequential delegation states build
  * as one list in a column inside the boundary, which deepens just before each is said, down from a top edge that
- * stays. The stage stands once at the midpoint of the places that centre the boundary alone and the boundary with the
- * pile. */
+ * stays. The boundary stands centred alone, and on the pile's words the stage glides once to centre the boundary with
+ * the pile (a structural glide, p05/kit.js glide): a stage held at the midpoint of the two would stand about 63 px off
+ * in each, past the reviewers' 50 px for a settled picture (ZH6-1). */
 const C = { y: 425, pile: 170, clear: 34 };
 const PILE = () => L("一堆背景材料", "A pile of context");
 export function boundaryStage(s, t, c, g) {
@@ -200,7 +201,7 @@ export function boundaryStage(s, t, c, g) {
     // The pile's words and their cross centre under it, `C.clear` from the boundary's side.
     pileHalf = Math.max(60, (measure(PILE()) + 42) / 2),
     toPile = half + C.clear + pileHalf,
-    x = (centring(-half, half) + centring(-toPile - pileHalf, half)) / 2,
+    x = glide(t, centring(-half, half), [[c.pile, centring(-toPile - pileHalf, half)]]),
     grown = ats.reduce((v, at) => v + travel(t, at - 0.6, 0.6), 0),
     y = C.y,
     top = y - room,
