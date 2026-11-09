@@ -308,7 +308,9 @@ export function termRow(
  * words rather than over them. The dim is a ceiling on the name's ink, not a factor of it, so a refusal at a list's
  * second level stands at that level, as legible as the list's other names, rather than dimmer still. A centred refusal
  * centres its words and their cross together on x; `markLeft` stands the cross's left edge at one x instead, so the
- * crosses of a list of refusals form one column after its longest name. */
+ * crosses of a list of refusals form one column after its longest name. The cross is a key mark, which holds 4.5:1
+ * only at full ink: `markAlpha`, the alpha of the refusal's stage, keeps it there while its name steps to a list's
+ * second level, so only the name dims. */
 export function rejectedName(
   v,
   x,
@@ -322,6 +324,7 @@ export function rejectedName(
     width = Infinity,
     set = null,
     markLeft = null,
+    markAlpha = alpha,
   } = {},
 ) {
   const s = Math.min(26, labelSize(size) * 0.9),
@@ -339,7 +342,7 @@ export function rejectedName(
     left = align === "left" ? at : align === "right" ? at - w : at - w / 2,
     markAt = markLeft ?? left + w + 16;
   cross(markAt + s / 2, (block.top + block.bottom) / 2, s, {
-    alpha: alpha * mark,
+    alpha: markAlpha * mark,
     width: 3,
   });
   return { ...block, left, right: markAt + s };

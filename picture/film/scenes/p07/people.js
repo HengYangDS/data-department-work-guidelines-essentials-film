@@ -105,9 +105,11 @@ export function collaborationStage(s, t, c, g) {
     alpha: g * (en ? named(t, c.collab) : early(t, c.first1, c.collab)),
   });
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
+  // Each refusal's cross keeps full ink while its name steps to the list's second level (naming/names.js).
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach((v, i) =>
     rejectedName(v, ax, y + 180 + i * 48, {
       alpha: g * listIn(t, c.refusals, i),
+      markAlpha: g,
       mark: ramp(t, c.refusals[i] + 0.3, 0.3),
       set: "refusals",
     }),

@@ -20,7 +20,8 @@ export function recordMark(x, y, w, h, { alpha = 1, checked = 1 } = {}) {
     check(x + w * 0.12, y + h * 0.3, w * 0.34, { alpha: alpha * clamp(checked), width: 3.5 });
 }
 
-/* A page that is only supposed, or false: its outline and rows dashed, in the colour given. */
+/* A page that is only supposed, or false: its outline and rows dashed, in the colour given. The rows take the outline's
+ * full ink, since a key colour holds 4.5:1 over the ground only at full ink. */
 export function dashedPage(x, y, w, h, { alpha = 1, color = P.unknown } = {}) {
   if (alpha < 0.01) return;
   box(x - w / 2, y - h / 2, w, h, { stroke: color, alpha, radius: 6, width: 2.5, dash: [7, 6] });
@@ -30,7 +31,7 @@ export function dashedPage(x, y, w, h, { alpha = 1, color = P.unknown } = {}) {
         ctx.moveTo(x - w * 0.32, y - h / 2 + h * q);
         ctx.lineTo(x + w * (k === 1 ? 0.12 : 0.32), y - h / 2 + h * q);
       }),
-    { color, alpha: alpha * 0.8, width: 2, dash: [6, 6] },
+    { color, alpha, width: 2, dash: [6, 6] },
   );
 }
 

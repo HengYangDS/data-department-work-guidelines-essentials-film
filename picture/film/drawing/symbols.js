@@ -61,7 +61,8 @@ export function clock(x, y, r, { hand = 0, color = P.ink, alpha = 1 } = {}) {
 /* A seal stamps what a role may grant: a rim with an inner ring and a check inside. `stamp` is the opacity of the inner
  * ring and the check, so a seal's rim can stand before the seal is stamped. `hollow`, true or false or a share, is how
  * far the seal stays unstamped: its inner ring dashed and no check; as it falls to 0 the solid ring fades in over the
- * dashed one and the check draws on, so a seal is stamped in one continuous movement. */
+ * dashed one and the check draws on, so a seal is stamped in one continuous movement. The inner ring stands at 0.75 of
+ * the stamp, which keeps it at 4.5:1 or more over the ground in the authority (5.6:1) and evidence (5.2:1) colours. */
 export function seal(
   x,
   y,
@@ -71,9 +72,9 @@ export function seal(
   const open = hollow === true ? 1 : hollow === false ? 0 : clamp(hollow);
   ring(x, y, r, { color, alpha, width: 3 });
   if (open > 0)
-    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * open, width: 1.5, dash: [5, 5] });
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.75 * open, width: 1.5, dash: [5, 5] });
   if (open < 1) {
-    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * (1 - open), width: 1.5 });
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.75 * (1 - open), width: 1.5 });
     check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp, upto: 1 - open });
   }
 }

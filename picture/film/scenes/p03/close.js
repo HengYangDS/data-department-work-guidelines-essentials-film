@@ -273,6 +273,7 @@ export function stageApart(t, a, c) {
       rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
         valign: "top",
         alpha: a * listIn(t, refused, i),
+        markAlpha: a,
         mark: ramp(t, refused[i] + 0.05, 0.3),
         set: "refused",
       }),

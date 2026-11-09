@@ -18,11 +18,12 @@ import { mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare } from "../../timing/pauses.js";
 import { early, openMark } from "../p05/kit.js";
 
-/* A rule: a page with its seal on the lower right. */
-function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
+/* A rule: a page with its seal on the lower right. `sealAlpha` lets the seal leave on its own: a key mark holds 4.5:1
+ * only at full ink, so a retired rule's page may fade while its seal goes. */
+function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22, sealAlpha = alpha } = {}) {
   if (alpha < 0.01) return;
   documentIcon(x - w / 2, y - h / 2, w, h, { alpha, rows: 2 });
-  seal(x, y + h * sealAt, Math.min(18, w * 0.2), { alpha });
+  if (sealAlpha > 0.01) seal(x, y + h * sealAt, Math.min(18, w * 0.2), { alpha: sealAlpha });
 }
 
 /* C: the monitor on the schedule lane from 08.1, at the agreed time; its owner, a figure linked up to it; a later look,
@@ -77,15 +78,16 @@ export function monitorStage(s, t, c, g) {
 /* D: a rule over the four reasons to retire it. The page stands on the frame's axis, named over itself; the rail
  * under it, joined to it, stands whole with the first reason, on its words, and the reasons take the rail's stations
  * on their words, open marks named under them, one list. As the sentence closes the page fades where it stands while
- * its names and the reasons stay. */
+ * its names and the reasons stay; its seal, the rule's authority, leaves as it fades, so no gold rests below 4.5:1. */
 /* The English reasons are longer, so their stations stand wider apart on a longer rail. */
 const R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
 export function retireStage(s, t, c, g) {
-  const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)),
+  const lifted = soon(t, c.lift, 0.7),
+    page = g * mix(1, 0.45, lifted),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()),
     ats = c.retire,
     carried = ramp(t, ats[0] - 0.15, 0.4);
-  rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
+  rulePage(R.x, R.y, { alpha: page, sealAlpha: g * (1 - lifted), w: 120, h: 156, sealAt: -0.34 });
   nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3b, c.rule3),

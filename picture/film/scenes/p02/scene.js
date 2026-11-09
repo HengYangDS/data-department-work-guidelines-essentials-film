@@ -205,8 +205,9 @@ function theWay(t, a, c, end) {
 function stageWay(t, a, c) {
   const end = WAY[1];
   theWay(t, a, c, end);
-  // The refused things, each on its words, a cross beside each name. On 「变成」/ "into judgments" they recede to the
-  // list's second level while their crosses keep full ink, and they stand so where they are until the stage leaves.
+  // The refused things, each on its words, a cross beside each name. While the list builds, the names already said
+  // step to its second level, and on 「变成」/ "into judgments" they all recede to it; their crosses keep full ink
+  // throughout, since a key mark holds 4.5:1 only at full ink, and they stand so where they are until the stage leaves.
   const recede = ramp(t, c.becomes + 0.05, 0.4);
   HANDED().forEach((v, k) => {
     const seen = a * ramp(t, c.handed[k] - 0.15, 0.4),
@@ -221,7 +222,7 @@ function stageWay(t, a, c) {
       set: "handed",
     });
     cross(name.right - REFUSAL_CROSS / 2, (name.top + name.bottom) / 2, REFUSAL_CROSS, {
-      alpha: mix(on, seen, recede) * mark,
+      alpha: seen * mark,
       width: 3,
     });
   });

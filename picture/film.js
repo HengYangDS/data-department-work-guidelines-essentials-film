@@ -493,9 +493,9 @@ function seal(x, y, r, { color = P.authority, alpha = 1, hollow = false, stamp =
   const open = hollow === true ? 1 : hollow === false ? 0 : clamp(hollow);
   ring(x, y, r, { color, alpha, width: 3 });
   if (open > 0)
-    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * open, width: 1.5, dash: [5, 5] });
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.75 * open, width: 1.5, dash: [5, 5] });
   if (open < 1) {
-    ring(x, y, r * 0.74, { color, alpha: stamp * 0.6 * (1 - open), width: 1.5 });
+    ring(x, y, r * 0.74, { color, alpha: stamp * 0.75 * (1 - open), width: 1.5 });
     check(x, y + r * 0.05, r * 0.8, { color, alpha: stamp, upto: 1 - open });
   }
 }
@@ -1246,7 +1246,8 @@ function rejectedName(v, x, y, {
   valign = "middle",
   width = Infinity,
   set = null,
-  markLeft = null
+  markLeft = null,
+  markAlpha = alpha
 } = {}) {
   const s = Math.min(26, labelSize(size) * 0.9), at2 = align === "center" && markLeft === null ? x - (16 + s) / 2 : x;
   const block = nameText(v, at2, y, {
@@ -1260,7 +1261,7 @@ function rejectedName(v, x, y, {
   });
   const w = Math.max(...block.lines.map((line2) => measure(line2, size))), left = align === "left" ? at2 : align === "right" ? at2 - w : at2 - w / 2, markAt = markLeft ?? left + w + 16;
   cross(markAt + s / 2, (block.top + block.bottom) / 2, s, {
-    alpha: alpha * mark,
+    alpha: markAlpha * mark,
     width: 3
   });
   return { ...block, left, right: markAt + s };
@@ -2494,7 +2495,7 @@ function stageWay(t, a, c) {
       set: "handed"
     });
     cross(name.right - REFUSAL_CROSS / 2, (name.top + name.bottom) / 2, REFUSAL_CROSS, {
-      alpha: mix(on, seen, recede) * mark,
+      alpha: seen * mark,
       width: 3
     });
   });
@@ -2550,7 +2551,7 @@ function dashedPage(x, y, w, h, { alpha = 1, color = P.unknown } = {}) {
       ctx.moveTo(x - w * 0.32, y - h / 2 + h * q);
       ctx.lineTo(x + w * (k === 1 ? 0.12 : 0.32), y - h / 2 + h * q);
     }),
-    { color, alpha: alpha * 0.8, width: 2, dash: [6, 6] }
+    { color, alpha, width: 2, dash: [6, 6] }
   );
 }
 function eye(x, y, { alpha = 1, color = P.evidence, hollow = false, repeat = 0, r = 30 } = {}) {
@@ -2989,6 +2990,7 @@ function stageApart(t, a, c) {
     (v, i) => rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
       valign: "top",
       alpha: a * listIn(t, refused, i),
+      markAlpha: a,
       mark: ramp(t, refused[i] + 0.05, 0.3),
       set: "refused"
     })
@@ -5377,6 +5379,7 @@ function collaborationStage(s, t, c, g) {
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach(
     (v, i) => rejectedName(v, ax, y + 180 + i * 48, {
       alpha: g * listIn(t, c.refusals, i),
+      markAlpha: g,
       mark: ramp(t, c.refusals[i] + 0.3, 0.3),
       set: "refusals"
     })
@@ -5762,10 +5765,10 @@ function signsStage(s, t, c, g) {
 }
 
 // picture/film/scenes/p08/rules.js
-function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22 } = {}) {
+function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22, sealAlpha = alpha } = {}) {
   if (alpha < 0.01) return;
   documentIcon(x - w / 2, y - h / 2, w, h, { alpha, rows: 2 });
-  seal(x, y + h * sealAt, Math.min(18, w * 0.2), { alpha });
+  if (sealAlpha > 0.01) seal(x, y + h * sealAt, Math.min(18, w * 0.2), { alpha: sealAlpha });
 }
 var M = { x: 960, y: 540, scale: 0.8 };
 function monitorStage(s, t, c, g) {
@@ -5814,8 +5817,8 @@ function monitorStage(s, t, c, g) {
 }
 var R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
 function retireStage(s, t, c, g) {
-  const page = g * mix(1, 0.45, soon(t, c.lift, 0.7)), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
-  rulePage(R.x, R.y, { alpha: page, w: 120, h: 156, sealAt: -0.34 });
+  const lifted = soon(t, c.lift, 0.7), page = g * mix(1, 0.45, lifted), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
+  rulePage(R.x, R.y, { alpha: page, sealAlpha: g * (1 - lifted), w: 120, h: 156, sealAt: -0.34 });
   nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3b, c.rule3)

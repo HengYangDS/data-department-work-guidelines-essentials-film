@@ -8,7 +8,9 @@
  * enough for 4.5:1 at the first second level, 0.58: #9BA8B1 itself falls to 3.3:1 there and to 4.3:1 under a refusal's
  * dim. The second level rose to 0.64 when the reviews measured 4.5:1 with no margin once antialiased. The keys stay the
  * DDWG keys, at 8.4:1, 10.4:1 and 5.5:1 at full ink but 3.6:1, 4.2:1 and 2.6:1 at the first second level, so no list
- * name takes them. The line tone (3.9:1) carries no text. */
+ * name takes them. Nor does a key mark rest below the ink that holds it at 4.5:1: a refusal's cross keeps full ink while
+ * its name steps to a list's second level, a seal's inner ring stands at 0.75 of its stamp, a false page's rows take its
+ * outline's full ink, and a retired rule's seal leaves as its page fades. The line tone (3.9:1) carries no text. */
 
 export const P = {
   ground: "#0F1519",
