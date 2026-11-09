@@ -5,7 +5,7 @@
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowAt, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { documentIcon, person, seal } from "../../drawing/symbols.js";
 import { HOUR, lastNight } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
@@ -27,7 +27,8 @@ function rulePage(x, y, { alpha = 1, w = 90, h = 116, sealAt = 0.22, sealAlpha =
 }
 
 /* C: the monitor on the schedule lane from 08.1, at the agreed time; its owner, a figure linked up to it; a later look,
- * a clock with its loop back; and what the look asks, an open mark beside the monitor, left unanswered. */
+ * a clock with its loop back; and what the look asks, an open mark beside the monitor, left unanswered. The English
+ * names drop their articles, so the monitor and its owner repeat less than half the caption's words (EN9-n11). */
 const M = { x: 960, y: 540, scale: 0.8 };
 export function monitorStage(s, t, c, g) {
   const m = lastNight(M.x, M.y, M.scale, { alpha: g, due: 1, flow: { t } });
@@ -49,7 +50,7 @@ export function monitorStage(s, t, c, g) {
     },
     { color: P.evidence, alpha: g, width: 2.5 },
   );
-  nameText(L("监控", "The monitor"), m.due, M.y - 150 - NAME_GAP, {
+  nameText(L("监控", "Monitor"), m.due, M.y - 150 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3, c.monitor3),
   });
@@ -60,7 +61,7 @@ export function monitorStage(s, t, c, g) {
     end: false,
   });
   person(m.due, M.y + 160, { alpha: owner, size: 1.1 });
-  nameText(L("有人负责", "An owner"), m.due, M.y + 210 + NAME_GAP, { valign: "top", alpha: owner });
+  nameText(L("有人负责", "Owner"), m.due, M.y + 210 + NAME_GAP, { valign: "top", alpha: owner });
   const look = g * named(t, c.look3),
     lx = m.arrival + 120;
   recoverIcon(lx, M.y + 150, 26, { alpha: look, color: P.evidence, upto: soon(t, c.look3, 0.8) });
@@ -81,10 +82,34 @@ export function monitorStage(s, t, c, g) {
  * its names and the reasons stay; its seal, the rule's authority, leaves as it fades, so no gold rests below 4.5:1. */
 /* The English reasons are longer, so their stations stand wider apart on a longer rail. */
 const R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
+/* The reasons' names. "Duplicates a source of truth" fits one line, so no line ends on "a" and "source of truth"
+ * stays whole; "Costs more than it returns" takes two lines of near equal width. */
+const REASONS = () =>
+  L(
+    ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
+    [
+      "Nothing left to govern",
+      "No user",
+      "Duplicates a source of truth",
+      ["Costs more", "than it returns"],
+    ],
+  );
+const widest = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line) => measure(line)));
+/* The English row of names centres on the frame's axis rather than its stations, and its rail reaches 20 px past the
+ * outer names; the Chinese row already stands within its rail (EN9-n1). */
+function retireRow() {
+  const names = REASONS(),
+    [first, last] = [widest(names[0]), widest(names[3])];
+  return L(
+    { x: R.x, half: R.half() },
+    { x: R.x - (last - first) / 4, half: 1.5 * R.pitch() + (first + last) / 4 + 20 },
+  );
+}
 export function retireStage(s, t, c, g) {
   const lifted = soon(t, c.lift, 0.7),
     page = g * mix(1, 0.45, lifted),
-    xs = [-1.5, -0.5, 0.5, 1.5].map((k) => R.x + k * R.pitch()),
+    row = retireRow(),
+    xs = [-1.5, -0.5, 0.5, 1.5].map((k) => row.x + k * R.pitch()),
     ats = c.retire,
     carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, sealAlpha: g * (1 - lifted), w: 120, h: 156, sealAt: -0.34 });
@@ -97,26 +122,21 @@ export function retireStage(s, t, c, g) {
     alpha: g * named(t, c.retired),
   });
   line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
-  line(R.x - R.half(), R.rail, R.x + R.half(), R.rail, {
+  line(row.x - row.half, R.rail, row.x + row.half, R.rail, {
     color: P.line,
     alpha: g * carried,
     width: 3.5,
   });
   [-1, 1].forEach((side) =>
-    dot(R.x + side * R.half(), R.rail, 6, { color: P.line, alpha: g * carried }),
+    dot(row.x + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried }),
   );
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
-  // Each reason stands on one line: the rail's pitch leaves the longest, "Duplicates a source of truth" and "Costs more
-  // than it returns", room beside their neighbours, and a break there would leave a first line ending on "a".
-  railNames(
-    L(
-      ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
-      ["No subject", "No user", "Duplicates a source of truth", "Costs more than it returns"],
-    ),
-    xs,
-    R.rail,
-    { gap: 16 + NAME_GAP, wrap: 400, alpha: (i) => g * listIn(t, ats, i), set: "retire" },
-  );
+  railNames(REASONS(), xs, R.rail, {
+    gap: 16 + NAME_GAP,
+    wrap: 400,
+    alpha: (i) => g * listIn(t, ats, i),
+    set: "retire",
+  });
 }
 
 /* E1: the full timeline as in the opening, six hours of the night from the hour the data was due, the price data on

@@ -20,6 +20,7 @@ import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
 import { drawShare, voiceTime } from "../../timing/pauses.js";
 import { meetingMark, openMark, people } from "../p01/failures.js";
+import { early } from "../p05/kit.js";
 import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } from "./marks.js";
 
 /* E: the meeting drawn at K times failure 3's size about its centre, so that with its course it covers a tenth of the
@@ -35,7 +36,7 @@ const MEET = { x: 960, y: 470, k: 1.8 },
   DECIDE_X = 1440,
   MISSING_X = 1720;
 const AGENDA = () =>
-  L(["决定什么", "谁决定", "哪些事实"], ["What to decide", "Who decides", "Which facts"]);
+  L(["决定什么", "谁必须参加", "哪些事实"], ["What to decide", "Who must attend", "Which facts"]);
 /* The meeting's point (x, y) on the screen, from a point of failure 3's mark. */
 const at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 export function stageMeeting(t, a, c) {
@@ -51,9 +52,10 @@ export function stageMeeting(t, a, c) {
   ctx.restore();
   const top = at(x, y - 10 - 14 - 2.15 * 9)[1],
     half = at(x + 86, y)[0] - x;
+  // The meeting stands from the stage's first words; its name at most `LEAD` ahead of its own (ZH8-3).
   nameText(L("那场会", "The meeting"), x, top - NAME_GAP, {
     valign: "bottom",
-    alpha: a * named(t, c.meeting),
+    alpha: a * early(t, c.meeting, c.meetingName),
   });
   // The meeting's course, through its table, with a point running along it.
   // The course touches the table at both sides, so the meeting and its course read as one mark.
@@ -244,8 +246,16 @@ export function stageApart(t, a, c) {
     valign: "top",
     alpha: a * named(t, c.permission),
   });
-  // When the two conflict: the divider runs on down to the conflict between them, named beside it, and its way runs
-  // down to the report.
+  // An authorized request and verified facts, each on its words: a point runs along its kind's way toward the divider
+  // and stops at the bar beside it. On the conflict's own word the divider runs on down to the conflict between them,
+  // named beside it, and its way runs down to the report.
+  [
+    [SIDES[0] + 52, BARS[0] - 8, c.request],
+    [SIDES[1] - 50, BARS[1] + 8, c.verified],
+  ].forEach(([from, to, at]) => {
+    const runs = flowAt(t, Math.abs(to - from), { from: at + 0.05 });
+    flowDot(mix(from, to, runs?.q ?? 0), TOP, 4.5, runs, { color: P.line, alpha: a });
+  });
   const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
   line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, drawShare(t, c.conflict + 0.05, CONFLICT_Y - 12 - DIVIDER[1])), {
     alpha: conflict,

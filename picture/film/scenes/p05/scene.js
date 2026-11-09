@@ -1,9 +1,9 @@
 /* 05 Data that means what it says. Saying data is usable takes evidence, and what merely looks right establishes
- * nothing (05.1); before using it, six questions, and data that cannot answer stays inside its authorized scope
- * (05.2); last night's prices, on the timeline and in a backtest (05.3); what could be known then against what is seen
- * in hindsight (05.4); and the views that hang from data, none of which may quietly become the source of truth (05.5).
- * Each thought's stage cuts in on its first words. The Illustrative chip stands while the made-up case shows
- * (05.3-05.4). */
+ * nothing (05.1); before using it, six questions, and data whose meaning, quality or earliest availability is still
+ * unclear stays inside its authorized scope (05.2); last night's prices, on the timeline and in a backtest (05.3);
+ * what could be known then against what is seen in hindsight (05.4); and the views that hang from data, none of which
+ * may quietly be treated as the source of truth (05.5). Each thought's stage cuts in on its first words. The
+ * Illustrative chip stands while the made-up case shows (05.3-05.4). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
@@ -20,7 +20,7 @@ function cuesOf(s) {
     nonProofs: cues(s, [
       ["能打开的文件", "A file that opens"],
       ["好看的图", "a chart that looks good"],
-      ["看起来有效的模型信号", "a promising model signal"],
+      ["模型信号", "model signal"],
     ]),
     refuse: cue(s, "本身都说明不了", "none of them alone"),
     unknowns: cues(s, [
@@ -36,17 +36,22 @@ function cuesOf(s) {
     first2: cue(s, "用之前", "So before relying"),
     sixClause: cue(s, "先问六个问题", "So before relying"),
     six: cue(s, "六个问题", "six questions"),
+    // Each question's station fills as it is asked; the English last on "may it be used", so its name, Use, stands
+    // within half a second of "used" (EN9-n6).
     asks: cues(s, [
       ["它从哪里来", "Where did it come from"],
       ["最早什么时候能拿到", "When did it become available"],
       ["含义是什么", "What does it mean"],
       ["被什么改过", "What changed it"],
       ["质量怎么样", "How good is it"],
-      ["能用在哪里", "And how may it be used"],
+      ["能用在哪里", "may it be used"],
     ]),
-    first2b: cue(s, "说不清这些的数据", "Data that cannot answer"),
+    // The scope's stage cuts in on the words that name its data: in English its first words, and in Chinese
+    // 「还说不清」, which follow the three unknowns, so the six questions' ring, whose stations name them, stands while
+    // they are said.
+    first2b: cue(s, "还说不清", "Data with unknown meaning"),
     explore: cue(s, "探索", "explored"),
-    scopeClause: cue(s, "可以在授权范围里探索", "Data that cannot answer"),
+    scopeClause: cue(s, "可以在授权范围里探索", "Data with unknown meaning"),
     scope: cue(s, "授权范围", "authorized scope"),
     staysOut: cue(s, "可要拿去", "but stays out"),
     uses: cues(s, [
@@ -55,15 +60,15 @@ function cuesOf(s) {
       ["做决策", "decisions"],
     ]),
     first3: cue(s, "昨晚那份价格", "Last night's prices"),
-    // The Chinese names the arrival on the words that say when the prices could first be had; the English names it
-    // with the measure, on "two hours later".
-    arrival: cue(s, "最早能拿到", "two hours later"),
     measure: cue(s, "比平时", "two hours later"),
     usual: cue(s, "平时", "usual"),
     backtest: cue(s, "回测", "backtest"),
     later: cue(s, "晚到的时间", "that later time"),
     first4: cue(s, "做历史研究", "In historical research"),
-    then: cue(s, "当时能知道什么", "what could have been known"),
+    // What could be known then: its card stands from the clause that says it, so the stage has it two seconds in, and
+    // its name at most LEAD ahead of its own words (night.js).
+    thenClause: cue(s, "当时能知道什么", "what could have been known"),
+    then: cue(s, "当时能知道什么", "known then"),
     hindsight: cue(s, "事后看到了什么", "seen in hindsight"),
     corrected: cue(s, "修正过价格", "corrected its prices"),
     series: cue(s, "修正后的数据", "corrected series"),
@@ -75,10 +80,13 @@ function cuesOf(s) {
       ["缓存", "cache"],
       ["智能体的摘要", "Agent summary"],
     ]),
-    become: cue(s, "不能悄悄变成", "may quietly become"),
+    become: cue(s, "不能悄悄被当成", "may quietly be treated as"),
     truth: cue(s, "权威来源", "source of truth"),
   };
   c.fit2 = cueFrom(s, "证明它适合", "shown fit", c.first2b);
+  // The Chinese names the arrival on the words that say when the prices could first be had, in 05.3, since 05.2 says
+  // 最早能拿到 first; the English names it with the measure, on "two hours later".
+  c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);
   return c;
 }
 

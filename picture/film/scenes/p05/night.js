@@ -24,7 +24,7 @@ import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { clamp, ease, mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare } from "../../timing/pauses.js";
-import { bar } from "./kit.js";
+import { bar, earliest } from "./kit.js";
 
 /* The backtest's height and how far it stands below the measure's name, and the room its marker's name takes under it:
  * the stage's place counts them from its first word, so nothing moves when they arrive. */
@@ -103,9 +103,10 @@ export function nightStage(s, t, c, g) {
 const D = { scale: 0.6, hours: [-2, 8], today: 8 };
 export function hindsightStage(s, t, c, g) {
   const research = L("历史研究", "Historical research"),
+    known = earliest(c.thenClause, c.then),
     names = {
       axis: { v: research, alpha: named(t, c.first4) },
-      card: { v: L("当时", "Known then"), alpha: named(t, c.then) },
+      card: { v: L("当时", "Known then"), alpha: named(t, known) },
     },
     later = L("事后", "Seen in hindsight"),
     series = L("修正后的数据", "Corrected series"),
@@ -115,7 +116,8 @@ export function hindsightStage(s, t, c, g) {
     y = 545;
   const m = lastNight(x, y, D.scale, {
     alpha: g,
-    card: soon(t, c.then - 0.15, 0.8),
+    // The card comes on the clause that says what could be known; its name, on its words, at most LEAD after it.
+    card: soon(t, c.thenClause - 0.15, 0.8),
     hours: D.hours,
     flow: { t, until: c.cannot },
     names,

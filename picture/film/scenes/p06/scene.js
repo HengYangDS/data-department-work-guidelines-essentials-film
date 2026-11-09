@@ -23,13 +23,13 @@ function cuesOf(s) {
     lateJob: cue(s, "任务启动晚了", "job started late"),
     first2: cue(s, "这件事要分三层处理", "The fix has three layers"),
     three: cue(s, "三层", "three layers"),
-    // Each layer stands with its name from the first words of its clause, except the Chinese first layer: its name,
-    // 止住影响, is spoken after its action, 先把缺的数据补上, which the timeline above shows as it is said, so the layer
-    // stands on its name's words rather than before them.
+    // Each layer stands with its name on its words. In Chinese they are the words each name takes (止住影响, 修掉,
+    // 防止它再发生), the first two said after the actions the timeline above shows; in English "to repair", while
+    // Containment and Prevention, which their clauses do not say as such, stand from those clauses' first words.
     layers: cues(s, [
       ["止住影响", "First, fill in"],
-      ["再把任务提前启动", "Then start the job earlier"],
-      ["最后是防止它再发生", "Last, stop it happening again"],
+      ["修掉", "to repair"],
+      ["防止它再发生", "Last, stop it happening again"],
     ]),
     missing: cue(s, "缺的数据", "the missing data"),
     fill: cue(s, "补上", "fill in"),
@@ -46,7 +46,7 @@ function cuesOf(s) {
     first3: cue(s, "决策负责人批准", "The decision owner approves"),
     stations: cues(s, [
       ["决策负责人批准", "The decision owner approves"],
-      ["也划定了范围", "and sets its limits"],
+      ["划定了范围", "and sets its limits"],
       ["改动只在这个范围里做", "The job is changed"],
       ["当前的运行", "The runs since the change"],
       ["话只说到", "The claim stays"],
@@ -55,12 +55,12 @@ function cuesOf(s) {
     ]),
     chainClause: cue(s, "这是一条信任链", "This is a chain of trust"),
     chain: cue(s, "信任链", "chain of trust"),
-    lighter: cue(s, "手续可以随风险变轻", "lower risk means less process"),
+    lighter: cue(s, "手续可以随风险变轻", "less process"),
     skip: cue(s, "但一环都不能少", "but the chain cannot skip"),
     first5: cue(s, "汇报时", "Report the state"),
     stateClause: cue(s, "说做到哪一步", "Report the state"),
-    state: cue(s, "做到哪一步", "the state"),
-    effort: cue(s, "不说花了多少力气", "not the effort"),
+    state: cue(s, "哪一步", "the state"),
+    effort: cue(s, "多少力气", "not the effort"),
     first5b: cue(s, "核验通过了", "Verified means"),
     bounds: cues(s, [
       ["对象", "subject"],
@@ -68,7 +68,7 @@ function cuesOf(s) {
       ["环境", "environment"],
       ["限度", "limit"],
     ]),
-    published: cue(s, "发布到了约定的地方", "Publication at the agreed destination"),
+    published: cue(s, "发布到了约定的地方", "the agreed destination"),
     notMean: cue(s, "不代表有人在用", "does not mean anyone uses it"),
     inUse: cue(s, "有人在用", "anyone uses it"),
     observed: cue(s, "实际看到了什么", "actually observed"),
@@ -86,7 +86,7 @@ function cuesOf(s) {
     test: cue(s, "测试通过", "A passing test"),
     acceptance: cue(s, "不等于已经验收", "is not acceptance"),
     agentSays: cue(s, "智能体说完成了", "And an Agent reporting completion"),
-    complete: cueFrom(s, "也不等于完成了", "does not make the work complete", 0),
+    complete: cueFrom(s, "也不等于完成了", "the work complete", 0),
   };
   // The earlier start is first said in 06.2 in Chinese, so the one that is approved is cued from 06.3's first words.
   c.approved = cueFrom(s, "任务提前启动", "an earlier start", c.first3);

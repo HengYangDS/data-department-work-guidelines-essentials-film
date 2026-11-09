@@ -6,6 +6,7 @@ import { ctx } from "../../canvas.js";
 import { flowAt, flowDot, line, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
+import { named } from "../../naming/lists.js";
 import { NAME_GAP, nameText, termRow } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
@@ -16,25 +17,28 @@ import { recordMark } from "./marks.js";
 
 /* A and C1: the two kinds apart, joined by one fork under their one name. The seal and the record stand far enough
  * apart that the pair covers a tenth of the frame, and the fork joins them into one mark that the name names. In A the
- * fork, its name and the two kinds stand from the clause that says 「两种依据」/ "Two kinds of authority", which in
- * Chinese opens on 工作里有 while the chapter title clears: three firm marks must stand through every voiced frame, so
- * the kinds cannot wait for their name's own words. The name stays over the fork until the stage leaves, so neither
- * kind stands unnamed; on 「分开看」/ "stay apart" a point runs out along the fork to each kind once and rests. In C1 the
- * pair stands from the cut and its points run once on the stage's first words. Each kind's name and what it answers
- * hang one gap under it, on one baseline. */
+ * fork and the two kinds stand from the clause that says 「两种依据」/ "Two kinds of authority", which in Chinese opens
+ * on 工作里有 while the chapter title clears: three firm marks must stand through every voiced frame, so the kinds
+ * cannot wait for their name's own words, as their name does. The name stays over the fork until the stage leaves, so
+ * neither kind stands unnamed; on 「分开看」/ "stay apart" a point runs out along the fork to each kind once and rests.
+ * In C1 the pair stands from the cut and its points run once on the stage's first words. Each kind's name and what it
+ * answers hang one gap under it, on one baseline. */
 const KINDS = { left: 560, right: 1360, y: 490, name: 350 },
   SEAL_R = 58,
   RECORD = [110, 140];
 export function twoKinds(s, t, a, c, { facts = false } = {}) {
+  // The fork and the two kinds stand from the clause's first words, so three firm marks stand through its every voiced
+  // frame; their name waits for its own words, at most `LEAD` ahead of them (ZH-5).
   const g = a * clearOfTitle(s, t, KINDS.name - 30),
-    named0 = facts ? 1 : early(t, s.words[0].start, c.two),
-    on = g * named0,
+    marks = facts ? 1 : named(t, s.words[0].start - 0.2),
+    name = facts ? 1 : early(t, s.words[0].start, c.two),
+    on = g * marks,
     fork = KINDS.name + 16,
     joint = fork + 24,
     names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD[1] / 2) + NAME_GAP;
   nameText(L("两种依据", "Two kinds of authority"), 960, KINDS.name, {
     valign: "bottom",
-    alpha: g * named0,
+    alpha: g * name,
   });
   const out = flowAt(t, KINDS.right - 960, { from: facts ? c.another : c.apart, passes: 1 });
   [KINDS.left, KINDS.right].forEach((x) =>
@@ -49,7 +53,7 @@ export function twoKinds(s, t, a, c, { facts = false } = {}) {
       ctx.lineTo(KINDS.right, joint);
       ctx.lineTo(KINDS.right, KINDS.y - RECORD[1] / 2 - 4);
     },
-    { color: P.line, alpha: g * named0, width: 2.5 },
+    { color: P.line, alpha: g * marks, width: 2.5 },
   );
   seal(KINDS.left, KINDS.y, SEAL_R, { alpha: on });
   recordMark(KINDS.right, KINDS.y, ...RECORD, { alpha: on });

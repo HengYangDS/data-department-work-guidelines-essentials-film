@@ -14,7 +14,7 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare, thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
-import { centring, early, missingPage, openMark, patchMark } from "../p05/kit.js";
+import { centring, early, earliest, missingPage, openMark, patchMark } from "../p05/kit.js";
 
 /* A small shield, the lightest safeguard: a crest whose point faces down. */
 export function shieldMark(x, y, s, { alpha = 1, color = P.evidence, width = 3 } = {}) {
@@ -72,7 +72,7 @@ export function backStage(s, t, c, g) {
   };
   const pubIn = (v) => early(v, c.checked, c.publication),
     logIn = (v) => named(v, c.log),
-    pub = page(0, pubIn, Math.max(c.checked - 0.2, c.publication - 1.35), 2),
+    pub = page(0, pubIn, earliest(c.checked, c.publication), 2),
     log = page(2, logIn, c.log, 2);
   nameText(L("发布时间", "Publication time"), m.due, pub.top - NAME_GAP, {
     valign: "bottom",
@@ -196,7 +196,7 @@ export function layersStage(s, t, c, g) {
     alpha: guard,
   });
   // The three layers, placed once by their extent with the refusal's.
-  const refusedAt = Math.max(c.notFix - 0.2, c.systemic - 1.35),
+  const refusedAt = earliest(c.notFix, c.systemic),
     toBracket = B.slab[1] + NAME_GAP + L(170, 190),
     left = B.spine - NAME_GAP - measure(THREE()),
     reach = toBracket + NAME_GAP + measure(REFUSED()) + 42,

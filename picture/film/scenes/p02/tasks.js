@@ -1,16 +1,17 @@
 /* 02.3-02.4. C (02.3), cut on 「一项任务」/ "a task": a task on the frame's axis, named over itself, and under it, joined
  * to it, the rail of the three things it must achieve, whole from the task's first words and named on their count; the
- * three outcomes hang from the rail in one row, each on its words, named under itself; then the reports it must not
- * stop at, refused beside the task. C2 (02.4), the made-up case: the reports leave and the colleague who patched the
- * data stands in their place, joined to the task; only the way to the first outcome lights and only the first outcome
- * takes its check. */
+ * reports it must not stop at, refused beside the task on their words, which come before the outcomes; then the three
+ * outcomes hang from the rail in one row, each on its words, named under itself. C2 (02.4), the made-up case: the
+ * reports leave and the colleague who patched the data stands in their place, joined to the task; only the way to the
+ * first outcome lights and only the first outcome takes its check. C hands over to C2 without a cut: the reports fade
+ * from 02.4's first words and the colleague comes on its own words once they have gone (ZH6-4). */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
 import { labelSize, measure, stroke } from "../../drawing/strokes.js";
 import { token } from "../../drawing/symbols.js";
 import { illustrative } from "../../framing/chapters.js";
-import { beats, listLevel, named } from "../../naming/lists.js";
+import { listLevel, named } from "../../naming/lists.js";
 import {
   NAME_GAP,
   NOTE,
@@ -25,7 +26,7 @@ import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { ramp, soon } from "../../timing/easing.js";
 import { voiceTime } from "../../timing/pauses.js";
-import { stageIn, stageOut } from "../../timing/stages.js";
+import { stageIn } from "../../timing/stages.js";
 import { mechanism, outcome, people, reports } from "./marks.js";
 
 /* The spoken cues of 02.3-02.4. 系统 is said first in 02.1 (人工智能系统), so the third outcome takes its last
@@ -33,7 +34,7 @@ import { mechanism, outcome, people, reports } from "./marks.js";
 export function taskCues(s) {
   return {
     task: cue(s, "一项任务", "a task"),
-    three: cue(s, "三件事", "three things"),
+    three: cue(s, "三件事", "three distinct outcomes"),
     outcomes: [
       cue(s, "问题解决掉", "resolve the problem"),
       cue(s, "判断检验过", "test the judgment"),
@@ -42,19 +43,20 @@ export function taskCues(s) {
     holds: cue(s, "说清", "say when it holds"),
     sooner: cue(s, "更早认出来", "recognize"),
     better: cue(s, "处理得更好", "handle it better"),
-    kinds: cue(s, "三种结果", "three outcomes"),
-    reports: cue(s, "三份报告", "three reports"),
+    reports: cue(s, "三份必须交的报告", "three required reports"),
     colleague: cue(s, "连夜", "The colleague"),
+    mate: cue(s, "那位同事", "The colleague"),
     first: cue(s, "只做到了第一件", "only the first"),
   };
 }
 
-/* C: the task on the frame's axis, its outer ring (r) RING_GAP above the stem that joins it to the rail; the outcomes
- * hang from the rail at one pitch about the axis, their names on one baseline one gap under their rings; the reports,
- * and later the colleague, stand on the task's row beside it, named at their outer side, more than a column's reach
- * (90 px) above the outcomes' branches, so their names name no branch. Every part is laid out about the axis, so each
- * state the stage holds stands centred, and the rail reaches as far past the outer outcomes as the wider of their
- * names, so the picture has its whole extent from the task's first words. */
+/* C: the task on its axis, its outer ring (r) RING_GAP above the stem that joins it to the rail; the outcomes hang from
+ * the rail at one pitch about the axis, their names on one baseline one gap under their rings; the reports, and later
+ * the colleague, stand on the task's row beside it, named at their outer side, more than a column's reach (90 px)
+ * above the outcomes' branches, so their names name no branch. Every part is laid out about the task's axis, which
+ * stands `stageShift` from the frame's, so each state the stage holds stands near the centre, and the rail reaches as
+ * far past the outer outcomes as the wider of their names, so the picture has its whole extent from the task's first
+ * words. */
 const TASK = { x: 960, y: 440, r: 21 },
   RING_GAP = 4,
   RAIL_Y = 570,
@@ -68,8 +70,8 @@ const TASK = { x: 960, y: 440, r: 21 },
   /* A refusal's cross and the gap before it (rejectedName), which a name set at the pages' outer side keeps clear. */
   REFUSAL = 16 + Math.min(26, labelSize(LABEL) * 0.9);
 const TASK_NAME = () => L("一项任务", "A task"),
-  THREE = () => L("三件事", "Three things"),
-  REPORTS = () => L("三份报告", "Three reports"),
+  THREE = () => L("三件事", "Three distinct outcomes"),
+  REPORTS = () => L("三份必须交的报告", "Three required reports"),
   COLLEAGUE = () => L("那位同事", "The colleague"),
   ONLY_FIRST = () => L("只做到了第一件", "only the first");
 /* Each outcome's term and the qualifier set under it, its parts said in turn. An English qualifier wraps between its
@@ -97,18 +99,38 @@ function nameHalf([term, qual]) {
   );
 }
 const railHalf = () => PITCH + Math.max(nameHalf(OUTCOMES()[0]), nameHalf(OUTCOMES()[2]));
+/* The stage's shift right of the frame's axis: the midpoint of the shifts that centre its two lasting states, the
+ * reports refused at the task's left (C) and the colleague in their place (C2), so neither stands far off (the idiom
+ * of p05/data.js fitShift). The English reports' name is the wider, so its stage stands right of the axis. */
+function stageShift() {
+  const half = railHalf(),
+    right = Math.max(TASK.x + half, TASK.x + NAME_GAP + measure(THREE())),
+    reports = BESIDE.x - BESIDE.half - NAME_GAP - REFUSAL - measure(REPORTS()),
+    colleague =
+      BESIDE.x - 24 - NAME_GAP - Math.max(measure(COLLEAGUE()), measure(ONLY_FIRST(), NOTE)),
+    shifts = [reports, colleague].map((left) => 960 - (Math.min(TASK.x - half, left) + right) / 2);
+  return (Math.max(...shifts) + Math.min(...shifts)) / 2;
+}
 
-/* C and C2 share the task, its rail and the outcomes; C adds the reports, C2 the colleague and the first outcome
- * reached. */
+/* C and C2 share the task, its rail and the outcomes, which stand from the task's words to the scene's end, so the
+ * frame never goes bare; C adds the reports, C2 the colleague and the first outcome reached. The reports leave over
+ * LEAVE seconds from just after 02.4's first word, and the colleague enters where they stood on its own words,
+ * 「那位同事」/ "The colleague", its fade beginning no sooner than the reports' last tenth of a second: the two never
+ * stand together, so nothing ghosts, and no mark arrives at a cut. */
+const LEAVE = 0.3;
 export function stageOutcomes(s, t, c) {
-  const C = stageIn(t, c.task) * stageOut(t, c.colleague),
-    C2 = stageIn(t, c.colleague);
-  const a = Math.max(C, C2);
+  const a = stageIn(t, c.task);
   if (a <= 0) return;
   const vt = voiceTime(t),
-    { x, y, r } = TASK,
+    shift = stageShift(),
+    { y, r } = TASK,
+    x = TASK.x + shift,
+    xs = XS.map((v) => v + shift),
     half = railHalf(),
-    first = C2 * ramp(t, c.first - 0.15, 0.4);
+    gone = c.colleague + 0.05 + LEAVE,
+    mate = Math.max(c.mate, gone + 0.05),
+    arrived = a * named(t, mate),
+    first = a * ramp(t, c.first - 0.15, 0.4);
   token(x, y, { alpha: a * ramp(t, c.task - 0.15, 0.4) });
   nameText(TASK_NAME(), x, y - r - NAME_GAP, { valign: "bottom", alpha: a * named(t, c.task) });
   // The rail of the three things and the stem that joins it to the task, one stroke as wide as the way's, in the line
@@ -130,7 +152,7 @@ export function stageOutcomes(s, t, c) {
   const noteW = noteWidth();
   OUTCOMES().forEach(([term, qual], k) => {
     const at = c.outcomes[k],
-      ox = XS[k],
+      ox = xs[k],
       on = a * ramp(t, at - 0.15, 0.4);
     link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
       alpha: on,
@@ -141,7 +163,7 @@ export function stageOutcomes(s, t, c) {
       outcome(ox, RING_Y, {
         alpha: on,
         bounds: k === 1 ? ramp(t, c.holds - 0.1, 0.4) : 0,
-        done: k === 0 ? soon(t, c.first + 0.05, 0.5) * C2 : 0,
+        done: k === 0 ? soon(t, c.first + 0.05, 0.5) : 0,
       });
     else
       mechanism(ox, RING_Y, {
@@ -149,7 +171,6 @@ export function stageOutcomes(s, t, c) {
         turn: vt * 0.5,
         watch: ramp(t, c.sooner - 0.1, 0.4),
       });
-    beats(t, ox, RING_Y, RING + 12, [c.kinds], { alpha: C });
     termRow(
       t,
       term,
@@ -170,47 +191,39 @@ export function stageOutcomes(s, t, c) {
   });
   // C: the reports the task must not stop at, refused together beside it on its row, their name at their outer side,
   // the refusal's cross between the name and the pages.
-  const reportsOn = C * ramp(t, c.reports - 0.15, 0.4),
-    { x: bx, pitch, half: pages } = BESIDE;
+  const reportsOn = a * ramp(t, c.reports - 0.15, 0.4) * (1 - ramp(t, c.colleague + 0.05, LEAVE)),
+    { pitch, half: pages } = BESIDE,
+    bx = BESIDE.x + shift;
   reports([bx - pitch, bx, bx + pitch], y, { alpha: reportsOn });
   rejectedName(REPORTS(), bx - pages - NAME_GAP - REFUSAL, y, {
     align: "right",
     alpha: reportsOn,
     mark: ramp(t, c.reports + 0.05, 0.3),
   });
-  if (C2 <= 0) return;
+  if (t < c.colleague) return;
   // C2: the colleague stands where the reports stood, joined to the task and named at the outer side; the way from the
   // task to the first outcome lights on 「只做到了第一件」/ "only the first", a point running it, and the first outcome
-  // takes its check.
-  illustrative(C2);
-  people([bx], y, { size: 1, alpha: C2 });
+  // takes its check. The chip of the made-up case fades in with its first words.
+  illustrative(a * ramp(t, c.colleague + 0.05, 0.4));
+  people([bx], y, { size: 1, alpha: arrived });
   link(bx + 30, y, x - r - RING_GAP, y, {
-    alpha: C2,
-    draw: { t, at: c.colleague + 0.05 },
+    alpha: arrived,
+    draw: { t, at: mate + 0.05 },
     width: 2.5,
   });
   const { height } = termRowLayout([COLLEAGUE()], [ONLY_FIRST()], Infinity, false);
-  termRow(
-    t,
-    [COLLEAGUE()],
-    [c.colleague],
-    [ONLY_FIRST()],
-    [c.first],
-    bx - 24 - NAME_GAP,
-    y - height / 2,
-    {
-      align: "right",
-      inline: false,
-      alpha: C2,
-    },
-  );
+  termRow(t, [COLLEAGUE()], [mate], [ONLY_FIRST()], [c.first], bx - 24 - NAME_GAP, y - height / 2, {
+    align: "right",
+    inline: false,
+    alpha: a,
+  });
   const lit = { color: P.evidence, alpha: first, width: 3 };
   stroke(() => {
     ctx.moveTo(x, y + r + RING_GAP);
     ctx.lineTo(x, RAIL_Y);
-    ctx.lineTo(XS[0], RAIL_Y);
+    ctx.lineTo(xs[0], RAIL_Y);
   }, lit);
-  link(XS[0], RAIL_Y, XS[0], RING_Y - RING - 7, {
+  link(xs[0], RAIL_Y, xs[0], RING_Y - RING - 7, {
     ...lit,
     flow: { t, from: c.first + 0.6 },
   });

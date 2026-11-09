@@ -22,6 +22,7 @@ import { clamp, ease, ramp, soon } from "../../timing/easing.js";
 import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
+import { earliest } from "../p05/kit.js";
 import { forkMark, meetingMark, openMark, pagesMark, patchMark } from "./failures.js";
 
 /* The spoken cues, in the order they are said. */
@@ -41,7 +42,7 @@ function cuesOf(s) {
     speaks: cue(s, "人人都发了言", "everyone speaks"),
     decide: cue(s, "决定", "decide"),
     act: cue(s, "动手", "or act"),
-    agent: cue(s, "智能体", "an Agent"),
+    pages: cue(s, "十页分析", "ten pages"),
     more: cue(s, "材料多了", "more material"),
     judgment: cue(s, "判断和结果", "the judgment"),
     busy: cue(s, "大家都没闲着", "Everyone keeps busy"),
@@ -125,12 +126,15 @@ function compactNight(a, t) {
   });
 }
 
+/* When each failure arrives with its link and its name: on the words that bring it, the fourth, the AI system with
+ * its pages, 0.25 s before 「十页分析」/ "ten pages", so its name is read within 0.3 s of its words (ZH7-2). */
+const arrivals = (c) => [c.vendor, c.patch, c.meeting, c.pages - 0.25];
 /* One failure's figure at (x, ROW_Y), its parts on their words; `busy` shows it as it stands once told: the fork's
  * taken way and the dripping pipe keep running as flows in voice time, while the meeting and the stack of pages, whose
  * marks count the speakers and the material, hold still. The stack climbs its six pages over 2.4 s of voice time, so
  * each page fades in as it settles rather than snapping in. */
 function figure(k, x, t, a, c, busy = false) {
-  const on = a * ramp(t, [c.vendor, c.patch, c.meeting, c.agent][k] - 0.15, 0.4),
+  const on = a * ramp(t, arrivals(c)[k] - 0.15, 0.4),
     part = (at) => ramp(t, at - 0.15, 0.4);
   if (k === 0)
     forkMark(x, ROW_Y, {
@@ -186,7 +190,7 @@ function stageFailures(t, a, c) {
     ],
     rail,
   );
-  const ats = [c.vendor, c.patch, c.meeting, c.agent],
+  const ats = arrivals(c),
     terms = TERMS(),
     quals = QUALS(),
     qualAts = [[c.facts], [c.mechanism], [], [c.judgment, c.judgment]],
@@ -258,8 +262,10 @@ const QX = [540, 960, 1380],
 function stageBusy(t, a, c) {
   busyRow(t, a, c);
   rowName(L("大家", "Everyone"), t, c.busy, a);
-  // The English says that no one can say before it asks; its first question stands on those words.
-  const qs = [L(c.who, c.noOne), c.which, c.boundary],
+  // Each question stands on its own words, the first on 「谁可以决定」; the English says that no one can say before it
+  // asks, so its first question stands from those words, at most `LEAD` ahead of its own (p05/kit.js), which keeps the
+  // picture balanced two seconds into the thought (EN9-n6).
+  const qs = [L(c.who, earliest(c.noOne, c.who)), c.which, c.boundary],
     names = L(
       ["谁可以决定", "哪些事实", "哪条边界"],
       ["Who may decide", "Which facts", "Which boundary"],

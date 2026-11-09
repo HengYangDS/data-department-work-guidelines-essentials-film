@@ -19,7 +19,7 @@ const STAGES = {
     ["说数据能用", "Calling data usable"],
     ["数据要先证明适合", "Data earns trust"],
     ["用之前", "So before relying"],
-    ["说不清这些的数据", "Data that cannot answer"],
+    ["还说不清", "Data with unknown meaning"],
     ["昨晚那份价格", "Last night's prices"],
     ["做历史研究", "In historical research"],
     ["报告", "No report"],

@@ -1,4 +1,4 @@
-/* C2 (03.4, from 「要看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has
+/* C2 (03.4, from 「优先看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has
  * named authority about facts and what it answers under its record (C1, kinds.js); this one cuts in on the primary
  * records' words, so the list's first item is never told over the previous picture: a primary record stands at its top
  * from the cut and a repeatable observation joins it on its own words, over the outer columns of the leads' row and at
@@ -7,8 +7,8 @@
  * enough for the widest neighbouring names, the middle lead on the frame's axis: the way stands whole with the first
  * lead, on its words, and each lead joins it on its words, with its own way down from it, in its edition's order, at
  * its place in the whole row. The stage stands where its first state, the pair named, and its last, the leads named,
- * stand equally far off the content centre, so nothing moves as it builds. On 「都不是原始记录」/ "are not primary
- * records" their way rises on that axis toward the records and stops at a bar under them; on 「线索」/ "leads" a bracket
+ * stand equally far off the content centre, so nothing moves as it builds. On 「都未经核实」/ "are unverified"
+ * their way rises on that axis toward the records and stops at a bar under them; on 「线索」/ "leads" a bracket
  * that ends the same distance past each outer name's ink names the row. */
 
 import { ctx } from "../../canvas.js";
@@ -90,19 +90,19 @@ export function stageFacts(t, a, c) {
       set: "leads",
     });
   });
-  // On 「都不是原始记录」/ "are not primary records" their way rises on the middle lead's axis toward the records and
-  // stops at a bar under them.
-  const meet = soon(t, c.notPrimary + 0.05, 0.7);
+  // On 「都未经核实」/ "are unverified" their way rises on the middle lead's axis toward the records and stops at a bar
+  // under them.
+  const meet = soon(t, c.unverified + 0.05, 0.7);
   if (meet > 0) {
     line(960, JOIN_Y, 960, JOIN_Y - (JOIN_Y - BAR_Y - 4) * meet, {
       color: P.line,
       alpha: a * Math.min(1, meet * 3),
       width: 2.5,
     });
-    bar(960, BAR_Y, { alpha: a * ramp(t, c.notPrimary + 0.6, 0.3), length: 56 });
+    bar(960, BAR_Y, { alpha: a * ramp(t, c.unverified + 0.6, 0.3), length: 56 });
   }
   // A point rises from the leads toward the records in voice time and stops at the bar, once their way stands.
-  const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.notPrimary + 0.75 });
+  const rises = flowAt(t, JOIN_Y - BAR_Y - 8, { from: c.unverified + 0.75 });
   flowDot(960, mix(JOIN_Y, BAR_Y + 8, rises?.q ?? 0), 5, rises, { color: P.line, alpha: a });
   // 「线索」/ "leads": a bracket 16 px under the row's names whose ends stand BRACKET_CLEAR past the outer names, drawn
   // on with the name that hangs under its middle.

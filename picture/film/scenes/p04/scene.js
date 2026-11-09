@@ -1,11 +1,12 @@
 /* 04 四条底线 / Four boundaries. A (04.1): the field of the four boundaries, four separate sides that count in one after
  * another, centred, named over itself on their words; a point inside runs to a side and stops at it. B (04.2-04.3,
- * from its first words 「第一」/ "First"): the field widens and deepens from its top round a list of the four boundaries
- * that builds inside it, its sides lighting one by one, and its name stays over it (lines.js). C (04.4): the field and
- * the two cases, inside it and near a side, the field named at the same place (lines.js). D (04.5-04.7): the ladder of
- * risk and the record each tier needs; E (04.8): last night's case in the highest tier, and the independent review
- * that examines the work, not its authors' account (ladder.js). F (04.9, from 「风险高低」/ "Whatever the risk"): three
- * tiers' documents, each inside the same field, every field's sides lit together. */
+ * from its first words 「第一」/ "First"): without a cut, the point fades and the field glides wider and deeper from its
+ * top round a list of the four boundaries that builds inside it, its sides lighting one by one, and its name stays over
+ * it (lines.js). C (04.4): the field and the two cases, inside it and near a side, the field named at the same place
+ * (lines.js). D (04.5-04.7): the ladder of risk and the record each tier needs; E (04.8): last night's case in the
+ * highest tier, and the independent review that examines the work, not its authors' account (ladder.js). F (04.9, from
+ * 「风险高低」/ "Whatever the risk"): three tiers' documents, each inside the same field, every field's sides lit
+ * together. */
 
 import { dot } from "../../drawing/strokes.js";
 import { illustrative } from "../../framing/chapters.js";
@@ -18,7 +19,7 @@ import { mix, ramp } from "../../timing/easing.js";
 import { drawShare } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { FIELD, stageCases, stageLines } from "./lines.js";
+import { FIELD, handover, listField, stageCases, stageLines } from "./lines.js";
 import { stageLadder, stageReview } from "./ladder.js";
 import { field, fieldRow, tierDoc } from "./marks.js";
 
@@ -26,10 +27,12 @@ import { field, fieldRow, tierDoc } from "./marks.js";
 const each = (zh, en) => L(zh, en)();
 function cuesOf(s) {
   const lastCase = cue(s, "昨晚的事", "Last night's case"),
+    // The highest tier's name begins with "Production", so the English tier arrives on "touching production", within
+    // half a second of its name's word (EN9-n6).
     tiers = [
       cue(s, "局部", "Local"),
       cue(s, "跨角色", "Cross-role"),
-      cue(s, "涉及生产", "Work touching production"),
+      cue(s, "涉及生产", "touching production"),
     ],
     oneClear = cue(s, "一次讲清", "one clear exchange"),
     recordQual = cue(s, "问题", "the problem");
@@ -58,7 +61,7 @@ function cuesOf(s) {
       ],
       [
         cue(s, "对象和时间", "subject"),
-        cue(s, "能力和权限", "competence"),
+        cue(s, "专业能力和权限", "competence"),
         cue(s, "数据", "data"),
         ...each(
           () => [cue(s, "安全", ""), cue(s, "合规", "")],
@@ -85,7 +88,10 @@ function cuesOf(s) {
     // The fourth boundary's last words, on which the list of the four counts as said.
     listEnd: cue(s, "证据", "adopted"),
     inside: cue(s, "在这四条底线之内", "Inside these boundaries"),
+    // What is welcome inside them, each on its words: autonomy, exploration and creative work.
     free: cue(s, "自主", "autonomy"),
+    explore: cue(s, "探索", "exploration"),
+    create: cue(s, "创造", "creative work"),
     near: cue(s, "快要越线时", "When an action would cross one"),
     // What is done at the edge, each on its words: stop, make it visible, escalate.
     edge: [
@@ -160,14 +166,22 @@ function cuesOf(s) {
 /* A: the field centred, its four sides counting in on 「四条底线」/ "Four boundaries", lit in the colour of authority, and
  * named over itself, where B and C name it too; a point stands at its centre, and on 「不能越过」/ "never be crossed" it
  * runs to its right side and stops there. The phrase ends its thought within a second, so the run eases out over 0.8 s
- * of the film's own time and settles before the quiet that follows (at most 465 px/s), rather than resting part way. */
+ * of the film's own time and settles before the quiet that follows (at most 465 px/s), rather than resting part way.
+ * On 04.2's first words A hands its field over to B's list without a cut (ZH6-4): the point fades out over 0.3 s, and
+ * the field glides from A's size to B's, keeping its top, over 0.9 s of voice time (lines.js handover, at most about
+ * 400 px/s), its sides but the first easing back to the line colour, to light again on their ordinals as B says
+ * them. */
 const A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
 function stageField(t, a, c) {
-  field(A.x, A.y, A.w, A.h, {
+  const q = handover(t, c),
+    to = listField(),
+    w = mix(A.w, to.w, q),
+    h = mix(A.h, to.h, q);
+  field(A.x, A.y - A.h / 2 + h / 2, w, h, {
     alpha: a,
     // Each side draws on at the tip pace by its own length, a gap short of each corner.
     drawn: [A.w, A.h, A.w, A.h].map((side, k) => drawShare(t, c.four - 0.15 + 0.08 * k, side - 32)),
-    lit: [1, 1, 1, 1],
+    lit: c.ordinals.map((at, k) => (k ? mix(1, ramp(t, at - 0.15, 0.4), q) : 1)),
   });
   nameText(L("四条底线", "Four boundaries"), A.x, A.y - A.h / 2 - NAME_GAP, {
     valign: "bottom",
@@ -177,7 +191,7 @@ function stageField(t, a, c) {
   const run = ramp(t, c.never - 0.05, 0.8);
   dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
     color: P.ink,
-    alpha: a * ramp(t, c.four - 0.15, 0.3),
+    alpha: a * ramp(t, c.four - 0.15, 0.3) * (1 - ramp(t, c.ordinals[0] + 0.05, 0.3)),
   });
 }
 
@@ -204,14 +218,15 @@ function stageDuty(t, a, c) {
 
 scenes["04"] = function (s, t) {
   const c = cuesOf(s);
-  const SA = stageOut(t, c.ordinals[0]),
-    SB = stageIn(t, c.ordinals[0]) * stageOut(t, c.inside),
+  const SAB = stageOut(t, c.inside),
     SC = stageIn(t, c.inside) * stageOut(t, c.ladder),
     SD = stageIn(t, c.ladder) * stageOut(t, c.lastCase),
     SE = stageIn(t, c.lastCase) * stageOut(t, c.whatever),
     SF = stageIn(t, c.whatever);
-  if (SA > 0) stageField(t, SA, c);
-  if (SB > 0) stageLines(t, SB, c);
+  if (SAB > 0) {
+    stageField(t, SAB, c);
+    stageLines(t, SAB, c);
+  }
   if (SC > 0) stageCases(t, SC, c);
   if (SD > 0) stageLadder(t, SD, c);
   if (SE > 0) stageReview(t, SE, c);

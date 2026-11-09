@@ -103,6 +103,18 @@
         "primary": 1,
         "weak": [2]
       }
+    },
+    "conflicts": {
+      "noun": {
+        "phones": "K AA1 N F L IH0 K T S",
+        "primary": 1,
+        "weak": [2]
+      },
+      "verb": {
+        "phones": "K AH0 N F L IH1 K T S",
+        "primary": 2,
+        "weak": [1]
+      }
     }
   },
   "variants": {
@@ -126,8 +138,10 @@
       "04:743": "verb"
     },
     "conflict": {
-      "03:1446": "verb",
-      "03:1467": "noun"
+      "03:1508": "noun"
+    },
+    "conflicts": {
+      "03:1466": "verb"
     },
     "contract": {
       "02:36": "noun"
@@ -137,55 +151,53 @@
     },
     "delegate": {
       "02:148": "verb",
-      "07:449": "verb"
+      "07:451": "verb"
     },
     "delegated": {
       "07:48": "verb"
     },
     "duplicates": {
-      "08:721": "verb"
+      "08:738": "verb"
     },
     "impact": {
-      "03:1484": "noun",
-      "08:468": "noun"
+      "03:1525": "noun",
+      "08:465": "noun"
     },
     "increase": {
       "08:296": "verb"
     },
     "leads": {
-      "03:724": "noun"
+      "03:726": "noun"
     },
     "minutes": {
       "08:360": "noun"
     },
     "read": {
-      "07:691": "present",
-      "07:810": "present"
+      "07:693": "present",
+      "07:812": "present"
     },
     "record": {
-      "03:1508": "noun",
+      "03:1549": "noun",
       "04:940": "noun"
     },
     "records": {
       "03:341": "noun",
-      "03:496": "noun",
-      "03:649": "noun",
-      "03:698": "noun"
+      "03:507": "noun",
+      "03:660": "noun"
     },
     "subject": {
-      "03:554": "noun",
+      "03:565": "noun",
       "04:191": "noun",
       "06:850": "noun",
-      "06:1093": "noun",
-      "08:699": "noun"
+      "06:1093": "noun"
     },
     "use": {
       "05:249": "noun",
-      "05:583": "noun",
-      "05:683": "verb",
+      "05:616": "noun",
+      "05:698": "verb",
       "06:968": "noun",
       "06:982": "noun",
-      "08:947": "noun"
+      "08:964": "noun"
     },
     "uses": {
       "06:950": "verb"

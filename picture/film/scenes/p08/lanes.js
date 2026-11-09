@@ -1,8 +1,8 @@
 /* Part 08, stages A, A2 and B: making the next attempt better. A, the made-up case: last night's delay on one lane and
  * the schedule on another, sharing the agreed time; the delay can recur, so a check is left before calling it fixed,
  * a monitor on the schedule that warns the moment the agreed time passes without the data. A2: what learning aims at,
- * three gains, and a growing file count refused. B: the early signs night after night, their pattern and impact, and
- * a needed safeguard that must not wait for an incident. */
+ * three gains, and a growing file count refused. B: the early signs night after night, their pattern, impact and
+ * direction, and a needed safeguard that must not wait for an incident. */
 
 import { ctx } from "../../canvas.js";
 import { dot, flowAt, flowDot, measure, ring, stroke } from "../../drawing/strokes.js";
@@ -16,14 +16,16 @@ import { L } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare, travel } from "../../timing/pauses.js";
-import { centring, early, openMark } from "../p05/kit.js";
+import { centring, early, earliest, openMark } from "../p05/kit.js";
 
 /* A: two lanes at 0.8 sharing the agreed time. The upper lane is last night, its two hours lit and named over them;
  * the lower lane is the next nights, where the same delay may recur, drawn dashed and named over it, and which is the
  * schedule. The agreed time is the scene's own line through both lanes' due hour; the monitor stands on it on the
  * schedule and flashes as a run passes the agreed time without the data. The stamp of "fixed" stands open at the right
- * until the check is left. Every mark waits for the rising chapter title to clear it. */
-const A = { x: 940, up: 380, low: 600, scale: 0.8, stamp: 1470 };
+ * until the check is left, near enough the lanes that the picture with it, before the schedule is named at the left,
+ * stays within the reviewers' 50 px, and the schedule's name, its noun alone as 07.4 names it, keeps the picture with
+ * both as near the centre (EN9-n12). Every mark waits for the rising chapter title to clear it. */
+const A = { x: 940, up: 380, low: 600, scale: 0.8, stamp: 1460 };
 /* The height from which A's marks wait for the rising chapter title; the scene's Illustrative chip waits with them. */
 export const LANES_TOP = 248;
 export function lanesStage(s, t, c, g0) {
@@ -50,22 +52,23 @@ export function lanesStage(s, t, c, g0) {
     flow: { t, from: c.warns },
     names: {
       late: { v: L("还会出现", "Recurrence"), side: "top", alpha: 1 },
-      axis: { v: L("调度", "The schedule"), side: "left", alpha: named(t, c.schedule) },
+      axis: { v: L("调度", "Schedule"), side: "left", alpha: named(t, c.schedule) },
     },
   });
-  // The agreed time: a line through both lanes' due hour, named at its top.
+  // The agreed time: a line through both lanes' due hour, named at its top, which stands high enough that its name
+  // keeps a line and a half over the delay's name beside it (EN9-n2).
   const agreed = g * named(t, c.agreed),
     dx = upper.due;
   stroke(
     () => {
-      ctx.moveTo(dx, A.up - 64);
+      ctx.moveTo(dx, A.up - 80);
       ctx.lineTo(dx, A.up - 18);
       ctx.moveTo(dx, A.up + 18);
       ctx.lineTo(dx, A.low - 22);
     },
     { color: P.authority, alpha: agreed, width: 2.5 },
   );
-  nameText(L("约定时间", "The agreed time"), dx, A.up - 64 - NAME_GAP, {
+  nameText(L("约定时间", "The agreed time"), dx, A.up - 80 - NAME_GAP, {
     valign: "bottom",
     alpha: agreed,
   });
@@ -190,8 +193,8 @@ export function aimStage(s, t, c, g) {
 
 /* B: early signs. Four nights before last night in a row, named over it from the first words that speak of them; a few
  * of them a few minutes late, their delays lit as one stroke and named under them; a rescue mark over each late night,
- * one stroke, named under a bracket that joins the two; under the row two checks, the pattern and the impact, each
- * named, standing midway between the first two nights and the last two. Then a needed safeguard, dashed, stands at the
+ * one stroke, named under a bracket that joins the two; under the row three checks, the pattern, the impact and the
+ * direction, each named, standing midway between neighbouring nights. Then a needed safeguard, dashed, stands at the
  * row's right, and the incident it must not wait for is refused under it. While the row builds, the stage stands where
  * the row alone stays within the reviewers' 90 px of the centre and the row with its delays named at its left, which
  * holds for seconds, within their 50 px for a settled picture; when the safeguard comes it glides once (a structural
@@ -234,7 +237,7 @@ export function signsStage(s, t, c, g) {
       }),
     { color: P.ink, alpha: g, width: 2.5 },
   );
-  const signs = Math.max(c.signsClause - 0.2, c.signs - 1.35);
+  const signs = earliest(c.signsClause, c.signs);
   growName(
     t,
     L(["出事之前", "的苗头"], ["Early signs"]),
@@ -278,16 +281,16 @@ export function signsStage(s, t, c, g) {
     valign: "top",
     alpha: rescue,
   });
-  // The pattern and the impact: two checks under the row, midway between the first two nights and the last two.
+  // The pattern, the impact and the direction: three checks under the row, midway between neighbouring nights.
   const checks = c.look,
-    checkXs = [(xs[0] + xs[1]) / 2, (xs[2] + xs[3]) / 2];
-  [0, 1].forEach((i) => {
+    checkXs = [0, 1, 2].map((i) => (xs[i] + xs[i + 1]) / 2);
+  [0, 1, 2].forEach((i) => {
     const x = checkXs[i],
       a = g * ramp(t, checks[i] - 0.15, 0.4);
     ring(x, B.y + 160, 18, { color: P.evidence, alpha: a, width: 2.5 });
     dot(x, B.y + 160, 5, { color: P.evidence, alpha: a });
   });
-  L(["规律", "影响"], ["Pattern", "Impact"]).forEach((v, i) =>
+  L(["规律", "影响", "走向"], ["Pattern", "Impact", "Direction"]).forEach((v, i) =>
     nameText(v, checkXs[i], B.y + 178 + NAME_GAP, {
       valign: "top",
       alpha: g * listIn(t, checks, i),

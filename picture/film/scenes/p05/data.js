@@ -1,9 +1,10 @@
 /* Part 05, stages A, A2, B, B2 and E: data that means what it says. A: the data and the evidence its use takes; a file
  * that opens, a chart that looks good and a model signal build below, their way up stops at a bar, and what none of
  * them establishes stands between as open marks. A2: shown fit for a specific use, the data earns its seal. B: six
- * questions ring the data, each station filling as it is asked. B2: data that cannot answer them is explored inside
- * an authorized scope, and its way out to sharing, production and decisions stops at the scope's edge. E: the
- * views hang from the data, and none may climb back to become the source of truth. */
+ * questions ring the data, each station filling as it is asked. B2: data whose meaning, quality or earliest
+ * availability is still unclear is explored inside an authorized scope, and its way out to sharing, production and
+ * decisions stops at the scope's edge. E: the views hang from the data, and none may climb back to be treated as the
+ * source of truth. */
 
 import { link } from "../../drawing/links.js";
 import { dot, labelSize, line, measure, ring, stroke } from "../../drawing/strokes.js";
@@ -20,6 +21,7 @@ import {
   bar,
   chartMark,
   early,
+  earliest,
   fileMark,
   missingPage,
   openMark,
@@ -37,7 +39,9 @@ import {
  * at most about 420 px/s), and the dashed relation then draws on from the page to the data, so no way stands before
  * its far end is named. */
 const A = { top: 388, card: [300, 170], page: [120, 170], pageX: 620, cardX: 1210 },
-  UNKNOWN_Y = 241,
+  // The open marks stand high enough that their names keep a line and a half from the pair's names below them, as names
+  // of different marks do (EN9-n2).
+  UNKNOWN_Y = 225,
   BAR_Y = 568,
   BUS_Y = 608,
   ROW_Y = 676,
@@ -177,8 +181,10 @@ export function fitStage(s, t, c, g) {
 
 /* B: six questions ring the data. The ring is counted in on its words and named under the data; each question's
  * station fills on the ring as it is asked and is named outside it by what it asks about, one list; the station of
- * availability carries a clock, the time the example returns to. */
-const B = { x: 960, y: 505, rx: 400, ry: 245, card: [200, 128] };
+ * availability carries a clock, the time the example returns to. The ring stands 8 px left of the frame's axis, as
+ * the stations asked first are named at its right, so each state it holds stays within the reviewers' 50 px
+ * (EN9-n12). */
+const B = { x: 952, y: 505, rx: 400, ry: 245, card: [200, 128] };
 /* The ring is six arcs, one between each pair of stations, leaving each station's place open: it reads as one cycle of
  * questions and never as a closed frame waiting to be filled. The arcs are drawn as one stroke, on in turn. */
 const GAP = 0.09;
@@ -221,8 +227,11 @@ export function questionsStage(s, t, c, g) {
     top = B.y - ch / 2;
   tableIcon(B.x - cw / 2, top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), B.x, top - NAME_GAP, { valign: "bottom", alpha: g });
+  // The ring counts in as its name fades in, from the start of the name's fade: its arcs draw on as the name comes
+  // rather than stand part drawn when it does, and the one stroke they share still holds little ink when its second
+  // arc begins, far round the ring from the first.
   const six = g * early(t, c.sixClause, c.six);
-  ringArcs(t, c.sixClause - 0.2, six);
+  ringArcs(t, earliest(c.sixClause, c.six) - 0.15, six);
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   const names = L(
     ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
@@ -251,14 +260,16 @@ export function questionsStage(s, t, c, g) {
   });
 }
 
-/* B2: data that cannot answer the questions. It is explored inside its authorized scope, a frame sized to it in
- * which it moves; the work it stays out of stands in a row under the scope, each kind on its words; and the way out of
- * the scope toward that work stops at a bar on the scope's lower edge, which stays shut until the data is shown fit. */
+/* B2: data whose meaning, quality or earliest availability is still unclear. It is explored inside its authorized
+ * scope, a frame sized to it in which it moves; the work it stays out of stands in a row under the scope, each kind on
+ * its words; and the way out of the scope toward that work stops at a bar on the scope's lower edge, which stays shut
+ * until the data is shown fit. */
 /* The scope stands round the data from the cut on the frame's axis, a thin solid frame that holds the data and its
  * name, so it is never an empty frame; it is named on its words. The work arrives in a row under the scope, so the
  * stage grows downward on that axis and nothing moves: a row of work beside the scope would leave the scope alone off
- * centre for more than three seconds before the work is said. */
-const S = { w: 500, h: 285, card: [320, 160], inset: 18 },
+ * centre for more than three seconds before the work is said. The scope is wide enough that, with the data alone, it
+ * covers more than a tenth of the band while its name waits for its words (the frame gate's thin runs). */
+const S = { w: 550, h: 285, card: [320, 160], inset: 18 },
   /* The row of work stands `below` the scope's lower edge, `half` its height either side: each kind is its mark, its
    * name `toName` right of the mark's centre, the kinds `gap` apart and the row centred on the frame's axis. */
   WORK = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
@@ -293,7 +304,7 @@ export function scopeStage(s, t, c, g) {
   // The data at the scope's top, moving about as it is explored, and its name under it.
   tableIcon(960 + dx - cw / 2, top + S.inset, cw, ch, { alpha: g, stroke: P.muted });
   const under = top + S.inset + ch + NAME_GAP,
-    data = nameText(L("说不清这些的数据", "Data that cannot answer"), 960, under, {
+    data = nameText(L("还说不清", "Data with unknown meaning"), 960, under, {
       valign: "top",
       color: P.ink,
       alpha: g * named(t, c.first2b),
@@ -338,8 +349,9 @@ export function scopeStage(s, t, c, g) {
 }
 
 /* E: the views under the data. The data stands at the top; the views hang from it on one trunk and one crossing row,
- * each drop drawn on its word, one list. When none may quietly become the source of truth, a bar closes the trunk below
- * the data and a point runs up from the last view and stops at it, and the data takes its seal as the source of truth. */
+ * each drop drawn on its word, one list. When none may quietly be treated as the source of truth, a bar closes the
+ * trunk below the data and a point runs up from the last view and stops at it, and the data takes its seal as the
+ * source of truth. */
 const E = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
 function viewIcon(i, x, y, a) {
   if (i === 0) documentIcon(x - 34, y, 68, 88, { alpha: a, rows: 2 });

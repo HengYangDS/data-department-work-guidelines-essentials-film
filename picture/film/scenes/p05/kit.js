@@ -11,10 +11,14 @@ import { P } from "../../palette.js";
 import { clamp, ease, mix } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 
-/* A name may be read up to 0.3 s before the clause that says it and up to 1.5 s ahead of its words. A stage's first
- * name, when its words come a little into the thought, stands as early as that allows, so the thought shows a name
- * from its first second: `clause` is the time of the clause's first word and `at` of the name's own words. */
-export const early = (t, clause, at) => named(t, Math.max(clause - 0.2, at - 1.35));
+/* A name may be read up to 0.3 s before the clause that says it and at most LEAD seconds ahead of its own words, so
+ * every label stands within the half second of its words that the reviews measure (EN9-n6, ZH8-3). A stage's first
+ * name, when its words come a little into the clause, stands as early as that allows: `clause` is the time of the
+ * clause's first word and `at` of the name's own words, and `earliest` is the time the name arrives on, which a mark
+ * drawn with it takes too. */
+export const LEAD = 0.45;
+export const earliest = (clause, at) => Math.max(clause - 0.2, at - LEAD);
+export const early = (t, clause, at) => named(t, earliest(clause, at));
 
 /* The shift that centres the extent from x0 to x1 on the frame. */
 export const centring = (x0, x1) => 960 - (x0 + x1) / 2;

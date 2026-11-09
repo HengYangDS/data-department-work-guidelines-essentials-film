@@ -39,6 +39,7 @@ function cuesOf(s) {
     look: cues(s, [
       ["规律", "pattern"],
       ["影响", "impact"],
+      ["走向", "direction"],
     ]),
     guard: cue(s, "该有的防护", "a safeguard that is needed"),
     wait: cue(s, "等出了事", "wait for an incident"),
@@ -48,7 +49,7 @@ function cuesOf(s) {
     first3b: cue(s, "一条规矩", "Retire a rule"),
     rule3: cue(s, "一条规矩", "a rule"),
     retire: cues(s, [
-      ["对象没了", "lost its subject"],
+      ["对象没了", "nothing left to govern"],
       ["没人在用", "has no user"],
       ["跟权威来源重复", "duplicates"],
       ["得不偿失", "costs more"],

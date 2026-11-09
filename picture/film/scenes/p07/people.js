@@ -87,11 +87,12 @@ export function collaborationStage(s, t, c, g) {
   nameText(L("智能体", "Agents"), ax, y + 44 + NAME_GAP, { valign: "top", alpha: agentIn });
   // The link between them carries the delegation and reaches the Agent across the boundary's side.
   link(px + 110, y, ax - 56, y, { alpha: g, flow: { t }, width: 2.5 });
-  // The delegated boundary round the Agent, growing as it holds more. In Chinese it stands with its clause; in English
-  // the Agent comes with the boundary it works within, named on its own words.
+  // The delegated boundary round the Agent, growing as it holds more. In Chinese it stands 0.25 s before 「委托的范围」,
+  // so its name, which condenses those words, is read within 0.3 s of them (ZH7-2); in English the Agent comes with the
+  // boundary it works within, named on its own words.
   const top = y - 76,
     bottom = mix(y + 104, mix(y + 160, y + 270, deep), grow),
-    inBoundary = g * (en ? named(t, c.boundary) : early(t, c.boundaryClause, c.boundary));
+    inBoundary = g * named(t, L(c.boundary - 0.25, c.boundary));
   boundary(ax - halfW, top, ax + halfW, bottom, { alpha: en ? agentIn : inBoundary });
   nameText(L("委托范围", "A delegated boundary"), ax, top - NAME_GAP, {
     valign: "bottom",

@@ -739,6 +739,16 @@
             "term": "靠得住",
             "kind": "contextual-mandarin-word",
             "target_reading": "kào de zhù"
+          },
+          {
+            "term": "参加",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "cān jiā"
+          },
+          {
+            "term": "当成",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dàng chéng"
           }
         ],
         "sandhi": "Natural Mandarin connected-speech tone sandhi and weak grammatical syllables; never force isolated citation tones.",

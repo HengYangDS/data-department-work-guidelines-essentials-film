@@ -1,9 +1,9 @@
 /* Part 06, stages C, E1, E2, F and G: evidence sets the limit of the claim. C: under the job's earlier start, the
- * chain of trust builds on one rail, a station to each clause, the station being said lit; lower risk slims its links,
- * but a way that skips one stops at a bar. E1: report the state, not the effort. E2: what verification, publication
- * and use each establish, and no more. F: a completion claim pinned to its subject and version, signed by its
- * verification, covering what it covers and narrowed to its evidence. G: two pairs, each reached state against the
- * state it does not make. */
+ * chain of trust builds on one rail, a station to each clause, the station being said lit; lower risk is a lighter
+ * chain under it that keeps every link, but a way that skips one stops at a bar. E1: report the state, not the effort.
+ * E2: what verification, publication and use each establish, and no more. F: a completion claim pinned to its subject
+ * and version, signed by its verification, covering what it covers and narrowed to its evidence. G: two pairs, each
+ * reached state against the state it does not make. */
 
 import { ctx } from "../../canvas.js";
 import { box, dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
@@ -22,10 +22,41 @@ import { nightPlace, nightWay } from "./night.js";
 
 /* C: the chain of trust. The job's earlier start stands on the compact timeline in the top band, the start the decision
  * owner approves; below it seven stations at one pitch on one rail, each a small mark over the rail and its name under
- * it, one list. The whole rail stands in the line tone from the first station, centred, so no station moves when the
- * next is said; the chain lights along it to each station on its words. The rail's own names stand beyond its end
- * stations' names. */
-const C = { y: 690, pitch: 180, icon: 634 };
+ * it, one list. The whole rail stands in the line tone from the first station, so no station moves when the next is
+ * said; the chain lights along it to each station on its words. The rail's own name stands beyond its first station's
+ * name. Lower risk, less process: a slim rail under the chain with a point at every station, so the lighter chain keeps
+ * every link, fading in whole on its words and named at its end (EN9-n17). The stations stand right of the frame's
+ * axis by `chainShift`, so the chain named at its left alone, while its words wait for the lighter chain's, stands
+ * within the reviewers' 50 px, as its other states do. */
+const C = { y: 690, pitch: 180, icon: 634, slim: 802 };
+const STATIONS = () =>
+    L(
+      ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
+      ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"],
+    ),
+  CHAIN = () => L("信任链", "Chain of trust"),
+  LESS = () => L("手续变轻", "Less process");
+/* A name at a rail's end station reaches past the station by half its width, or past the rail's end. */
+const reachOut = (v) => Math.max(30, measure(v) / 2);
+/* The stations' shift right of the frame's axis: the midpoint of the shifts that centre the chain's lasting states, so
+ * none stands far off (the idiom of p03/order.js and p05/data.js fitShift): the stations building, bounded by the
+ * rail's ends; the chain named beyond its first station's name, with its last; and the whole, the lighter chain named
+ * at its right end. The last station's name, said just before the chain is named, reaches further only for that
+ * moment, which the reviewers' 90 px allows. */
+function chainShift() {
+  const stations = STATIONS(),
+    half = ((stations.length - 1) * C.pitch) / 2,
+    left = -half - reachOut(stations[0]),
+    last = half + reachOut(stations.at(-1)),
+    named = left - NAME_GAP - measure(CHAIN()),
+    lighter = Math.max(last, half + 30 + NAME_GAP + measure(LESS())),
+    shifts = [
+      [left, half + 30],
+      [named, last],
+      [named, lighter],
+    ].map(([l, r]) => -(l + r) / 2);
+  return (Math.max(...shifts) + Math.min(...shifts)) / 2;
+}
 function stationMark(i, x, y, a) {
   if (i === 0) person(x, y + 12, { alpha: a, color: P.authority, size: 0.8 });
   else if (i === 1) {
@@ -72,11 +103,10 @@ export function chainStage(s, t, c, g) {
   });
   const ats = c.stations,
     n = ats.length,
-    x0 = 960 - ((n - 1) * C.pitch) / 2,
-    xs = ats.map((_, i) => x0 + i * C.pitch),
-    slim = soon(t, c.lighter + 0.05, 0.8);
+    x0 = 960 - ((n - 1) * C.pitch) / 2 + chainShift(),
+    xs = ats.map((_, i) => x0 + i * C.pitch);
   // The whole rail stands in the line tone from the first station; the chain lights along it to each station as it is
-  // said, at the tip pace; lower risk slims it; a point runs along it once it is whole.
+  // said, at the tip pace; a point runs along it once it is whole.
   const reach = ats.reduce(
     (v, at, i) => (i ? mix(v, xs[i], drawShare(t, at - 0.15, C.pitch)) : xs[0]),
     xs[0],
@@ -89,7 +119,7 @@ export function chainStage(s, t, c, g) {
   line(xs[0] - 30, C.y, reach + 30, C.y, {
     color: P.ink,
     alpha: g * 0.9,
-    width: mix(5, 2.5, slim),
+    width: 5,
   });
   const runs = flowAt(t, xs[n - 1] - xs[0], { from: ats[n - 1] + 0.6 });
   flowDot(mix(xs[0], xs[n - 1], runs?.q ?? 0), C.y, 6, runs, { color: P.evidence, alpha: g });
@@ -100,26 +130,25 @@ export function chainStage(s, t, c, g) {
     stationMark(i, x, C.icon, a);
     if (lit > 0) ring(x, C.icon, 32, { color: P.ink, alpha: g * lit * 0.4, width: 2 });
   });
-  const stations = L(
-    ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
-    ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"],
-  );
+  const stations = STATIONS();
   railNames(stations, xs, C.y, {
     gap: NAME_GAP,
     alpha: (i) => g * listIn(t, ats, i),
     set: "chain",
   });
-  // The rail's own names stand at its ends, beyond the rail and the end stations' names alike.
-  const reachOut = (v) => Math.max(30, measure(v) / 2);
-  // Named on its own words, not from its clause: the far end's name follows within a breath, so the chain is never
-  // weighted to one end for long.
-  nameText(L("信任链", "Chain of trust"), xs[0] - reachOut(stations[0]) - NAME_GAP, C.y, {
+  // The rail's own name stands at its left end, beyond the rail and the first station's name, on its own words, not
+  // from its clause; until the lighter chain's words the picture leans to it, which `chainShift` keeps within 50 px.
+  nameText(CHAIN(), xs[0] - reachOut(stations[0]) - NAME_GAP, C.y, {
     align: "right",
     alpha: g * named(t, c.chain),
   });
-  nameText(L("手续变轻", "Less process"), xs[n - 1] + reachOut(stations[n - 1]) + NAME_GAP, C.y, {
+  // Lower risk: the lighter chain, a slim rail with a point at every station, named at its end on its words.
+  const lighter = g * named(t, c.lighter);
+  line(xs[0] - 30, C.slim, xs[n - 1] + 30, C.slim, { color: P.ink, alpha: lighter, width: 2.5 });
+  xs.forEach((x) => dot(x, C.slim, 5, { color: P.ink, alpha: lighter }));
+  nameText(LESS(), xs[n - 1] + 30 + NAME_GAP, C.slim, {
     align: "left",
-    alpha: g * named(t, c.lighter),
+    alpha: lighter,
   });
   // A way that skips a link: from the third station over the fourth toward the fifth, stopped at a bar over the fourth.
   const skip = g * named(t, c.skip),
@@ -142,7 +171,8 @@ export function chainStage(s, t, c, g) {
 }
 
 /* E1: the state and the effort. The work's states on one rail, the report on a page over the station it has reached,
- * named over the page, and the state named under the rail; and under them the effort spent, a long bar, refused. */
+ * named over the page, and the state named under the rail; and under them the effort spent, a long bar, refused. The
+ * English names drop their articles, so the three names repeat half the caption's words, not most (EN9-n11). */
 const E1 = { y: 505, x0: 540, x1: 1380, at: 3, page: [88, 110], effort: 116 };
 export function stateStage(s, t, c, g) {
   const xs = [0, 1, 2, 3, 4].map((k) => mix(E1.x0, E1.x1, k / 4)),
@@ -168,7 +198,7 @@ export function stateStage(s, t, c, g) {
     valign: "bottom",
     alpha: g * named(t, c.first5),
   });
-  nameText(L("哪一步", "The state"), reached, E1.y + 7 + NAME_GAP, { valign: "top", alpha: state });
+  nameText(L("哪一步", "State"), reached, E1.y + 7 + NAME_GAP, { valign: "top", alpha: state });
   // The effort: a long bar under the rail, nine tenths full, refused at its end.
   const effort = g * named(t, c.effort),
     ey = E1.y + E1.effort;
@@ -179,7 +209,7 @@ export function stateStage(s, t, c, g) {
     alpha: effort * 0.55,
     radius: 4,
   });
-  rejectedName(L("力气", "The effort"), (E1.x0 + E1.x1) / 2, ey + 14 + NAME_GAP, {
+  rejectedName(L("力气", "Effort"), (E1.x0 + E1.x1) / 2, ey + 14 + NAME_GAP, {
     valign: "top",
     alpha: effort,
     mark: ramp(t, c.effort + 0.4, 0.3),

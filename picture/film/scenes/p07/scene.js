@@ -18,7 +18,6 @@ function cuesOf(s) {
     first1: cue(s, "在人与人工智能的协作里", "In human–AI collaboration"),
     collab: cue(s, "人与人工智能的协作", "human–AI collaboration"),
     people: cue(s, "人", "people"),
-    boundaryClause: cue(s, "智能体在委托的范围内", "In human–AI collaboration"),
     agent: cue(s, "智能体", "Agents"),
     boundary: cue(s, "委托的范围", "a delegated boundary"),
     extend: cue(s, "调查、推理和动手", "investigate"),
@@ -31,7 +30,7 @@ function cuesOf(s) {
     decision: cue(s, "哪个决定", "which decision"),
     first3: cue(s, "委托时要划清边界", "So delegate with a clear boundary"),
     clear: cue(s, "边界", "a clear boundary"),
-    pile: cue(s, "别丢过去", "not a pile of context"),
+    pile: cue(s, "丢过去一堆", "not a pile of context"),
     important: cue(s, "重要的委托", "A consequential delegation"),
     five: cues(s, [
       ["目的和范围", "purpose and scope"],
@@ -68,11 +67,11 @@ function cuesOf(s) {
     from("方向", "Direction", c.refusals[1]),
     from("授权", "authorization", c.refusals[1]),
     from("决定", "decisions", c.refusals[1]),
-    from("后果的责任", "for consequences", c.refusals[1]),
+    from("后果的责任", "responsibility", c.refusals[1]),
   ];
   c.agent5 = from("智能体", "an Agent", c.first5);
   c.owns = [
-    from("信息", "context", c.first5),
+    from("背景材料", "context", c.first5),
     from("权限", "permissions", c.first5),
     from("核验", "verification", c.first5),
     from("结果", "result", c.first5),

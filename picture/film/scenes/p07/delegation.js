@@ -8,6 +8,7 @@ import { ctx } from "../../canvas.js";
 import { box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { agent, check, clock, lock, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
+import { cameraOf } from "../../framing/camera.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
 import { RAIL_CLEAR, railNames, rowNameTop } from "../../naming/placement.js";
@@ -15,7 +16,7 @@ import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
-import { bar, centring, early, openMark } from "../p05/kit.js";
+import { bar, early, openMark } from "../p05/kit.js";
 
 /* Failure 1's fork: a way that splits, its taken branch in the colour of authority. */
 function fork(x, y, { alpha = 1 } = {}) {
@@ -44,7 +45,8 @@ function fork(x, y, { alpha = 1 } = {}) {
  * start on one line, then the deliverable, the compact timeline with an open mark on each time to find, a source under
  * each and an open mark for what could not be verified. The schedule stands outside at the right, and the way to it
  * stops at a bar on the boundary's edge. The stage stands once at the midpoint of the places that centre it before and
- * after the stop and the schedule come at its right. */
+ * after the stop and the schedule come at its right, as they stand on the screen: the scene's camera pushes in about
+ * its anchor (framing/camera.js), so the two are centred through it, each about 48 px off (EN9-n12). */
 const D = {
   top: 280,
   bottom: 700,
@@ -65,7 +67,8 @@ export function delegationStage(s, t, c, g) {
       D.half + NAME_GAP + measure(L("停下来问我", "Stop and ask")),
       D.half + D.out + Math.max(22, measure(L("调度", "Schedule")) / 2),
     ),
-    x = (centring(-D.half, D.half) + centring(-D.half, reach)) / 2,
+    cam = cameraOf(s, c.stop),
+    x = cam.ax + (960 - cam.ox) / cam.k - (reach - D.half) / 4,
     x0 = x - D.half,
     x1 = x + D.half;
   stroke(
@@ -177,7 +180,7 @@ export function callerStage(s, t, c, g) {
   // the figure's shoulders reach 56 px below the line and the Agent's diamond 53 px.
   // What the caller owns, on the way between them.
   const ownNames = L(
-      ["信息", "权限", "核验", "结果"],
+      ["背景材料", "权限", "核验", "结果"],
       ["Context", "Permissions", "Verification", "Result"],
     ),
     // Chinese takes 170 px, so its widest vouched name, 为后果负责, keeps a clear gap from the name beside it.

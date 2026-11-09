@@ -59,14 +59,14 @@ function cuesOf(s) {
     order: cue(s, "有先后", "a fixed order"),
     ranks: [
       cue(s, "最先是法律", "Law"),
-      cue(s, "才是这件事", "what the decision owner"),
+      cue(s, "决策负责人作出", "what the decision owner"),
       cue(s, "有效的契约", "contracts"),
       cue(s, "工作计划", "Plans"),
     ],
     another: cue(s, "另一种", "Authority about facts"),
     facts: cue(s, "事实依据", "Authority about facts"),
     what: cue(s, "靠什么认定", "what can establish"),
-    primary: cue(s, "要看原始记录", "primary records"),
+    primary: cue(s, "优先看原始记录", "primary records"),
     observe: cue(s, "能重复的观察", "repeatable observations"),
     state: [
       cue(s, "来源", "a source"),
@@ -75,7 +75,7 @@ function cuesOf(s) {
       cue(s, "范围转述", "scope"),
     ],
     leads: LEAD_ORDER().map((k) => cue(s, ...LEADS[k])),
-    notPrimary: cue(s, "都不是原始记录", "are not primary records"),
+    unverified: cue(s, "都未经核实", "are unverified"),
     onlyLeads: cue(s, "线索", "leads"),
   };
   return { ...c, parts: partsOf(s, c.ranks), ...caseCues(s), ...closeCues(s) };
@@ -102,10 +102,11 @@ function caseCues(s) {
 function closeCues(s) {
   return {
     meeting: cue(s, "前面说的那场会", "The meeting at the start"),
+    meetingName: cue(s, "那场会", "The meeting"),
     before: cue(s, "会前", "Before it"),
     items: [
       cue(s, "要决定什么", "what is to be decided"),
-      cue(s, "由谁决定", "who decides"),
+      cue(s, "谁必须参加", "who must attend"),
       cue(s, "需要哪些事实", "which facts"),
     ],
     ends: cue(s, "散会时", "When it ends"),
@@ -118,10 +119,12 @@ function closeCues(s) {
     substitute: cue(s, "互相替代", "stands in for"),
     falseTrue: cue(s, "假的变成真的", "false fact"),
     permission: cue(s, "动手的权限", "permission to act"),
-    conflict: cue(s, "两者冲突时", "When the two conflict"),
+    request: cue(s, "经授权的要求", "an authorized request"),
+    verified: cue(s, "核实过的事实", "verified facts"),
+    conflict: cue(s, "冲突时", "conflicts"),
     report: cue(s, "讲出冲突和影响", "report the conflict"),
     alter: cue(s, "不改记录", "alter the record"),
-    oneSide: cue(s, "其中一边", "one side"),
+    oneSide: cue(s, "哪边", "one side"),
   };
 }
 

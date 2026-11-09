@@ -25,14 +25,15 @@ import { scenes } from "../registry.js";
 import { agents, guidePage, handedMark, outputMark, people, wave } from "./marks.js";
 import { stageOutcomes, taskCues } from "./tasks.js";
 
-/* The spoken cues of 02.1 and 02.2. The seal's rim stands with its name on the words that begin to say what the
- * contract is about (工作质量 / "contract") and is stamped on the next (契约 / "quality"), so the page never stands
- * alone for two seconds in either edition. */
+/* The spoken cues of 02.1 and 02.2. The seal's rim stands with its name before the seal is stamped, so the page never
+ * stands alone for two seconds in either edition: in English on "contract", the name's word, and stamped on
+ * "quality"; in Chinese 0.4 s before 契约, the name's word, which ends the clause, and stamped on it (ZH8-3). */
 function cuesOf(s) {
+  const stamp = cue(s, "契约", "quality");
   return {
     guide: cue(s, "这份指南", "The guidelines"),
-    seal: cue(s, "工作质量", "contract"),
-    stamp: cue(s, "契约", "quality"),
+    seal: L(stamp - 0.4, cue(s, "契约", "contract")),
+    stamp,
     members: cue(s, "部门成员", "members"),
     delegate: cue(s, "委托", "delegate"),
     agents: cue(s, "智能体", "Agents"),
