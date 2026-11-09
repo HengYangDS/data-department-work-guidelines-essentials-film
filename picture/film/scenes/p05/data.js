@@ -249,7 +249,9 @@ export function questionsStage(s, t, c, g) {
       line(x, y, x, y - 8, { color: P.evidence, alpha: asked, width: 2.5 });
       line(x, y, x + 6, y + 3, { color: P.evidence, alpha: asked, width: 2.5 });
     } else dot(x, y, 12, { color: P.evidence, alpha: asked });
-    if (lit > 0) ring(x, y, 22, { color: P.evidence, alpha: lit * 0.5 * g, width: 2 });
+    // The asked station's halo stands at the stage's ink while its question is said: the evidence blue holds 4.5:1
+    // only near full ink, and at half ink it rested at 3:1 (ZH10-3).
+    if (lit > 0) ring(x, y, 22, { color: P.evidence, alpha: lit * g, width: 2 });
     // The ring returns to full ink as its last question is asked, so the six stand whole for more than a moment before
     // the stage leaves on the next clause.
     radialName(names[i], B.x, B.y, B.rx + 12, a, {

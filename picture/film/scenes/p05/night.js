@@ -62,9 +62,11 @@ function backtest(t, c, g, m, top) {
   points.forEach(([x, y], i) => {
     const within = x > m.due + 1 && x < m.arrival - 1,
       reached = lengthOf(points.slice(0, i + 1)) / total;
+    // Each point inks in as the curve reaches it; a point near the curve's end inks in faster, so every point stands
+    // at full ink once the curve is drawn and no evidence blue rests below 4.5:1.
     dot(x, y, 6.5, {
       color: within ? P.unknown : P.evidence,
-      alpha: a * ease(clamp((seen - reached + 0.15) / 0.4)),
+      alpha: a * ease(clamp((seen - reached + 0.15) / Math.min(0.4, 1.15 - reached))),
     });
   });
   nameText(L("回测", "Backtest"), x0 - NAME_GAP, top + TEST.h / 2, { align: "right", alpha: a });

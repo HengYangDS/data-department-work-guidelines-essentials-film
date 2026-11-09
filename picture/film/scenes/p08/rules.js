@@ -95,15 +95,17 @@ const REASONS = () =>
     ],
   );
 const widest = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line) => measure(line)));
-/* The English row of names centres on the frame's axis rather than its stations, and its rail reaches 20 px past the
- * outer names; the Chinese row already stands within its rail (EN9-n1). */
+/* The stations keep one pitch about `x`. The English row of names centres on the frame's axis rather than on its
+ * stations, and the rail with its end points centres on the names' ink, from the first name's left edge to the last
+ * name's right edge, which it reaches 20 px past at each side (EN9-n1, EN10-n1); the Chinese names stand within their
+ * rail, its centre on the axis. */
 function retireRow() {
   const names = REASONS(),
-    [first, last] = [widest(names[0]), widest(names[3])];
-  return L(
-    { x: R.x, half: R.half() },
-    { x: R.x - (last - first) / 4, half: 1.5 * R.pitch() + (first + last) / 4 + 20 },
-  );
+    [first, last] = [widest(names[0]), widest(names[3])],
+    x = L(R.x, R.x - (last - first) / 4),
+    left = x - 1.5 * R.pitch() - first / 2,
+    right = x + 1.5 * R.pitch() + last / 2;
+  return { x, railX: (left + right) / 2, half: L(R.half(), (right - left) / 2 + 20) };
 }
 export function retireStage(s, t, c, g) {
   const lifted = soon(t, c.lift, 0.7),
@@ -122,13 +124,13 @@ export function retireStage(s, t, c, g) {
     alpha: g * named(t, c.retired),
   });
   line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
-  line(row.x - row.half, R.rail, row.x + row.half, R.rail, {
+  line(row.railX - row.half, R.rail, row.railX + row.half, R.rail, {
     color: P.line,
     alpha: g * carried,
     width: 3.5,
   });
   [-1, 1].forEach((side) =>
-    dot(row.x + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried }),
+    dot(row.railX + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried }),
   );
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(REASONS(), xs, R.rail, {

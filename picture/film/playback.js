@@ -110,8 +110,12 @@ function drawAt(t) {
   drawScene(v, t, keep);
   // A chapter card already shows while the previous chapter's last scene fades out.
   chapterCard(next && opensChapter(next) && t >= next.start - 0.15 ? next : s, t);
+  // A chapter's heads leave with its last scene, through the same fade, rather than in one frame as the next chapter
+  // begins (ZH10-2); the next chapter's heads are its title, which rises into place, so they keep their own entrance.
+  setDrawing({ sceneFade: fadeOut, wordFade: fadeOut });
   runningHead(s, t);
   partHead(v, t);
+  setDrawing({ sceneFade: 1, wordFade: 1 });
   caption(t);
   publish(t);
 }

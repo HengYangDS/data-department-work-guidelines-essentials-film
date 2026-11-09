@@ -4243,7 +4243,7 @@ function questionsStage(s, t, c, g) {
       line(x, y, x, y - 8, { color: P.evidence, alpha: asked, width: 2.5 });
       line(x, y, x + 6, y + 3, { color: P.evidence, alpha: asked, width: 2.5 });
     } else dot(x, y, 12, { color: P.evidence, alpha: asked });
-    if (lit > 0) ring(x, y, 22, { color: P.evidence, alpha: lit * 0.5 * g, width: 2 });
+    if (lit > 0) ring(x, y, 22, { color: P.evidence, alpha: lit * g, width: 2 });
     radialName(names[i], B2.x, B2.y, B2.rx + 12, a, {
       ry: B2.ry + 12,
       alpha: g * listIn(t, c.asks, i, Infinity, { whole: c.asks.at(-1) - 0.1 }),
@@ -4408,7 +4408,7 @@ function backtest(t, c, g, m, top) {
     const within = x > m.due + 1 && x < m.arrival - 1, reached = lengthOf(points.slice(0, i + 1)) / total;
     dot(x, y, 6.5, {
       color: within ? P.unknown : P.evidence,
-      alpha: a * ease(clamp((seen - reached + 0.15) / 0.4))
+      alpha: a * ease(clamp((seen - reached + 0.15) / Math.min(0.4, 1.15 - reached)))
     });
   });
   nameText(L("回测", "Backtest"), x0 - NAME_GAP, top + TEST.h / 2, { align: "right", alpha: a });
@@ -5878,11 +5878,8 @@ var REASONS = () => L(
 );
 var widest2 = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line2) => measure(line2)));
 function retireRow() {
-  const names = REASONS(), [first, last] = [widest2(names[0]), widest2(names[3])];
-  return L(
-    { x: R.x, half: R.half() },
-    { x: R.x - (last - first) / 4, half: 1.5 * R.pitch() + (first + last) / 4 + 20 }
-  );
+  const names = REASONS(), [first, last] = [widest2(names[0]), widest2(names[3])], x = L(R.x, R.x - (last - first) / 4), left = x - 1.5 * R.pitch() - first / 2, right = x + 1.5 * R.pitch() + last / 2;
+  return { x, railX: (left + right) / 2, half: L(R.half(), (right - left) / 2 + 20) };
 }
 function retireStage(s, t, c, g) {
   const lifted = soon(t, c.lift, 0.7), page = g * mix(1, 0.45, lifted), row = retireRow(), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => row.x + k * R.pitch()), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
@@ -5896,13 +5893,13 @@ function retireStage(s, t, c, g) {
     alpha: g * named(t, c.retired)
   });
   line(R.x, R.y + 78, R.x, R.rail, { color: P.line, alpha: page * carried, width: 2 });
-  line(row.x - row.half, R.rail, row.x + row.half, R.rail, {
+  line(row.railX - row.half, R.rail, row.railX + row.half, R.rail, {
     color: P.line,
     alpha: g * carried,
     width: 3.5
   });
   [-1, 1].forEach(
-    (side) => dot(row.x + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried })
+    (side) => dot(row.railX + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried })
   );
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(REASONS(), xs, R.rail, {
@@ -6126,8 +6123,10 @@ function drawAt(t) {
   const v = film.segments[shown];
   drawScene(v, t, keep);
   chapterCard(next && opensChapter(next) && t >= next.start - 0.15 ? next : s, t);
+  setDrawing({ sceneFade: fadeOut, wordFade: fadeOut });
   runningHead(s, t);
   partHead(v, t);
+  setDrawing({ sceneFade: 1, wordFade: 1 });
   caption(t);
   publish(t);
 }
