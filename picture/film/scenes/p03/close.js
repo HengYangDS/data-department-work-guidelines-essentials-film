@@ -1,20 +1,20 @@
-/* E and F (03.7-03.8). E, the made-up case, from 「前面说的那场会」/ "The meeting at the start": failure 3's meeting
- * returns at the centre, larger, on the line of its own course; before it, a station from which what is to be decided,
- * who decides and which facts are needed hang as one list; when it ends, a station from which one fork offers its two
- * endings: one branch reaches a decision, under it who does what by when, the other an open question, what is still
- * missing, each branch drawn on its own words. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for its one
- * thought: the two kinds apart at the top, each named with what it answers; a divider rises between the two kinds,
- * each one's way toward the other stopping at a bar beside it; the seal's way to a false fact and the record's way to
- * an action each stop at a bar, over a rail drawn with the false fact on which the outcomes stand; when the two
+/* E and F (03.7-03.8). E, the made-up case, from 「开头那场会」/ "The meeting at the start": failure 3's meeting returns at
+ * the centre, larger, on the line of its own course; before it, a station from which what is to be decided, who decides
+ * and which inputs are needed hang as one list; when it ends, a station from which one fork offers its two endings: one
+ * branch reaches a decision, under it who does what by when and what counts as done, the other an open question, what
+ * is still missing, each branch drawn on its own words. F, from 「两种依据，不能」/ "Neither kind", one stage laid out once for
+ * its one thought: the two kinds apart at the top, each named with what it answers; a divider rises between the two
+ * kinds, each one's way toward the other stopping at a bar beside it; the seal's way to a false fact and the record's
+ * way to an action each stop at a bar, over a rail drawn with the false fact on which the outcomes stand; when the two
  * conflict, the divider runs on down to the conflict, between them, and its way runs down to a report of the conflict
  * and its impact, under which the two ways it must not take are refused. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowAt, flowDot, line, ring, stroke } from "../../drawing/strokes.js";
+import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, nameText, rejectedName, termRow, termRowLayout } from "../../naming/names.js";
+import { NAME_GAP, NOTE, nameText, rejectedName, termRow, termRowLayout } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
@@ -25,8 +25,8 @@ import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } fro
 
 /* E: the meeting drawn at K times failure 3's size about its centre, so that with its course it covers a tenth of the
  * frame from its first words; its seats stay empty, as in failure 3. The end station's fork drops FORK under it and
- * branches to its two endings, the decision at DECIDE_X and the open question at MISSING_X, both NODE under the station;
- * the branches' names keep a gap apart. */
+ * branches to its two endings, the decision at DECIDE_X (or left of it, decideX) and the open question at MISSING_X,
+ * both NODE under the station; the branches' names keep a gap apart. */
 const MEET = { x: 960, y: 470, k: 1.8 },
   COURSE = [300, 1620],
   COURSE_Y = MEET.y + 7 * MEET.k,
@@ -36,7 +36,21 @@ const MEET = { x: 960, y: 470, k: 1.8 },
   DECIDE_X = 1440,
   MISSING_X = 1720;
 const AGENDA = () =>
-  L(["决定什么", "谁必须参加", "哪些事实"], ["What to decide", "Who must attend", "Which facts"]);
+  L(["决定什么", "谁必须参加", "哪些材料"], ["What to decide", "Who must attend", "Which inputs"]);
+/* What the decision settles, its qualifier's parts, each said in turn, and the open question's name. */
+const SETTLED = () =>
+    L(
+      ["谁去做、", "什么时候做完", "、怎样算完成"],
+      ["who does what", " by when", ", what counts as done"],
+    ),
+  MISSING = () => L("还缺什么", "Still missing");
+/* The decision stands at DECIDE_X, or further left when its qualifier, one line in both editions, would come closer
+ * than a name gap to the open question's name, as the English does: wrapped at 300 px, its first line ended on the lead
+ * word "when" (n5), and any break of its phrases ends a line on "what" or "when". */
+function decideX() {
+  const half = measure(SETTLED().join(""), NOTE) / 2;
+  return Math.min(DECIDE_X, MISSING_X - measure(MISSING()) / 2 - NAME_GAP - half);
+}
 /* The meeting's point (x, y) on the screen, from a point of failure 3's mark. */
 const at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 export function stageMeeting(t, a, c) {
@@ -88,7 +102,8 @@ export function stageMeeting(t, a, c) {
   );
   // When it ends: the station and its fork, one stem down from it and two branches, each drawn at the tip pace on
   // its own words: to a decision, a ring with its point in the colour of authority beside the person who does the
-  // work, named with who does what by when under it; or to an open question, what is still missing.
+  // work, named with who does what by when and what counts as done under it on one line, the decision standing where
+  // that line keeps clear of the open question's name (decideX); or to an open question, what is still missing.
   const ends = a * ramp(t, c.ends - 0.15, 0.4);
   station(COURSE[1], COURSE_Y, ends);
   nameText(L("散会时", "When it ends"), COURSE[1], over, {
@@ -97,6 +112,7 @@ export function stageMeeting(t, a, c) {
   });
   const forkY = COURSE_Y + FORK,
     nodeY = COURSE_Y + NODE,
+    decisionX = decideX(),
     missing = a * ramp(t, c.missing - 0.15, 0.4);
   link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
     alpha: decision,
@@ -104,22 +120,22 @@ export function stageMeeting(t, a, c) {
     end: false,
     width: 2.5,
   });
-  link(COURSE[1], forkY, DECIDE_X, nodeY - 22, {
+  link(COURSE[1], forkY, decisionX, nodeY - 22, {
     route: "hv",
     alpha: decision,
     draw: { t, at: c.decision - 0.1 },
     width: 2.5,
   });
-  ring(DECIDE_X - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
-  dot(DECIDE_X - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
-  people([DECIDE_X + 22], nodeY + 6, { alpha: doer, size: 0.7 });
+  ring(decisionX - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
+  dot(decisionX - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
+  people([decisionX + 22], nodeY + 6, { alpha: doer, size: 0.7 });
   termRow(
     t,
     [L("决定", "A decision")],
     [c.decision],
-    L(["谁去做、", "什么时候做完"], ["who does what", " by when"]),
-    [c.whoDoes, c.byWhen],
-    DECIDE_X,
+    SETTLED(),
+    [c.whoDoes, c.byWhen, c.done],
+    decisionX,
     nodeY + 30 + NAME_GAP,
     { align: "center", inline: false, alpha: a },
   );
@@ -130,7 +146,7 @@ export function stageMeeting(t, a, c) {
     width: 2.5,
   });
   openMark(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(L("还缺什么", "Still missing"), MISSING_X, nodeY + 30 + NAME_GAP, {
+  nameText(MISSING(), MISSING_X, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing),
   });
@@ -278,7 +294,7 @@ export function stageApart(t, a, c) {
     alpha: a * named(t, c.report),
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "悄悄照一边做"], ["Altering the record", "Acting as if one side had won"]).forEach(
+  L(["改记录", "悄悄按一方做"], ["Altering the record", "Acting as if one side had won"]).forEach(
     (v, i) =>
       rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
         valign: "top",

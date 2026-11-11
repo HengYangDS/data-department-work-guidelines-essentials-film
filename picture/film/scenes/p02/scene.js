@@ -4,10 +4,10 @@
  * it, each joined to it, and the delegation runs from the members to the Agents. B (02.2), one stage laid out once for
  * its one thought: the way of the work's value across the frame, with what a piece of work merely hands over refused
  * below it, one thing on each one's words; on its words a signal from the world runs in at the way's left. From
- * 「变成」/ "into judgments" the refused things stand on at the list's second level, their crosses at full ink, and what
- * the signal becomes hangs from the way under them, judgments, data assets and actions, carried along the way to the
- * others at its end, in English with the qualities the others rely on under them. C and C2 (02.3-02.4) are drawn by
- * tasks.js. */
+ * 「变成」/ "into reliable judgments" the refused things stand on at the list's second level, their crosses at full ink,
+ * and what the signal becomes hangs from the way under them, judgments, data assets and actions, carried along the way
+ * to the others at its end, named for what the outputs must be, 可靠 / "Reliable", in English with the qualities under
+ * them. C and C2 (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
@@ -37,7 +37,7 @@ function cuesOf(s) {
     members: cue(s, "部门成员", "members"),
     delegate: cue(s, "委托", "delegate"),
     agents: cue(s, "智能体", "Agents"),
-    aiWhat: cue(s, "查资料", "AI systems"),
+    aiWhat: cue(s, "调查", "AI systems"),
     aiReason: cue(s, "推理", "AI systems"),
     aiAct: cue(s, "动手", "AI systems"),
     value: cue(s, "数据工作的价值", "The value of data work"),
@@ -48,8 +48,8 @@ function cuesOf(s) {
       cue(s, "一个流程", "a process"),
     ],
     signal: cue(s, "现实里的信号", "signals from the world"),
-    becomes: cue(s, "变成", "into judgments"),
-    others: cue(s, "别人", "others"),
+    becomes: cue(s, "变成", "into reliable judgments"),
+    others: cue(s, "可靠的", "reliable"),
     outputs: [
       cue(s, "判断", "judgments"),
       cue(s, "数据资产", "data assets"),
@@ -131,15 +131,14 @@ function stageGuide(s, t, a, c) {
   // the explanation instead of standing still through it.
   growName(
     t,
-    L(["能查资料", "、推理", "和动手"], ["AI systems"]),
+    L(["能调查", "、推理", "和动手"], ["AI systems"]),
     [c.aiWhat, c.aiReason, c.aiAct],
     agentsX,
     ROW_NAMES + labelSize(LABEL) + TERM_STACK,
     { size: NOTE, color: P.muted, alpha: g, build: true, align: "center" },
   );
   // The delegation runs from the members to the Agents, a point travelling along it once it has reached them. It
-  // draws from just before its word, so it has reached the Agents before the English thought, which ends a second
-  // after "delegate", comes to rest.
+  // draws from just before its word, so it has reached the Agents before the English thought comes to rest.
   link(MEMBERS[2] + 34, ROW, AGENTS[0] - 34, ROW, {
     alpha: g * ramp(t, c.delegate - 0.45, 0.4),
     draw: { t, at: c.delegate - 0.3 },
@@ -173,7 +172,7 @@ const SHIFT = L(-20, 0),
   OTHERS_X = 1617 + SHIFT,
   OVER = WAY_Y - 7 - NAME_GAP;
 /* The size of a refusal's cross (rejectedName). The refused things recede to the list's second level, SECOND
- * (naming/lists.js), from 「变成」/ "into judgments" on. */
+ * (naming/lists.js), from 「变成」/ "into reliable judgments" on. */
 const REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
 const HANDED = () =>
   L(["一个文件", "一张表", "一份报告", "一个流程"], ["A file", "A table", "A report", "A process"]);
@@ -207,8 +206,9 @@ function stageWay(t, a, c) {
   const end = WAY[1];
   theWay(t, a, c, end);
   // The refused things, each on its words, a cross beside each name. While the list builds, the names already said
-  // step to its second level, and on 「变成」/ "into judgments" they all recede to it; their crosses keep full ink
-  // throughout, since a key mark holds 4.5:1 only at full ink, and they stand so where they are until the stage leaves.
+  // step to its second level, and on 「变成」/ "into reliable judgments" they all recede to it; their crosses keep full
+  // ink throughout, since a key mark holds 4.5:1 only at full ink, and they stand so where they are until the stage
+  // leaves.
   const recede = ramp(t, c.becomes + 0.05, 0.4);
   HANDED().forEach((v, k) => {
     const seen = a * ramp(t, c.handed[k] - 0.15, 0.4),
@@ -244,7 +244,7 @@ function stageWay(t, a, c) {
   });
   const others = a * ramp(t, c.others - 0.15, 0.4);
   people(OTHERS, WAY_Y, { size: 0.8, alpha: others });
-  const own = nameText(L("别人", "Others"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
+  const own = nameText(L("可靠", "Reliable"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.others),
   });

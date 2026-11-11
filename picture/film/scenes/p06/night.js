@@ -8,7 +8,7 @@ import { ctx } from "../../canvas.js";
 import { EDGE, box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { check, documentIcon } from "../../drawing/symbols.js";
 import { HOUR, lastNight, lastNightExtent } from "../../drawing/timeline.js";
-import { listIn, named, speaking } from "../../naming/lists.js";
+import { beats, listIn, named, speaking } from "../../naming/lists.js";
 import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
@@ -125,7 +125,7 @@ export function nightWay(c) {
 }
 const THREE = () => L("三层", "Three layers"),
   LAYERS = () => L(["止住影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
-  REFUSED = () => L("从根上修好", "A systemic fix");
+  REFUSED = () => L("治本", "A systemic fix");
 export function layersStage(s, t, c, g) {
   // The late measure's name fades on the earlier start's words; the start moves once it has gone.
   const move = startMoved(t, c),
@@ -230,9 +230,17 @@ export function layersStage(s, t, c, g) {
     });
     box(x0, y - B.h / 2, x1 - x0, B.h, { stroke: P.ink, alpha: q * lit, radius: 10, width: 3 });
     // The first two take their checks once they are said to be done; the third keeps the open question of why the
-    // existing system neither prevented nor caught the delay, from the words that ask it.
+    // existing system neither prevented nor caught the delay, from the words that ask it, and a ring beats once in ink
+    // around the question on each of its two parts, 「预防」/ "prevent" and 「发现」/ "detect", as their points arrive
+    // on the rail above, outside its dashed ring so the question never reads as closed: in the reviewers' grey frame
+    // the points alone, or a beat in the question's clay, change too little to be seen arriving, and the Chinese
+    // picture held still through 3.9 s of the question (n5 draft).
     if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
-    else openMark(x0 + 190, y, 17, { alpha: g * ramp(t, c.asks[0] + 0.05, 0.4) });
+    else {
+      const asked = g * ramp(t, c.asks[0] + 0.05, 0.4);
+      openMark(x0 + 190, y, 17, { alpha: asked });
+      beats(t, x0 + 190, y, 26, c.asks.slice(1), { alpha: asked });
+    }
     if (i === 0) patchMark(x0 + 60, y, 30, { alpha: q });
     if (i === 1) {
       dot(x0 + 60, y, 17, { color: P.ink, alpha: q, hollow: true, width: 2.5 });

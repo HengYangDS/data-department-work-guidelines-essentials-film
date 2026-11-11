@@ -30,7 +30,7 @@ function cuesOf(s) {
     decision: cue(s, "哪个决定", "which decision"),
     first3: cue(s, "委托时要划清边界", "So delegate with a clear boundary"),
     clear: cue(s, "边界", "a clear boundary"),
-    pile: cue(s, "丢过去一堆", "not a pile of context"),
+    pile: cue(s, "只给一堆", "not a pile of context"),
     important: cue(s, "重要的委托", "A consequential delegation"),
     five: cues(s, [
       ["目的和范围", "purpose and scope"],

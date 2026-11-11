@@ -11,7 +11,7 @@ import { dot, labelSize, line, measure, ring, stroke } from "../../drawing/strok
 import { diamond, documentIcon, person, seal, tableIcon } from "../../drawing/symbols.js";
 import { ctx } from "../../canvas.js";
 import { listIn, named, speaking } from "../../naming/lists.js";
-import { NAME_GAP, nameText } from "../../naming/names.js";
+import { LEADING, NAME_GAP, nameText, wrapName } from "../../naming/names.js";
 import { radialName, railNames } from "../../naming/placement.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
@@ -128,13 +128,18 @@ export function evidenceStage(s, t, c, g) {
 /* A2: the data shown fit for a specific use. The data stands at the left and the use, a target, at the right, their
  * names on one baseline; the relation between them is named as the contract renders it, and the data's trust, a seal
  * on its corner, is stamped once the use is named at the relation's far end. */
-/* The data and the relation that reaches from it to the use's place stand from the stage's first frame, so the
- * picture spans the stage before the relation and the use are named, and nothing moves when they are; once the
- * relation is said, a point runs along it toward the use. The places below are shifted as one by `fitShift`. */
+/* The data stands at its place from the stage's first frame. In Chinese, whose stage opens on 「数据要先证明适合」, the
+ * relation draws on from the data toward the use's place on the words that name it, 「证明适合」, with its name, so it
+ * never stands waiting for the name (the n5 seat waited 0.73 s). In English, whose stage opens on "Data earns trust",
+ * the seal and its name stand beside the data from the first words and the relation stands with them from the
+ * stage's first frame, so the picture spans the stage while "shown fit" is still to come (drawn on its words, the data
+ * alone would stand 290 px off the centre for 1.9 s). Once the relation is said, a point runs along it toward the use.
+ * Nothing moves when the relation and the use are named. The places below are shifted as one by `fitShift`. */
 const A2 = { y: 505, card: [220, 140], cardX: 640, useX: 1300, r: 56 };
 const USE = () => L("具体用途", "A specific use");
-/* The stage's two states are the data with its relation, and the whole once the use is named at the relation's end;
- * the stage stands at the midpoint of the shifts that centre each, so neither stands far off. */
+/* The stage's two lasting states are the data with its relation, and the whole once the use is named at the
+ * relation's end; the stage stands at the midpoint of the shifts that centre each, so neither stands far off. The
+ * Chinese data alone is a build-up, held only until the relation's words. */
 function fitShift() {
   const left = A2.cardX - A2.card[0] / 2,
     reach = A2.useX - A2.r - 12,
@@ -153,6 +158,7 @@ export function fitStage(s, t, c, g) {
   link(cardX + cw / 2 + 12, A2.y, useX - A2.r - 12, A2.y, {
     alpha: g,
     width: 3,
+    draw: L({ t, at: c.fit - 0.15 }, null),
     flow: { t, from: c.fit },
   });
   nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + useX - A2.r) / 2, A2.y - NAME_GAP, {
@@ -276,12 +282,19 @@ const S = { w: 550, h: 285, card: [320, 160], inset: 18 },
    * name `toName` right of the mark's centre, the kinds `gap` apart and the row centred on the frame's axis. */
   WORK = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
 const USES = () => L(["共享", "投产", "决策"], ["Sharing", "Production", "Decisions"]);
+/* The data is named by all three things still unknown about it, in the voice's words: meaning, quality and
+ * availability, without "historical", since the voice's whole phrase is a caption line, which no label may repeat word
+ * for word (EN12-n3). The name wraps as names do within the scope's inset, and each line it takes deepens the scope by
+ * a line, so the way out keeps its length under it. */
+const UNCLEAR = () => L("还说不清", "Data with unknown meaning, quality or availability");
+const unclearLines = () => wrapName(UNCLEAR(), S.w - 2 * S.inset);
+const scopeHeight = () => S.h + (unclearLines().length - 1) * labelSize(LABEL) * LEADING;
 /* The scope's top: the stage grows from the scope with its name over it to the whole with the row under it, and the
  * top stands at the midpoint of the tops that centre those two states, so neither stands far off. */
 function scopeTop() {
   const head = labelSize(LABEL) + NAME_GAP,
-    first = S.h - head,
-    whole = S.h + WORK.below + WORK.half - head;
+    first = scopeHeight() - head,
+    whole = scopeHeight() + WORK.below + WORK.half - head;
   return 505 - (first + whole) / 4;
 }
 /* The x of each kind's mark: the row measured and centred on the frame's axis. */
@@ -298,7 +311,8 @@ function workXs() {
 export function scopeStage(s, t, c, g) {
   const left = 960 - S.w / 2,
     top = scopeTop(),
-    bottom = top + S.h,
+    h = scopeHeight(),
+    bottom = top + h,
     roam = g * soon(t, c.explore - 0.15, 0.6),
     dx = 26 * Math.sin(Math.PI * 2 * 0.22 * voiceTime(t)) * roam,
     [cw, ch] = S.card,
@@ -306,13 +320,13 @@ export function scopeStage(s, t, c, g) {
   // The data at the scope's top, moving about as it is explored, and its name under it.
   tableIcon(960 + dx - cw / 2, top + S.inset, cw, ch, { alpha: g, stroke: P.muted });
   const under = top + S.inset + ch + NAME_GAP,
-    data = nameText(L("还说不清", "Data with unknown meaning"), 960, under, {
+    data = nameText(unclearLines(), 960, under, {
       valign: "top",
       color: P.ink,
       alpha: g * named(t, c.first2b),
     });
   // The scope, a thin solid frame round the data.
-  stroke(() => ctx.roundRect(left, top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
+  stroke(() => ctx.roundRect(left, top, S.w, h, 12), { color: P.line, alpha: g, width: 2.5 });
   // A frame is named centred over its top side, as every frame of the film is.
   nameText(L("授权范围", "Authorized scope"), 960, top - NAME_GAP, {
     valign: "bottom",
@@ -326,7 +340,7 @@ export function scopeStage(s, t, c, g) {
     end: false,
   });
   bar(960, bottom, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), length: 60 });
-  nameText(L("证明适合", "Shown fit"), 960 + 30 + NAME_GAP, bottom + 10, {
+  nameText(L("证明适合", "Qualified"), 960 + 30 + NAME_GAP, bottom + 10, {
     align: "left",
     valign: "top",
     alpha: g * named(t, c.fit2),

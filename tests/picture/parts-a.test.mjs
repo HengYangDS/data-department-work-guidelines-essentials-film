@@ -1,8 +1,9 @@
 /** Parts 01-04 of the composition, composer a's: for each part and stage, on the authored timeline, the part paints,
  * never plays speech over an empty picture, and at three times in each stage its lit picture keeps the reviewers'
- * balance and cover limits, holds at most twelve names and sets no two of them over each other; the key-word labels
- * the sync audit cannot time arrive on their words. The modules load one edition per process, so this file runs its
- * edition (PARTS_EDITION, Chinese by default) and runs itself again for the other. */
+ * balance and cover limits, holds at most twelve names and sets no two of them over each other; the points that come
+ * to rest over their lists stand on the lists' axes; the key-word labels the sync audit cannot time arrive on their
+ * words. The modules load one edition per process, so this file runs its edition (PARTS_EDITION, Chinese by default)
+ * and runs itself again for the other. */
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -37,7 +38,7 @@ const STAGES = {
   "01": [
     ["昨晚", "Last night"],
     ["有人马上说", "Someone says at once"],
-    ["大家都没闲着", "Everyone keeps busy"],
+    ["大家都在忙碌", "Everyone keeps busy"],
     ["数据部门工作指南", "The Data Department Work Guidelines"],
   ],
   "02": [
@@ -48,11 +49,11 @@ const STAGES = {
   ],
   "03": [
     ["两种依据", "Two kinds of authority"],
-    ["它有先后", "It comes in a fixed order"],
+    ["有先后", "an order of precedence"],
     ["另一种", "Authority about facts"],
     ["优先看原始记录", "primary records"],
     ["拿昨晚的事来说", "Take last night"],
-    ["前面说的那场会", "The meeting at the start"],
+    ["开头那场会", "The meeting at the start"],
     ["两种依据不能", "Neither kind"],
   ],
   "04": [
@@ -115,6 +116,30 @@ function picture(id, t) {
   return { box, names };
 }
 
+/* Points that come to rest over the list that names them: from the last words of their stage's thought until the next
+ * stage cuts in, each stands on its list's axis, within 10 px of the ink centre of every line, and the points stand
+ * level, as 04.4's halted point stands over what is done at the edge and its free point over what is welcome (EN10-n2).
+ * Each entry is a stage, by its index in STAGES, and the sets of its lists, left to right. */
+const RESTS = { "04": [{ stage: 2, sets: ["free", "edge"] }] };
+/* The points a scene paints at t, its ink fills 16 px across, by their centres left to right, and its texts. */
+function restingPlaces(id, t) {
+  const paints = [];
+  const { texts } = composition.render(t, (p) => paints.push(p));
+  const points = paints
+    .filter(
+      (p) => p.scene === id && p.kind === "fill" && /^#ece8df$/i.test(p.color) && p.alpha > 0.3,
+    )
+    .map((p) => {
+      const xs = p.subs.flat().map((q) => q[0]),
+        ys = p.subs.flat().map((q) => q[1]);
+      return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    })
+    .filter(([x0, y0, x1, y1]) => Math.abs(x1 - x0 - 16) < 3 && Math.abs(y1 - y0 - 16) < 3)
+    .map(([x0, y0, x1, y1]) => [(x0 + x1) / 2, (y0 + y1) / 2])
+    .sort((a, b) => a[0] - b[0]);
+  return { points, texts: texts.filter((v) => v.scene === id && v.alpha > 0.3) };
+}
+
 for (const id of Object.keys(STAGES)) {
   test(`${CODE} ${id} paints through its speech and never speaks over an empty picture`, () => {
     const s = segment(id);
@@ -153,6 +178,32 @@ for (const id of Object.keys(STAGES)) {
           }
       }),
     );
+    for (const { stage, sets } of RESTS[id] ?? []) {
+      const s = segment(id),
+        next = wordAt(s, ...STAGES[id][stage + 1]),
+        last = s.words.findLast((w) => w.start < next);
+      for (const t of [last.end, next + 0.16]) {
+        const where = `${id} stage ${stage + 1} at rest at ${t.toFixed(2)}`,
+          { points, texts } = restingPlaces(id, t);
+        assert.equal(points.length, sets.length, `${where}: ${points.length} points`);
+        sets.forEach((set, k) => {
+          const lines = texts.filter((v) => v.set === set);
+          assert.ok(lines.length > 0, `${where}: no ${set} list`);
+          for (const v of lines) {
+            const off = points[k][0] - (v.bounds[0] + v.bounds[2]) / 2;
+            assert.ok(
+              Math.abs(off) <= 10,
+              `${where}: the ${set} point ${off.toFixed(1)} px off ${v.text}`,
+            );
+          }
+        });
+        const rise = points[0][1] - points.at(-1)[1];
+        assert.ok(
+          Math.abs(rise) <= 2,
+          `${where}: the points stand ${rise.toFixed(1)} px apart in height`,
+        );
+      }
+    }
   });
 }
 
@@ -160,7 +211,7 @@ for (const id of Object.keys(STAGES)) {
  * words and no later than half a second after them. */
 const KEY_WORDS = [
   ["02", "委托", "Delegation", "委托", "delegate"],
-  ["02", "问题解决掉", "Problem resolved", "问题解决掉", "resolve the problem"],
+  ["02", "解决问题", "Problem resolved", "解决问题", "resolve the problem"],
   [
     "03",
     "有效的契约、制度、规范、决策记录",
@@ -171,9 +222,9 @@ const KEY_WORDS = [
   [
     "03",
     "工作计划、临时约定、个人偏好",
-    "Plans, provisional agreements, personal preferences",
+    "Work plans, provisional agreements, personal preferences",
     "工作计划",
-    "Plans",
+    "Work plans",
   ],
   ["03", "假的事实", "A false fact", "假的变成真的", "false fact"],
   ["04", "停下来", "Stop", "停下来", "stop"],

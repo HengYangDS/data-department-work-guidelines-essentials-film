@@ -1,12 +1,15 @@
 /* 03 两种依据 / Two kinds of authority, chapter 03 五个要点 / Five essentials. A (03.1-03.2): under the rising chapter
  * title, the two kinds stand apart, joined under their one name: authority to act, a seal, at the left, and authority
  * about facts, a record with its check, at the right; a divider rises between them; the left kind is named with what
- * it answers. B (03.3, from its first words, 「它有先后」/ "Law"): authority to act's order of sources (order.js). C
- * (03.4): the two kinds again, the right one now named with what it answers; from 「能重复的观察」/ "repeatable
- * observations" what can establish a fact, the primary record and the repeatable observation arriving together so the
- * stage opens balanced, and the leads that cannot (facts.js). D (03.5-03.6): last night's case (case.js). E-F
- * (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for each other (close.js).
- * Each stage cuts in on the first words of a thought, except C's second, whose stage names nothing the first named. */
+ * it answers. B (03.3, from 「有先后」/ "an order of precedence", the words that announce it): authority to act's
+ * order of sources (order.js). C (03.4): the two kinds again, the right one now named with what it answers; from
+ * 「能重复的观察」/ "repeatable observations" what can establish a fact, the primary record and the repeatable
+ * observation arriving together so the stage opens balanced, and the leads that cannot (facts.js). D (03.5-03.6): last
+ * night's case (case.js). E-F (03.7-03.8): the meeting as it should have run, and the two kinds that never stand in for
+ * each other (close.js). Each stage cuts in on the first words of a thought, except C's second, whose stage names
+ * nothing the first named, and B, which cuts in on the words that announce the order: from 03.3's first words its head
+ * stood alone 324 px off the centre, its ranks still to come at its right, for 1.6 s of the n5 English, past the 1.5 s
+ * a build-up may. */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom } from "../../timing/cues.js";
@@ -36,7 +39,7 @@ const PARTS = [
     ["决策记录", "decision records"],
   ],
   [
-    ["工作计划", "Plans"],
+    ["工作计划", "Work plans"],
     ["临时约定", "provisional"],
     ["个人偏好", "personal"],
   ],
@@ -54,14 +57,13 @@ function cuesOf(s) {
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    // The order opens on 03.3's first words, which announce it, and its span grows on 「有先后」/ "a fixed order".
-    opens: cue(s, "它有先后", "It comes in a fixed order"),
-    order: cue(s, "有先后", "a fixed order"),
+    // The order opens, and its span grows, on the words that announce it, 「有先后」/ "an order of precedence".
+    order: cue(s, "有先后", "an order of precedence"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "决策负责人作出", "what the decision owner"),
       cue(s, "有效的契约", "contracts"),
-      cue(s, "工作计划", "Plans"),
+      cue(s, "工作计划", "Work plans"),
     ],
     another: cue(s, "另一种", "Authority about facts"),
     facts: cue(s, "事实依据", "Authority about facts"),
@@ -89,7 +91,7 @@ function caseCues(s) {
     late: cue(s, "晚了两个小时", "two hours late"),
     log: cue(s, "日志", "the log"),
     fact: cue(s, "这是事实", "that is a fact"),
-    vendorLate: cue(s, "供应商发布晚了", "the vendor published late"),
+    vendorLate: cue(s, "供应商发布晚了", "The vendor's late publication"),
     hypothesis: cue(s, "假设", "a hypothesis"),
     checks: cue(s, "查过发布时间", "checks the publication time"),
     observation: cueFrom(s, "观察", "observation", checked(s)),
@@ -101,18 +103,19 @@ function caseCues(s) {
 }
 function closeCues(s) {
   return {
-    meeting: cue(s, "前面说的那场会", "The meeting at the start"),
+    meeting: cue(s, "开头那场会", "The meeting at the start"),
     meetingName: cue(s, "那场会", "The meeting"),
     before: cue(s, "会前", "Before it"),
     items: [
       cue(s, "要决定什么", "what is to be decided"),
       cue(s, "谁必须参加", "who must attend"),
-      cue(s, "需要哪些事实", "which facts"),
+      cue(s, "需要哪些材料", "which inputs"),
     ],
     ends: cue(s, "散会时", "When it ends"),
     decision: cue(s, "有了决定", "reach a decision"),
     whoDoes: cue(s, "谁去做", "who does what"),
     byWhen: cue(s, "什么时候做完", "by when"),
+    done: cue(s, "怎样算完成", "what counts as done"),
     missing: cue(s, "还缺什么", "still missing"),
     orSay: cue(s, "要么说清", "or say"),
     neither: cue(s, "两种依据不能", "Neither kind"),
@@ -124,14 +127,14 @@ function closeCues(s) {
     conflict: cue(s, "冲突时", "conflicts"),
     report: cue(s, "讲出冲突和影响", "report the conflict"),
     alter: cue(s, "不改记录", "alter the record"),
-    oneSide: cue(s, "哪边", "one side"),
+    oneSide: cue(s, "其中一方", "one side"),
   };
 }
 
 scenes["03"] = function (s, t) {
   const c = cuesOf(s);
-  const A = stageOut(t, c.opens),
-    B = stageIn(t, c.opens) * stageOut(t, c.another),
+  const A = stageOut(t, c.order),
+    B = stageIn(t, c.order) * stageOut(t, c.another),
     C1 = stageIn(t, c.another) * stageOut(t, c.primary),
     C2 = stageIn(t, c.primary) * stageOut(t, c.night),
     D = stageIn(t, c.night) * stageOut(t, c.meeting),

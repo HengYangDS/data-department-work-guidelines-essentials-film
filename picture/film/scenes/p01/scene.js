@@ -38,14 +38,14 @@ function cuesOf(s) {
     patch: cue(s, "手工把数据补上", "patches the data"),
     again: cue(s, "下个月照样出错", "next month the collection fails again"),
     mechanism: cue(s, "机制", "the mechanism"),
-    meeting: cue(s, "开了个会", "A meeting"),
+    meeting: cue(s, "开了一场会", "A meeting"),
     speaks: cue(s, "人人都发了言", "everyone speaks"),
     decide: cue(s, "决定", "decide"),
     act: cue(s, "动手", "or act"),
     pages: cue(s, "十页分析", "ten pages"),
     more: cue(s, "材料多了", "more material"),
     judgment: cue(s, "判断和结果", "the judgment"),
-    busy: cue(s, "大家都没闲着", "Everyone keeps busy"),
+    busy: cue(s, "大家都在忙碌", "Everyone keeps busy"),
     who: cue(s, "谁可以决定", "who may decide"),
     which: cue(s, "哪些事实", "which facts"),
     boundary: cue(s, "哪条边界", "which boundary"),
@@ -81,7 +81,7 @@ const TERMS = () => [
 ];
 const QUALS = () => [
   [L("事实还没查清", "before the facts are in")],
-  [L("机制一点没动", "the mechanism untouched")],
+  [L("机制原封不动", "the mechanism untouched")],
   [],
   // The fourth says what did not improve, in the voice's words, as its neighbours say what went wrong; the English, in
   // two phrases, breaks between them within the name's width, clear of the meeting beside it.

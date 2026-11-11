@@ -45,7 +45,7 @@ const STAGES = {
     ["学习的目的", "The aim of learning"],
     ["出事之前", "There may have been early signs"],
     ["那个监控", "The monitor needs"],
-    ["一条规矩", "Retire a rule"],
+    ["一条规则", "Retire a rule"],
     ["回到开头那份数据", "Back to the price data"],
     ["把判断讲给别人", "And when you convey a judgment"],
   ],

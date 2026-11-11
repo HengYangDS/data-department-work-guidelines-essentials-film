@@ -67,7 +67,7 @@ export function monitorStage(s, t, c, g) {
   recoverIcon(lx, M.y + 150, 26, { alpha: look, color: P.evidence, upto: soon(t, c.look3, 0.8) });
   line(lx, M.y + 150, lx, M.y + 134, { color: P.evidence, alpha: look, width: 3 });
   line(lx, M.y + 150, lx + 11, M.y + 156, { color: P.evidence, alpha: look, width: 3 });
-  nameText(L("回头看看", "A later look"), lx, M.y + 176 + NAME_GAP, { valign: "top", alpha: look });
+  nameText(L("复查", "A later look"), lx, M.y + 176 + NAME_GAP, { valign: "top", alpha: look });
   const asks = g * named(t, c.earlier);
   openMark(m.arrival, M.y - 60, 18, { alpha: asks });
   nameText(L("更早发现问题", "Problems caught earlier"), m.arrival + 18 + NAME_GAP, M.y - 60, {
@@ -80,13 +80,13 @@ export function monitorStage(s, t, c, g) {
  * under it, joined to it, stands whole with the first reason, on its words, and the reasons take the rail's stations
  * on their words, open marks named under them, one list. As the sentence closes the page fades where it stands while
  * its names and the reasons stay; its seal, the rule's authority, leaves as it fades, so no gold rests below 4.5:1. */
-/* The English reasons are longer, so their stations stand wider apart on a longer rail. */
-const R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
+/* The English reasons are longer, so their stations stand wider apart. */
+const R = { x: 960, y: 420, rail: 640, pitch: () => L(300, 400) };
 /* The reasons' names. "Duplicates a source of truth" fits one line, so no line ends on "a" and "source of truth"
  * stays whole; "Costs more than it returns" takes two lines of near equal width. */
 const REASONS = () =>
   L(
-    ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
+    ["失去适用对象", "没人在用", "和权威来源重复", "得不偿失"],
     [
       "Nothing left to govern",
       "No user",
@@ -95,17 +95,17 @@ const REASONS = () =>
     ],
   );
 const widest = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line) => measure(line)));
-/* The stations keep one pitch about `x`. The English row of names centres on the frame's axis rather than on its
- * stations, and the rail with its end points centres on the names' ink, from the first name's left edge to the last
- * name's right edge, which it reaches 20 px past at each side (EN9-n1, EN10-n1); the Chinese names stand within their
- * rail, its centre on the axis. */
+/* The stations keep one pitch about `x`. In both editions the row of names centres on the frame's axis rather than on
+ * its stations, and the rail with its end points centres on the names' ink, from the first name's left edge to the
+ * last name's right edge, which it reaches 20 px past at each side (EN9-n1, EN10-n1), so the Chinese 失去适用对象, wider
+ * than 得不偿失, stands within the rail as the English names do. */
 function retireRow() {
   const names = REASONS(),
     [first, last] = [widest(names[0]), widest(names[3])],
-    x = L(R.x, R.x - (last - first) / 4),
+    x = R.x - (last - first) / 4,
     left = x - 1.5 * R.pitch() - first / 2,
     right = x + 1.5 * R.pitch() + last / 2;
-  return { x, railX: (left + right) / 2, half: L(R.half(), (right - left) / 2 + 20) };
+  return { x, railX: (left + right) / 2, half: (right - left) / 2 + 20 };
 }
 export function retireStage(s, t, c, g) {
   const lifted = soon(t, c.lift, 0.7),
@@ -115,7 +115,7 @@ export function retireStage(s, t, c, g) {
     ats = c.retire,
     carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, sealAlpha: g * (1 - lifted), w: 120, h: 156, sealAt: -0.34 });
-  nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
+  nameText(L("规则", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3b, c.rule3),
   });

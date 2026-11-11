@@ -452,7 +452,7 @@ export function pairsStage(s, t, c, g) {
       at: c.test,
       to: c.acceptance,
       from: L("测试通过", "A passing test"),
-      not: L("已经验收", "Acceptance"),
+      not: L("已验收", "Acceptance"),
     },
     {
       y: 640,

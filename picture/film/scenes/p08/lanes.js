@@ -101,12 +101,12 @@ export function lanesStage(s, t, c, g0) {
  * the next failure found earlier (its detection moves back along the strand, its old place a muted trace), judged more
  * easily (a decision's doubt clears), and less manual rescue (a long band shrinks). A pile of files is refused under
  * them. A point runs the first strand once as its gain is said, and rests. The next failure on the first strand comes
- * where the first gain's words begin: on "find the next failure earlier", and on 「下一次故障」 in Chinese, which names
- * the failure before it is found earlier. */
+ * where the first gain's words begin: on "find the next failure earlier", and on 「下一次失败」 in Chinese, which names the
+ * failure before it is found earlier. */
 const G = { x0: 700, x1: 1220, ys: [360, 480, 600], reach: 24, drop: 28 };
 export function aimStage(s, t, c, g) {
   const ats = c.gains,
-    starts = [cue(s, "下一次故障", "find the next failure earlier"), ats[1], ats[2]],
+    starts = [cue(s, "下一次失败", "find the next failure earlier"), ats[1], ats[2]],
     [y0, y1, y2] = G.ys,
     mid = (G.x0 + G.x1) / 2,
     top = y0 - G.reach,

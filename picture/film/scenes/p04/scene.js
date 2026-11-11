@@ -92,12 +92,12 @@ function cuesOf(s) {
     free: cue(s, "自主", "autonomy"),
     explore: cue(s, "探索", "exploration"),
     create: cue(s, "创造", "creative work"),
-    near: cue(s, "快要越线时", "When an action would cross one"),
+    near: cue(s, "发现会越线时", "When an action would cross one"),
     // What is done at the edge, each on its words: stop, make it visible, escalate.
     edge: [
       cue(s, "停下来", "stop"),
       cue(s, "讲出来", "make it visible"),
-      cue(s, "往上报", "escalate"),
+      cue(s, "上报", "escalate"),
     ],
     ladder: cue(s, "要留多少记录", "Risk sets the process"),
     risk: cue(s, "多少记录", "Risk sets the process"),
@@ -127,7 +127,7 @@ function cuesOf(s) {
     oneClear,
     clearQual: cue(s, "结论", "conclusion"),
     // The later parts of the first record's qualifier and of the second record's contents.
-    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "做法", "action", oneClear)],
+    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "行动", "action", oneClear)],
     record: cue(s, "现有的工作记录", "existing work record"),
     recordQual,
     recordParts: [

@@ -192,8 +192,14 @@ const PILE = () => L("一堆背景材料", "A pile of context");
 export function boundaryStage(s, t, c, g) {
   const ats = c.five,
     items = L(
-      ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
-      ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"],
+      ["目的和范围", "交什么", "限制和权限", "怎么验收", "停下交接"],
+      [
+        "Purpose and scope",
+        "Deliverable",
+        "Limits and permissions",
+        "Acceptance",
+        "Stop and hand off",
+      ],
     ),
     half = Math.max(...items.map((v) => measure(v) / 2 + 36)),
     name = L("边界", "A clear boundary"),

@@ -45,6 +45,12 @@
         ],
         "targets": [
           {
+            "term": "一场",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "yì chǎng",
+            "dictionary_disagreement": "场 is the measure word for an event, chǎng, as in 开了一场会; the dictionary reads it cháng here."
+          },
+          {
             "term": "一种",
             "kind": "contextual-mandarin-word",
             "target_reading": "yì zhǒng"
@@ -110,6 +116,11 @@
             "target_reading": "huì"
           },
           {
+            "term": "体系",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "tǐ xì"
+          },
+          {
             "term": "供应",
             "kind": "contextual-mandarin-word",
             "target_reading": "gōngyìng",
@@ -141,12 +152,6 @@
             "kind": "contextual-mandarin-word",
             "target_reading": "piān hào",
             "dictionary_disagreement": "偏好 is a preference, piānhào; the dictionary reads 好 as hǎo here."
-          },
-          {
-            "term": "做得",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "zuò de",
-            "dictionary_disagreement": "得 is the complement particle de after a verb; the dictionary reads 得 alone as dé."
           },
           {
             "term": "充分",
@@ -220,6 +225,11 @@
             "target_reading": "dào le"
           },
           {
+            "term": "参加",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "cān jiā"
+          },
+          {
             "term": "发了言",
             "kind": "contextual-mandarin-word",
             "target_reading": "fā le yán"
@@ -276,6 +286,11 @@
             "target_reading": "zhǐ chá"
           },
           {
+            "term": "只给",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhǐ gěi"
+          },
+          {
             "term": "只能",
             "kind": "contextual-mandarin-word",
             "target_reading": "zhǐ néng"
@@ -284,6 +299,12 @@
             "term": "只说",
             "kind": "contextual-mandarin-word",
             "target_reading": "zhǐ shuō"
+          },
+          {
+            "term": "周期长",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhōu qī cháng",
+            "dictionary_disagreement": "周期长 means a long cycle, cháng; the dictionary reads 长 as zhǎng here."
           },
           {
             "term": "和",
@@ -357,9 +378,9 @@
             "target_reading": "bìng wèi"
           },
           {
-            "term": "弄清",
+            "term": "应对",
             "kind": "contextual-mandarin-word",
-            "target_reading": "nòng qīng"
+            "target_reading": "yìngduì"
           },
           {
             "term": "强制性",
@@ -372,6 +393,11 @@
             "target_reading": "dāng qián"
           },
           {
+            "term": "当成",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dàng chéng"
+          },
+          {
             "term": "当时",
             "kind": "contextual-mandarin-word",
             "target_reading": "dāng shí",
@@ -382,17 +408,6 @@
             "term": "得不偿失",
             "kind": "contextual-mandarin-word",
             "target_reading": "dé bù cháng shī"
-          },
-          {
-            "term": "得更好",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "de gèng hǎo",
-            "dictionary_disagreement": "得 is the complement particle de: 处理得更好 means handle it better"
-          },
-          {
-            "term": "快要",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "kuài yào"
           },
           {
             "term": "把",
@@ -446,6 +461,12 @@
             "target_reading": "gèng"
           },
           {
+            "term": "更好地",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "gèng hǎo de",
+            "dictionary_disagreement": "地 is the adverbial particle de after 更好; the dictionary reads 地 alone as dì."
+          },
+          {
             "term": "有的",
             "kind": "contextual-mandarin-word",
             "target_reading": "yǒu de"
@@ -460,6 +481,11 @@
             "term": "模型",
             "kind": "contextual-mandarin-word",
             "target_reading": "mó xíng"
+          },
+          {
+            "term": "正确",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "zhèng què"
           },
           {
             "term": "没",
@@ -497,25 +523,20 @@
             "target_reading": "kàn"
           },
           {
-            "term": "看看",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "kàn kàn"
-          },
-          {
             "term": "看起来",
             "kind": "contextual-mandarin-word",
             "target_reading": "kàn qǐ lái"
-          },
-          {
-            "term": "着",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "zhe"
           },
           {
             "term": "答得",
             "kind": "contextual-mandarin-word",
             "target_reading": "dá de",
             "dictionary_disagreement": "得 is the complement particle de in 答得上来; the dictionary reads 得 alone as dé."
+          },
+          {
+            "term": "答清",
+            "kind": "contextual-mandarin-word",
+            "target_reading": "dá qīng"
           },
           {
             "term": "系统",
@@ -734,21 +755,6 @@
             "term": "需要",
             "kind": "contextual-mandarin-word",
             "target_reading": "xū yào"
-          },
-          {
-            "term": "靠得住",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "kào de zhù"
-          },
-          {
-            "term": "参加",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "cān jiā"
-          },
-          {
-            "term": "当成",
-            "kind": "contextual-mandarin-word",
-            "target_reading": "dàng chéng"
           }
         ],
         "sandhi": "Natural Mandarin connected-speech tone sandhi and weak grammatical syllables; never force isolated citation tones.",

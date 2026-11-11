@@ -15,7 +15,7 @@ import { NAME_GAP, NOTE, nameText, termRow, termRowLayout } from "../../naming/n
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
-import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
+import { drawShare, thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
 import { field, fieldIcon } from "./marks.js";
 
 /* The centre line and height of A's field (scene.js). B's and C's fields keep its top, so the name over each stands
@@ -36,7 +36,7 @@ const ROWS = () =>
     [
       [
         "Telling the truth",
-        ["no fabrication, ", "hiding, ", "cherry-picking ", "or false certainty"],
+        ["no fabrication, ", "hiding, ", "cherry-picking ", "or uncertainty dressed as certainty"],
       ],
       [
         "Staying in bounds",
@@ -132,7 +132,7 @@ const C = {
 };
 const FREE = () => L(["自主", "探索", "创造"], ["Autonomy", "Exploration", "Creative work"]);
 /* The English names begin alike in case, as the names of one list do. */
-const EDGE = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
+const EDGE = () => L(["停下来", "讲出来", "上报"], ["Stop", "Make it visible", "Escalate"]);
 const widest = (names) => Math.max(...names.map((v) => measure(v)));
 /* The field's width and the x of each list's centre, the free list's and the edge list's. */
 function caseColumns() {
@@ -159,11 +159,16 @@ export function stageCases(t, a, c) {
     alpha: a * named(t, c.inside),
   });
   // Inside these boundaries: a point moving freely about its list's column, and under it what is welcome, one list on
-  // the edge list's baselines.
+  // the edge list's baselines. The roam is timed back from the voice time at which the cases' thought ends, so the
+  // point comes to rest with the voice on its list's axis, level with the halted point, and stands there until the
+  // cut, as the halted point stands over its own list (EN12-n2).
   const row = C.y + C.ring + NAME_GAP,
     free = a * ramp(t, c.inside - 0.15, 0.4),
-    ry = row - NAME_GAP - 8 - C.reach[1];
-  dot(xf + C.reach[0] * Math.sin(vt * 0.9), ry + C.reach[1] * Math.sin(vt * 1.3), 8, {
+    ry = row - NAME_GAP - 8 - C.reach[1],
+    rest = voiceTime(thoughtEnd(c.free)),
+    roam = Math.min(vt, rest) - rest,
+    phase = Math.asin((C.y - ry) / C.reach[1]);
+  dot(xf + C.reach[0] * Math.sin(roam * 0.9), ry + C.reach[1] * Math.sin(roam * 1.3 + phase), 8, {
     color: P.ink,
     alpha: free * level(0),
   });
@@ -186,8 +191,8 @@ export function stageCases(t, a, c) {
     alpha: near * level(1) * ramp(t, edge[1] - 0.1, 0.4),
     width: 3,
   });
-  // The way rises at the tip pace while 「往上报」/ "escalate" is said, the thought's last words, so it stands whole
-  // before the quiet.
+  // The way rises at the tip pace while 「上报」/ "escalate" is said, the thought's last words, so it stands whole before
+  // the quiet.
   const rise = drawShare(t, edge[2] - 0.2, hy - 25 - top);
   if (rise > 0)
     line(hx, hy - C.ring, hx, mix(hy - C.ring, top + 8, rise), {

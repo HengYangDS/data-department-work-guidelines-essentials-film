@@ -13,6 +13,7 @@ import { token } from "../../drawing/symbols.js";
 import { illustrative } from "../../framing/chapters.js";
 import { listLevel, named } from "../../naming/lists.js";
 import {
+  LEADING,
   NAME_GAP,
   NOTE,
   growTexts,
@@ -29,20 +30,22 @@ import { voiceTime } from "../../timing/pauses.js";
 import { stageIn } from "../../timing/stages.js";
 import { mechanism, outcome, people, reports } from "./marks.js";
 
-/* The spoken cues of 02.3-02.4. 系统 is said first in 02.1 (人工智能系统), so the third outcome takes its last
- * occurrence, 02.3's 让系统下次再碰到这类事 (ZH7-1); "the system" is said once. */
+/* The spoken cues of 02.3-02.4. The third outcome takes the last occurrence of its term, as when 02.3 said 系统 after
+ * 02.1's 人工智能系统 (ZH7-1); 工作体系 and "the system" are each said once, in 02.3. */
 export function taskCues(s) {
   return {
     task: cue(s, "一项任务", "a task"),
     three: cue(s, "三件事", "three distinct outcomes"),
     outcomes: [
-      cue(s, "问题解决掉", "resolve the problem"),
-      cue(s, "判断检验过", "test the judgment"),
-      cue(s, "系统", "the system", { last: true }),
+      cue(s, "解决问题", "resolve the problem"),
+      cue(s, "检验判断", "test the judgment"),
+      cue(s, "工作体系", "the system", { last: true }),
     ],
     holds: cue(s, "说清", "say when it holds"),
-    sooner: cue(s, "更早认出来", "recognize"),
-    better: cue(s, "处理得更好", "handle it better"),
+    // The English qualifier of the third outcome begins on its own first words, before "recognize".
+    able: cue(s, "更好地发现", "better able"),
+    sooner: cue(s, "更好地发现", "recognize"),
+    better: cue(s, "应对", "handle"),
     reports: cue(s, "三份必须交的报告", "three required reports"),
     colleague: cue(s, "连夜", "The colleague"),
     mate: cue(s, "那位同事", "The colleague"),
@@ -54,9 +57,9 @@ export function taskCues(s) {
  * the rail at one pitch about the axis, their names on one baseline one gap under their rings; the reports, and later
  * the colleague, stand on the task's row beside it, named at their outer side, more than a column's reach (90 px)
  * above the outcomes' branches, so their names name no branch. Every part is laid out about the task's axis, which
- * stands `stageShift` from the frame's, so each state the stage holds stands near the centre, and the rail reaches as
- * far past the outer outcomes as the wider of their names, so the picture has its whole extent from the task's first
- * words. */
+ * stands `stageShift` from the frame's, and every row stands `stageRise` above its place below, so each state the
+ * stage holds stands near the centre, and the rail reaches as far past the outer outcomes as the wider of their names,
+ * so the picture has its whole extent from the task's first words. */
 const TASK = { x: 960, y: 440, r: 21 },
   RING_GAP = 4,
   RAIL_Y = 570,
@@ -76,14 +79,13 @@ const TASK_NAME = () => L("一项任务", "A task"),
   ONLY_FIRST = () => L("只做到了第一件", "only the first");
 /* Each outcome's term and the qualifier set under it, its parts said in turn. An English qualifier wraps between its
  * parts at the width of the widest term, so each outcome's name keeps to its column; a Chinese one stands on one line,
- * since its parts are one clause, 更早认出来，或者处理得更好, whose break after its comma would leave the first line
- * short of the engine's wrapping rule, and the columns leave it room. */
+ * since its parts are one clause, 更好地发现或应对, and the columns leave it room. */
 const OUTCOMES = () => [
-  [[L("问题解决掉", "Problem resolved")], []],
-  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "when it holds")]],
+  [[L("解决问题", "Problem resolved")], []],
+  [[L("检验判断", "Judgment tested")], [L("成立的条件", "when it holds")]],
   [
-    [L("系统", "The system")],
-    L(["更早认出来", "，或者处理得更好"], ["recognized sooner,", " handled better"]),
+    [L("工作体系", "The system")],
+    L(["更好地发现", "或应对"], ["better able", " to recognize", " or handle"]),
   ],
 ];
 const noteWidth = () =>
@@ -99,6 +101,15 @@ function nameHalf([term, qual]) {
   );
 }
 const railHalf = () => PITCH + Math.max(nameHalf(OUTCOMES()[0]), nameHalf(OUTCOMES()[2]));
+/* The stage stands higher, by half the height its outcomes' qualifiers take beyond one line under their terms, so the
+ * picture keeps its centre when an edition's qualifier wraps: the English third outcome's takes three lines, which
+ * stood the n5 English pictures of 02.3-02.4 89 px under the content centre, past the gate's 78 px. */
+function stageRise() {
+  const lines = Math.max(
+    ...OUTCOMES().map(([, qual]) => (qual.length ? growTexts(qual, noteWidth(), NOTE).length : 1)),
+  );
+  return ((lines - 1) * labelSize(NOTE) * LEADING) / 2;
+}
 /* The stage's shift right of the frame's axis: the midpoint of the shifts that centre its two lasting states, the
  * reports refused at the task's left (C) and the colleague in their place (C2), so neither stands far off (the idiom
  * of p05/data.js fitShift). The English reports' name is the wider, so its stage stands right of the axis. */
@@ -123,7 +134,11 @@ export function stageOutcomes(s, t, c) {
   if (a <= 0) return;
   const vt = voiceTime(t),
     shift = stageShift(),
-    { y, r } = TASK,
+    { r } = TASK,
+    rise = stageRise(),
+    y = TASK.y - rise,
+    railY = RAIL_Y - rise,
+    ringY = RING_Y - rise,
     x = TASK.x + shift,
     xs = XS.map((v) => v + shift),
     half = railHalf(),
@@ -138,13 +153,13 @@ export function stageOutcomes(s, t, c) {
   stroke(
     () => {
       ctx.moveTo(x, y + r + RING_GAP);
-      ctx.lineTo(x, RAIL_Y);
-      ctx.moveTo(x - half, RAIL_Y);
-      ctx.lineTo(x + half, RAIL_Y);
+      ctx.lineTo(x, railY);
+      ctx.moveTo(x - half, railY);
+      ctx.lineTo(x + half, railY);
     },
     { color: P.line, alpha: a * ramp(t, c.task - 0.15, 0.4), width: 3.5 },
   );
-  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + RAIL_Y) / 2, {
+  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + railY) / 2, {
     align: "left",
     alpha: a * named(t, c.three),
   });
@@ -154,19 +169,19 @@ export function stageOutcomes(s, t, c) {
     const at = c.outcomes[k],
       ox = xs[k],
       on = a * ramp(t, at - 0.15, 0.4);
-    link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
+    link(ox, railY, ox, ringY - RING - 7, {
       alpha: on,
       draw: { t, at: at + 0.05 },
       width: 2.5,
     });
     if (k < 2)
-      outcome(ox, RING_Y, {
+      outcome(ox, ringY, {
         alpha: on,
         bounds: k === 1 ? ramp(t, c.holds - 0.1, 0.4) : 0,
         done: k === 0 ? soon(t, c.first + 0.05, 0.5) : 0,
       });
     else
-      mechanism(ox, RING_Y, {
+      mechanism(ox, ringY, {
         alpha: on,
         turn: vt * 0.5,
         watch: ramp(t, c.sooner - 0.1, 0.4),
@@ -176,9 +191,9 @@ export function stageOutcomes(s, t, c) {
       term,
       [at],
       qual,
-      k === 1 ? [c.holds] : [c.sooner, c.better],
+      k === 1 ? [c.holds] : L([c.sooner, c.better], [c.able, c.sooner, c.better]),
       ox,
-      RING_Y + RING + NAME_GAP,
+      ringY + RING + NAME_GAP,
       {
         align: "center",
         inline: false,
@@ -220,10 +235,10 @@ export function stageOutcomes(s, t, c) {
   const lit = { color: P.evidence, alpha: first, width: 3 };
   stroke(() => {
     ctx.moveTo(x, y + r + RING_GAP);
-    ctx.lineTo(x, RAIL_Y);
-    ctx.lineTo(xs[0], RAIL_Y);
+    ctx.lineTo(x, railY);
+    ctx.lineTo(xs[0], railY);
   }, lit);
-  link(xs[0], RAIL_Y, xs[0], RING_Y - RING - 7, {
+  link(xs[0], railY, xs[0], ringY - RING - 7, {
     ...lit,
     flow: { t, from: c.first + 0.6 },
   });

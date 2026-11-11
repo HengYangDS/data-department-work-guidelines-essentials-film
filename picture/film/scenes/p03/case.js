@@ -129,7 +129,7 @@ export function stageCase(t, a, c) {
     seen = a * ramp(t, c.observation - 0.15, 0.4);
   eye(x, ROW_Y, { alpha: seen, hollow: true, r });
   const term = [L("观察", "An observation")],
-    qual = [L("能推翻它", "would refute it")],
+    qual = [L("能推翻它", "could refute it")],
     { height } = termRowLayout(term, qual, Infinity, false);
   termRow(t, term, [c.observation], qual, [c.refute], x, ROW_Y - r * 0.9 - NAME_GAP - height, {
     align: "center",

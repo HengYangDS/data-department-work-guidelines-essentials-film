@@ -34,13 +34,14 @@ function cuesOf(s) {
     use: cue(s, "具体用途", "a specific use"),
     trust: cue(s, "可信", "earns trust"),
     first2: cue(s, "用之前", "So before relying"),
-    sixClause: cue(s, "先问六个问题", "So before relying"),
+    sixClause: cue(s, "先答清六个问题", "So before relying"),
     six: cue(s, "六个问题", "six questions"),
     // Each question's station fills as it is asked; the English last on "may it be used", so its name, Use, stands
-    // within half a second of "used" (EN9-n6).
+    // within half a second of "used" (EN9-n6), and the second on "become available", so Availability stands within
+    // 0.45 s of "available" in its own question (EN12-n6).
     asks: cues(s, [
       ["它从哪里来", "Where did it come from"],
-      ["最早什么时候能拿到", "When did it become available"],
+      ["最早什么时候能拿到", "become available"],
       ["含义是什么", "What does it mean"],
       ["被什么改过", "What changed it"],
       ["质量怎么样", "How good is it"],
@@ -53,7 +54,7 @@ function cuesOf(s) {
     explore: cue(s, "探索", "explored"),
     scopeClause: cue(s, "可以在授权范围里探索", "Data with unknown meaning"),
     scope: cue(s, "授权范围", "authorized scope"),
-    staysOut: cue(s, "可要拿去", "but stays out"),
+    staysOut: cue(s, "但若用于", "but must stay out"),
     uses: cues(s, [
       ["共享", "sharing"],
       ["投产", "production"],
@@ -83,7 +84,7 @@ function cuesOf(s) {
     become: cue(s, "不能悄悄被当成", "may quietly be treated as"),
     truth: cue(s, "权威来源", "source of truth"),
   };
-  c.fit2 = cueFrom(s, "证明它适合", "shown fit", c.first2b);
+  c.fit2 = cueFrom(s, "证明它适合", "qualified", c.first2b);
   // The Chinese names the arrival on the words that say when the prices could first be had, in 05.3, since 05.2 says
   // 最早能拿到 first; the English names it with the measure, on "two hours later".
   c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);

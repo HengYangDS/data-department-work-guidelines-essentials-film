@@ -1830,14 +1830,14 @@ function cuesOf(s) {
     patch: cue(s, "手工把数据补上", "patches the data"),
     again: cue(s, "下个月照样出错", "next month the collection fails again"),
     mechanism: cue(s, "机制", "the mechanism"),
-    meeting: cue(s, "开了个会", "A meeting"),
+    meeting: cue(s, "开了一场会", "A meeting"),
     speaks: cue(s, "人人都发了言", "everyone speaks"),
     decide: cue(s, "决定", "decide"),
     act: cue(s, "动手", "or act"),
     pages: cue(s, "十页分析", "ten pages"),
     more: cue(s, "材料多了", "more material"),
     judgment: cue(s, "判断和结果", "the judgment"),
-    busy: cue(s, "大家都没闲着", "Everyone keeps busy"),
+    busy: cue(s, "大家都在忙碌", "Everyone keeps busy"),
     who: cue(s, "谁可以决定", "who may decide"),
     which: cue(s, "哪些事实", "which facts"),
     boundary: cue(s, "哪条边界", "which boundary"),
@@ -1867,7 +1867,7 @@ var TERMS = () => [
 ];
 var QUALS = () => [
   [L("事实还没查清", "before the facts are in")],
-  [L("机制一点没动", "the mechanism untouched")],
+  [L("机制原封不动", "the mechanism untouched")],
   [],
   // The fourth says what did not improve, in the voice's words, as its neighbours say what went wrong; the English, in
   // two phrases, breaks between them within the name's width, clear of the meeting beside it.
@@ -2296,13 +2296,15 @@ function taskCues(s) {
     task: cue(s, "一项任务", "a task"),
     three: cue(s, "三件事", "three distinct outcomes"),
     outcomes: [
-      cue(s, "问题解决掉", "resolve the problem"),
-      cue(s, "判断检验过", "test the judgment"),
-      cue(s, "系统", "the system", { last: true })
+      cue(s, "解决问题", "resolve the problem"),
+      cue(s, "检验判断", "test the judgment"),
+      cue(s, "工作体系", "the system", { last: true })
     ],
     holds: cue(s, "说清", "say when it holds"),
-    sooner: cue(s, "更早认出来", "recognize"),
-    better: cue(s, "处理得更好", "handle it better"),
+    // The English qualifier of the third outcome begins on its own first words, before "recognize".
+    able: cue(s, "更好地发现", "better able"),
+    sooner: cue(s, "更好地发现", "recognize"),
+    better: cue(s, "应对", "handle"),
     reports: cue(s, "三份必须交的报告", "three required reports"),
     colleague: cue(s, "连夜", "The colleague"),
     mate: cue(s, "那位同事", "The colleague"),
@@ -2324,11 +2326,11 @@ var REPORTS = () => L("三份必须交的报告", "Three required reports");
 var COLLEAGUE = () => L("那位同事", "The colleague");
 var ONLY_FIRST = () => L("只做到了第一件", "only the first");
 var OUTCOMES = () => [
-  [[L("问题解决掉", "Problem resolved")], []],
-  [[L("判断检验过", "Judgment tested")], [L("成立的条件", "when it holds")]],
+  [[L("解决问题", "Problem resolved")], []],
+  [[L("检验判断", "Judgment tested")], [L("成立的条件", "when it holds")]],
   [
-    [L("系统", "The system")],
-    L(["更早认出来", "，或者处理得更好"], ["recognized sooner,", " handled better"])
+    [L("工作体系", "The system")],
+    L(["更好地发现", "或应对"], ["better able", " to recognize", " or handle"])
   ]
 ];
 var noteWidth = () => L(Infinity, Math.max(...OUTCOMES().map(([term]) => measure(term.join("")))));
@@ -2340,6 +2342,12 @@ function nameHalf([term, qual]) {
   ) / 2;
 }
 var railHalf = () => PITCH + Math.max(nameHalf(OUTCOMES()[0]), nameHalf(OUTCOMES()[2]));
+function stageRise() {
+  const lines = Math.max(
+    ...OUTCOMES().map(([, qual]) => qual.length ? growTexts(qual, noteWidth(), NOTE).length : 1)
+  );
+  return (lines - 1) * labelSize(NOTE) * LEADING / 2;
+}
 function stageShift() {
   const half = railHalf(), right = Math.max(TASK.x + half, TASK.x + NAME_GAP + measure(THREE())), reports2 = BESIDE.x - BESIDE.half - NAME_GAP - REFUSAL - measure(REPORTS()), colleague = BESIDE.x - 24 - NAME_GAP - Math.max(measure(COLLEAGUE()), measure(ONLY_FIRST(), NOTE)), shifts = [reports2, colleague].map((left) => 960 - (Math.min(TASK.x - half, left) + right) / 2);
   return (Math.max(...shifts) + Math.min(...shifts)) / 2;
@@ -2348,38 +2356,38 @@ var LEAVE = 0.3;
 function stageOutcomes(s, t, c) {
   const a = stageIn(t, c.task);
   if (a <= 0) return;
-  const vt = voiceTime(t), shift = stageShift(), { y, r } = TASK, x = TASK.x + shift, xs = XS2.map((v) => v + shift), half = railHalf(), gone = c.colleague + 0.05 + LEAVE, mate = Math.max(c.mate, gone + 0.05), arrived = a * named(t, mate), first = a * ramp(t, c.first - 0.15, 0.4);
+  const vt = voiceTime(t), shift = stageShift(), { r } = TASK, rise = stageRise(), y = TASK.y - rise, railY = RAIL_Y - rise, ringY = RING_Y - rise, x = TASK.x + shift, xs = XS2.map((v) => v + shift), half = railHalf(), gone = c.colleague + 0.05 + LEAVE, mate = Math.max(c.mate, gone + 0.05), arrived = a * named(t, mate), first = a * ramp(t, c.first - 0.15, 0.4);
   token(x, y, { alpha: a * ramp(t, c.task - 0.15, 0.4) });
   nameText(TASK_NAME(), x, y - r - NAME_GAP, { valign: "bottom", alpha: a * named(t, c.task) });
   stroke(
     () => {
       ctx.moveTo(x, y + r + RING_GAP);
-      ctx.lineTo(x, RAIL_Y);
-      ctx.moveTo(x - half, RAIL_Y);
-      ctx.lineTo(x + half, RAIL_Y);
+      ctx.lineTo(x, railY);
+      ctx.moveTo(x - half, railY);
+      ctx.lineTo(x + half, railY);
     },
     { color: P.line, alpha: a * ramp(t, c.task - 0.15, 0.4), width: 3.5 }
   );
-  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + RAIL_Y) / 2, {
+  nameText(THREE(), x + NAME_GAP, (y + r + RING_GAP + railY) / 2, {
     align: "left",
     alpha: a * named(t, c.three)
   });
   const noteW = noteWidth();
   OUTCOMES().forEach(([term, qual], k) => {
     const at2 = c.outcomes[k], ox = xs[k], on = a * ramp(t, at2 - 0.15, 0.4);
-    link(ox, RAIL_Y, ox, RING_Y - RING - 7, {
+    link(ox, railY, ox, ringY - RING - 7, {
       alpha: on,
       draw: { t, at: at2 + 0.05 },
       width: 2.5
     });
     if (k < 2)
-      outcome(ox, RING_Y, {
+      outcome(ox, ringY, {
         alpha: on,
         bounds: k === 1 ? ramp(t, c.holds - 0.1, 0.4) : 0,
         done: k === 0 ? soon(t, c.first + 0.05, 0.5) : 0
       });
     else
-      mechanism(ox, RING_Y, {
+      mechanism(ox, ringY, {
         alpha: on,
         turn: vt * 0.5,
         watch: ramp(t, c.sooner - 0.1, 0.4)
@@ -2389,9 +2397,9 @@ function stageOutcomes(s, t, c) {
       term,
       [at2],
       qual,
-      k === 1 ? [c.holds] : [c.sooner, c.better],
+      k === 1 ? [c.holds] : L([c.sooner, c.better], [c.able, c.sooner, c.better]),
       ox,
-      RING_Y + RING + NAME_GAP,
+      ringY + RING + NAME_GAP,
       {
         align: "center",
         inline: false,
@@ -2426,10 +2434,10 @@ function stageOutcomes(s, t, c) {
   const lit = { color: P.evidence, alpha: first, width: 3 };
   stroke(() => {
     ctx.moveTo(x, y + r + RING_GAP);
-    ctx.lineTo(x, RAIL_Y);
-    ctx.lineTo(xs[0], RAIL_Y);
+    ctx.lineTo(x, railY);
+    ctx.lineTo(xs[0], railY);
   }, lit);
-  link(xs[0], RAIL_Y, xs[0], RING_Y - RING - 7, {
+  link(xs[0], railY, xs[0], ringY - RING - 7, {
     ...lit,
     flow: { t, from: c.first + 0.6 }
   });
@@ -2445,7 +2453,7 @@ function cuesOf2(s) {
     members: cue(s, "部门成员", "members"),
     delegate: cue(s, "委托", "delegate"),
     agents: cue(s, "智能体", "Agents"),
-    aiWhat: cue(s, "查资料", "AI systems"),
+    aiWhat: cue(s, "调查", "AI systems"),
     aiReason: cue(s, "推理", "AI systems"),
     aiAct: cue(s, "动手", "AI systems"),
     value: cue(s, "数据工作的价值", "The value of data work"),
@@ -2456,8 +2464,8 @@ function cuesOf2(s) {
       cue(s, "一个流程", "a process")
     ],
     signal: cue(s, "现实里的信号", "signals from the world"),
-    becomes: cue(s, "变成", "into judgments"),
-    others: cue(s, "别人", "others"),
+    becomes: cue(s, "变成", "into reliable judgments"),
+    others: cue(s, "可靠的", "reliable"),
     outputs: [
       cue(s, "判断", "judgments"),
       cue(s, "数据资产", "data assets"),
@@ -2520,7 +2528,7 @@ function stageGuide2(s, t, a, c) {
   });
   growName(
     t,
-    L(["能查资料", "、推理", "和动手"], ["AI systems"]),
+    L(["能调查", "、推理", "和动手"], ["AI systems"]),
     [c.aiWhat, c.aiReason, c.aiAct],
     agentsX,
     ROW_NAMES + labelSize(LABEL) + TERM_STACK,
@@ -2606,7 +2614,7 @@ function stageWay(t, a, c) {
   });
   const others = a * ramp(t, c.others - 0.15, 0.4);
   people2(OTHERS, WAY_Y, { size: 0.8, alpha: others });
-  const own = nameText(L("别人", "Others"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
+  const own = nameText(L("可靠", "Reliable"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.others)
   });
@@ -2833,7 +2841,7 @@ function stageCase(t, a, c) {
   theHypothesis(t, a, c);
   const { x, r } = OBSERVATION, seen = a * ramp(t, c.observation - 0.15, 0.4);
   eye(x, ROW_Y2, { alpha: seen, hollow: true, r });
-  const term = [L("观察", "An observation")], qual = [L("能推翻它", "would refute it")], { height } = termRowLayout(term, qual, Infinity, false);
+  const term = [L("观察", "An observation")], qual = [L("能推翻它", "could refute it")], { height } = termRowLayout(term, qual, Infinity, false);
   termRow(t, term, [c.observation], qual, [c.refute], x, ROW_Y2 - r * 0.9 - NAME_GAP - height, {
     align: "center",
     inline: false,
@@ -2885,7 +2893,16 @@ var FORK = 64;
 var NODE = 170;
 var DECIDE_X = 1440;
 var MISSING_X = 1720;
-var AGENDA = () => L(["决定什么", "谁必须参加", "哪些事实"], ["What to decide", "Who must attend", "Which facts"]);
+var AGENDA = () => L(["决定什么", "谁必须参加", "哪些材料"], ["What to decide", "Who must attend", "Which inputs"]);
+var SETTLED = () => L(
+  ["谁去做、", "什么时候做完", "、怎样算完成"],
+  ["who does what", " by when", ", what counts as done"]
+);
+var MISSING = () => L("还缺什么", "Still missing");
+function decideX() {
+  const half = measure(SETTLED().join(""), NOTE) / 2;
+  return Math.min(DECIDE_X, MISSING_X - measure(MISSING()) / 2 - NAME_GAP - half);
+}
 var at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 function stageMeeting(t, a, c) {
   const vt = voiceTime(t), { x, y, k } = MEET, decision = a * ramp(t, c.decision - 0.15, 0.4), doer = a * ramp(t, c.whoDoes - 0.15, 0.4);
@@ -2930,29 +2947,29 @@ function stageMeeting(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.ends)
   });
-  const forkY = COURSE_Y + FORK, nodeY = COURSE_Y + NODE, missing = a * ramp(t, c.missing - 0.15, 0.4);
+  const forkY = COURSE_Y + FORK, nodeY = COURSE_Y + NODE, decisionX = decideX(), missing = a * ramp(t, c.missing - 0.15, 0.4);
   link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
     alpha: decision,
     draw: { t, at: c.decision - 0.35 },
     end: false,
     width: 2.5
   });
-  link(COURSE[1], forkY, DECIDE_X, nodeY - 22, {
+  link(COURSE[1], forkY, decisionX, nodeY - 22, {
     route: "hv",
     alpha: decision,
     draw: { t, at: c.decision - 0.1 },
     width: 2.5
   });
-  ring(DECIDE_X - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
-  dot(DECIDE_X - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
-  people([DECIDE_X + 22], nodeY + 6, { alpha: doer, size: 0.7 });
+  ring(decisionX - 18, nodeY, 14, { color: P.authority, alpha: decision, width: 3 });
+  dot(decisionX - 18, nodeY, 4.5, { color: P.authority, alpha: decision });
+  people([decisionX + 22], nodeY + 6, { alpha: doer, size: 0.7 });
   termRow(
     t,
     [L("决定", "A decision")],
     [c.decision],
-    L(["谁去做、", "什么时候做完"], ["who does what", " by when"]),
-    [c.whoDoes, c.byWhen],
-    DECIDE_X,
+    SETTLED(),
+    [c.whoDoes, c.byWhen, c.done],
+    decisionX,
     nodeY + 30 + NAME_GAP,
     { align: "center", inline: false, alpha: a }
   );
@@ -2963,7 +2980,7 @@ function stageMeeting(t, a, c) {
     width: 2.5
   });
   openMark2(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(L("还缺什么", "Still missing"), MISSING_X, nodeY + 30 + NAME_GAP, {
+  nameText(MISSING(), MISSING_X, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing)
   });
@@ -3085,7 +3102,7 @@ function stageApart(t, a, c) {
     alpha: a * named(t, c.report)
   });
   const refused = [c.alter, c.oneSide];
-  L(["改记录", "悄悄照一边做"], ["Altering the record", "Acting as if one side had won"]).forEach(
+  L(["改记录", "悄悄按一方做"], ["Altering the record", "Acting as if one side had won"]).forEach(
     (v, i) => rejectedName(v, 960, MID_NAMES + 52 + i * 44, {
       valign: "top",
       alpha: a * listIn(t, refused, i),
@@ -3251,7 +3268,7 @@ var RANKS = () => L(
     "Law, regulation, security requirements, mandatory company policy",
     "What the decision owner for the matter explicitly decides",
     "Contracts, policies, specifications, decision records in force",
-    "Plans, provisional agreements, personal preferences"
+    "Work plans, provisional agreements, personal preferences"
   ]
 );
 var HEAD = () => L("行动依据", "Authority to act");
@@ -3310,7 +3327,7 @@ var PARTS = [
     ["决策记录", "decision records"]
   ],
   [
-    ["工作计划", "Plans"],
+    ["工作计划", "Work plans"],
     ["临时约定", "provisional"],
     ["个人偏好", "personal"]
   ]
@@ -3323,14 +3340,13 @@ function cuesOf3(s) {
     apart: cue(s, "分开看", "stay apart"),
     act: cue(s, "行动依据", "Authority to act"),
     who: cue(s, "谁可以决定", "who may decide"),
-    // The order opens on 03.3's first words, which announce it, and its span grows on 「有先后」/ "a fixed order".
-    opens: cue(s, "它有先后", "It comes in a fixed order"),
-    order: cue(s, "有先后", "a fixed order"),
+    // The order opens, and its span grows, on the words that announce it, 「有先后」/ "an order of precedence".
+    order: cue(s, "有先后", "an order of precedence"),
     ranks: [
       cue(s, "最先是法律", "Law"),
       cue(s, "决策负责人作出", "what the decision owner"),
       cue(s, "有效的契约", "contracts"),
-      cue(s, "工作计划", "Plans")
+      cue(s, "工作计划", "Work plans")
     ],
     another: cue(s, "另一种", "Authority about facts"),
     facts: cue(s, "事实依据", "Authority about facts"),
@@ -3358,7 +3374,7 @@ function caseCues(s) {
     late: cue(s, "晚了两个小时", "two hours late"),
     log: cue(s, "日志", "the log"),
     fact: cue(s, "这是事实", "that is a fact"),
-    vendorLate: cue(s, "供应商发布晚了", "the vendor published late"),
+    vendorLate: cue(s, "供应商发布晚了", "The vendor's late publication"),
     hypothesis: cue(s, "假设", "a hypothesis"),
     checks: cue(s, "查过发布时间", "checks the publication time"),
     observation: cueFrom(s, "观察", "observation", checked(s)),
@@ -3370,18 +3386,19 @@ function caseCues(s) {
 }
 function closeCues(s) {
   return {
-    meeting: cue(s, "前面说的那场会", "The meeting at the start"),
+    meeting: cue(s, "开头那场会", "The meeting at the start"),
     meetingName: cue(s, "那场会", "The meeting"),
     before: cue(s, "会前", "Before it"),
     items: [
       cue(s, "要决定什么", "what is to be decided"),
       cue(s, "谁必须参加", "who must attend"),
-      cue(s, "需要哪些事实", "which facts")
+      cue(s, "需要哪些材料", "which inputs")
     ],
     ends: cue(s, "散会时", "When it ends"),
     decision: cue(s, "有了决定", "reach a decision"),
     whoDoes: cue(s, "谁去做", "who does what"),
     byWhen: cue(s, "什么时候做完", "by when"),
+    done: cue(s, "怎样算完成", "what counts as done"),
     missing: cue(s, "还缺什么", "still missing"),
     orSay: cue(s, "要么说清", "or say"),
     neither: cue(s, "两种依据不能", "Neither kind"),
@@ -3393,12 +3410,12 @@ function closeCues(s) {
     conflict: cue(s, "冲突时", "conflicts"),
     report: cue(s, "讲出冲突和影响", "report the conflict"),
     alter: cue(s, "不改记录", "alter the record"),
-    oneSide: cue(s, "哪边", "one side")
+    oneSide: cue(s, "其中一方", "one side")
   };
 }
 scenes["03"] = function(s, t) {
   const c = cuesOf3(s);
-  const A5 = stageOut(t, c.opens), B6 = stageIn(t, c.opens) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.primary), C22 = stageIn(t, c.primary) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E4 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
+  const A5 = stageOut(t, c.order), B6 = stageIn(t, c.order) * stageOut(t, c.another), C1 = stageIn(t, c.another) * stageOut(t, c.primary), C22 = stageIn(t, c.primary) * stageOut(t, c.night), D3 = stageIn(t, c.night) * stageOut(t, c.meeting), E4 = stageIn(t, c.meeting) * stageOut(t, c.neither), F3 = stageIn(t, c.neither);
   if (A5 > 0) twoKinds(s, t, A5, c);
   if (B6 > 0) stageOrder(t, B6, c);
   if (C1 > 0) twoKinds(s, t, C1, c, { facts: true });
@@ -3539,7 +3556,7 @@ var ROWS2 = () => L(
   [
     [
       "Telling the truth",
-      ["no fabrication, ", "hiding, ", "cherry-picking ", "or false certainty"]
+      ["no fabrication, ", "hiding, ", "cherry-picking ", "or uncertainty dressed as certainty"]
     ],
     [
       "Staying in bounds",
@@ -3601,7 +3618,7 @@ var C = {
   ring: 17
 };
 var FREE = () => L(["自主", "探索", "创造"], ["Autonomy", "Exploration", "Creative work"]);
-var EDGE2 = () => L(["停下来", "讲出来", "往上报"], ["Stop", "Make it visible", "Escalate"]);
+var EDGE2 = () => L(["停下来", "讲出来", "上报"], ["Stop", "Make it visible", "Escalate"]);
 var widest = (names) => Math.max(...names.map((v) => measure(v)));
 function caseColumns() {
   const free = widest(FREE()), edge = widest(EDGE2()), w = Math.max(C.s, 2 * C.inset + free + C.between + edge);
@@ -3614,8 +3631,8 @@ function stageCases(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.inside)
   });
-  const row = C.y + C.ring + NAME_GAP, free = a * ramp(t, c.inside - 0.15, 0.4), ry = row - NAME_GAP - 8 - C.reach[1];
-  dot(xf + C.reach[0] * Math.sin(vt * 0.9), ry + C.reach[1] * Math.sin(vt * 1.3), 8, {
+  const row = C.y + C.ring + NAME_GAP, free = a * ramp(t, c.inside - 0.15, 0.4), ry = row - NAME_GAP - 8 - C.reach[1], rest = voiceTime(thoughtEnd(c.free)), roam = Math.min(vt, rest) - rest, phase = Math.asin((C.y - ry) / C.reach[1]);
+  dot(xf + C.reach[0] * Math.sin(roam * 0.9), ry + C.reach[1] * Math.sin(roam * 1.3 + phase), 8, {
     color: P.ink,
     alpha: free * level(0)
   });
@@ -3692,7 +3709,7 @@ function radialName(v, cx, cy, r, a, { gap = NAME_GAP, ry = r, width = 260, ...o
 var WORK = () => L(
   [
     { term: ["局部、可逆"], qual: ["无对外承诺"] },
-    { term: ["跨角色、做得久"], qual: ["几种方案、重大不确定性"] },
+    { term: ["跨角色、周期长"], qual: ["几种方案、重大不确定性"] },
     {
       term: ["生产、", "资金、", "敏感数据、", "安全合规"],
       qual: ["删除覆盖、", "对外承诺、", "不可逆"]
@@ -3715,7 +3732,7 @@ var WORK = () => L(
 );
 var RECORD3 = () => L(
   [
-    { term: ["一次讲清"], qual: ["结论、", "依据、", "做法"] },
+    { term: ["一次讲清"], qual: ["结论、", "依据、", "行动"] },
     { term: ["现有的工作记录"], qual: ["问题、", "方案、", "做法、", "验收"] },
     { term: ["书面决定、", "明确授权"], qual: ["回滚或降级预案、", "独立评审、", "由人验收"] }
   ],
@@ -3978,12 +3995,12 @@ function cuesOf4(s) {
     free: cue(s, "自主", "autonomy"),
     explore: cue(s, "探索", "exploration"),
     create: cue(s, "创造", "creative work"),
-    near: cue(s, "快要越线时", "When an action would cross one"),
+    near: cue(s, "发现会越线时", "When an action would cross one"),
     // What is done at the edge, each on its words: stop, make it visible, escalate.
     edge: [
       cue(s, "停下来", "stop"),
       cue(s, "讲出来", "make it visible"),
-      cue(s, "往上报", "escalate")
+      cue(s, "上报", "escalate")
     ],
     ladder: cue(s, "要留多少记录", "Risk sets the process"),
     risk: cue(s, "多少记录", "Risk sets the process"),
@@ -4013,7 +4030,7 @@ function cuesOf4(s) {
     oneClear,
     clearQual: cue(s, "结论", "conclusion"),
     // The later parts of the first record's qualifier and of the second record's contents.
-    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "做法", "action", oneClear)],
+    clearParts: [cue(s, "依据", "basis"), cueFrom(s, "行动", "action", oneClear)],
     record: cue(s, "现有的工作记录", "existing work record"),
     recordQual,
     recordParts: [
@@ -4175,6 +4192,7 @@ function fitStage(s, t, c, g) {
   link(cardX + cw / 2 + 12, A22.y, useX - A22.r - 12, A22.y, {
     alpha: g,
     width: 3,
+    draw: L({ t, at: c.fit - 0.15 }, null),
     flow: { t, from: c.fit }
   });
   nameText(L("证明适合", "Shown fit"), (cardX + cw / 2 + useX - A22.r) / 2, A22.y - NAME_GAP, {
@@ -4254,8 +4272,11 @@ function questionsStage(s, t, c, g) {
 var S = { w: 550, h: 285, card: [320, 160], inset: 18 };
 var WORK2 = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
 var USES = () => L(["共享", "投产", "决策"], ["Sharing", "Production", "Decisions"]);
+var UNCLEAR = () => L("还说不清", "Data with unknown meaning, quality or availability");
+var unclearLines = () => wrapName(UNCLEAR(), S.w - 2 * S.inset);
+var scopeHeight = () => S.h + (unclearLines().length - 1) * labelSize(LABEL) * LEADING;
 function scopeTop() {
-  const head = labelSize(LABEL) + NAME_GAP, first = S.h - head, whole = S.h + WORK2.below + WORK2.half - head;
+  const head = labelSize(LABEL) + NAME_GAP, first = scopeHeight() - head, whole = scopeHeight() + WORK2.below + WORK2.half - head;
   return 505 - (first + whole) / 4;
 }
 function workXs() {
@@ -4268,14 +4289,14 @@ function workXs() {
   });
 }
 function scopeStage(s, t, c, g) {
-  const left = 960 - S.w / 2, top = scopeTop(), bottom = top + S.h, roam = g * soon(t, c.explore - 0.15, 0.6), dx = 26 * Math.sin(Math.PI * 2 * 0.22 * voiceTime(t)) * roam, [cw, ch] = S.card, scope = g * early(t, c.scopeClause, c.scope);
+  const left = 960 - S.w / 2, top = scopeTop(), h = scopeHeight(), bottom = top + h, roam = g * soon(t, c.explore - 0.15, 0.6), dx = 26 * Math.sin(Math.PI * 2 * 0.22 * voiceTime(t)) * roam, [cw, ch] = S.card, scope = g * early(t, c.scopeClause, c.scope);
   tableIcon(960 + dx - cw / 2, top + S.inset, cw, ch, { alpha: g, stroke: P.muted });
-  const under = top + S.inset + ch + NAME_GAP, data = nameText(L("还说不清", "Data with unknown meaning"), 960, under, {
+  const under = top + S.inset + ch + NAME_GAP, data = nameText(unclearLines(), 960, under, {
     valign: "top",
     color: P.ink,
     alpha: g * named(t, c.first2b)
   });
-  stroke(() => ctx.roundRect(left, top, S.w, S.h, 12), { color: P.line, alpha: g, width: 2.5 });
+  stroke(() => ctx.roundRect(left, top, S.w, h, 12), { color: P.line, alpha: g, width: 2.5 });
   nameText(L("授权范围", "Authorized scope"), 960, top - NAME_GAP, {
     valign: "bottom",
     alpha: scope
@@ -4287,7 +4308,7 @@ function scopeStage(s, t, c, g) {
     end: false
   });
   bar(960, bottom, { alpha: g * ramp(t, c.staysOut + 0.4, 0.3), length: 60 });
-  nameText(L("证明适合", "Shown fit"), 960 + 30 + NAME_GAP, bottom + 10, {
+  nameText(L("证明适合", "Qualified"), 960 + 30 + NAME_GAP, bottom + 10, {
     align: "left",
     valign: "top",
     alpha: g * named(t, c.fit2)
@@ -4498,13 +4519,14 @@ function cuesOf5(s) {
     use: cue(s, "具体用途", "a specific use"),
     trust: cue(s, "可信", "earns trust"),
     first2: cue(s, "用之前", "So before relying"),
-    sixClause: cue(s, "先问六个问题", "So before relying"),
+    sixClause: cue(s, "先答清六个问题", "So before relying"),
     six: cue(s, "六个问题", "six questions"),
     // Each question's station fills as it is asked; the English last on "may it be used", so its name, Use, stands
-    // within half a second of "used" (EN9-n6).
+    // within half a second of "used" (EN9-n6), and the second on "become available", so Availability stands within
+    // 0.45 s of "available" in its own question (EN12-n6).
     asks: cues(s, [
       ["它从哪里来", "Where did it come from"],
-      ["最早什么时候能拿到", "When did it become available"],
+      ["最早什么时候能拿到", "become available"],
       ["含义是什么", "What does it mean"],
       ["被什么改过", "What changed it"],
       ["质量怎么样", "How good is it"],
@@ -4517,7 +4539,7 @@ function cuesOf5(s) {
     explore: cue(s, "探索", "explored"),
     scopeClause: cue(s, "可以在授权范围里探索", "Data with unknown meaning"),
     scope: cue(s, "授权范围", "authorized scope"),
-    staysOut: cue(s, "可要拿去", "but stays out"),
+    staysOut: cue(s, "但若用于", "but must stay out"),
     uses: cues(s, [
       ["共享", "sharing"],
       ["投产", "production"],
@@ -4547,7 +4569,7 @@ function cuesOf5(s) {
     become: cue(s, "不能悄悄被当成", "may quietly be treated as"),
     truth: cue(s, "权威来源", "source of truth")
   };
-  c.fit2 = cueFrom(s, "证明它适合", "shown fit", c.first2b);
+  c.fit2 = cueFrom(s, "证明它适合", "qualified", c.first2b);
   c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);
   return c;
 }
@@ -4638,7 +4660,7 @@ function nightWay(c) {
 }
 var THREE2 = () => L("三层", "Three layers");
 var LAYERS = () => L(["止住影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]);
-var REFUSED = () => L("从根上修好", "A systemic fix");
+var REFUSED = () => L("治本", "A systemic fix");
 function layersStage(s, t, c, g) {
   const move = startMoved(t, c), names = {
     axis: { v: L("昨晚", "Last night"), side: "left", alpha: 1 },
@@ -4718,7 +4740,11 @@ function layersStage(s, t, c, g) {
     });
     box(x0, y - B3.h / 2, x1 - x0, B3.h, { stroke: P.ink, alpha: q2 * lit, radius: 10, width: 3 });
     if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
-    else openMark(x0 + 190, y, 17, { alpha: g * ramp(t, c.asks[0] + 0.05, 0.4) });
+    else {
+      const asked = g * ramp(t, c.asks[0] + 0.05, 0.4);
+      openMark(x0 + 190, y, 17, { alpha: asked });
+      beats(t, x0 + 190, y, 26, c.asks.slice(1), { alpha: asked });
+    }
     if (i === 0) patchMark(x0 + 60, y, 30, { alpha: q2 });
     if (i === 1) {
       dot(x0 + 60, y, 17, { color: P.ink, alpha: q2, hollow: true, width: 2.5 });
@@ -5072,7 +5098,7 @@ function pairsStage(s, t, c, g) {
       at: c.test,
       to: c.acceptance,
       from: L("测试通过", "A passing test"),
-      not: L("已经验收", "Acceptance")
+      not: L("已验收", "Acceptance")
     },
     {
       y: 640,
@@ -5124,19 +5150,19 @@ function cuesOf6(s) {
     layers: cues(s, [
       ["止住影响", "First, fill in"],
       ["修掉", "to repair"],
-      ["防止它再发生", "Last, stop it happening again"]
+      ["防止它再发生", "Last, guard against a recurrence"]
     ]),
     missing: cue(s, "缺的数据", "the missing data"),
     fill: cue(s, "补上", "fill in"),
     earlier: cue(s, "提前启动", "start the job earlier"),
     safeguard: cue(s, "刚好够用的防护", "lightest safeguard"),
     firstTwo: cue(s, "只做前两层", "Doing only the first two"),
-    notFix: cue(s, "不算从根上修好", "Doing only the first two"),
-    systemic: cue(s, "从根上修好", "systemic fix"),
+    notFix: cue(s, "不算治本", "Doing only the first two"),
+    systemic: cue(s, "治本", "systemic fix"),
     asks: cues(s, [
-      ["弄清现有的系统", "work out why"],
-      ["防住", "prevent"],
-      ["发现", "catch"]
+      ["讲清现有的工作体系", "explain why"],
+      ["预防", "prevent"],
+      ["发现", "detect"]
     ]),
     first3: cue(s, "决策负责人批准", "The decision owner approves"),
     stations: cues(s, [
@@ -5163,9 +5189,9 @@ function cuesOf6(s) {
       ["环境", "environment"],
       ["限度", "limit"]
     ]),
-    published: cue(s, "发布到了约定的地方", "the agreed destination"),
-    notMean: cue(s, "不代表有人在用", "does not mean anyone uses it"),
-    inUse: cue(s, "有人在用", "anyone uses it"),
+    published: cue(s, "发布到约定的地方", "the agreed destination"),
+    notMean: cue(s, "不代表有人在用", "does not mean anyone uses the result"),
+    inUse: cue(s, "有人在用", "anyone uses the result"),
     observed: cue(s, "实际看到了什么", "actually observed"),
     first6: cue(s, "每次说完成", "Every completion claim"),
     claim: cue(s, "说完成", "completion claim"),
@@ -5179,7 +5205,9 @@ function cuesOf6(s) {
     inflate: cue(s, "别把话说大", "rather than inflate the wording"),
     first7: cue(s, "测试通过", "A passing test"),
     test: cue(s, "测试通过", "A passing test"),
-    acceptance: cue(s, "不等于已经验收", "is not acceptance"),
+    // What a passing test does not make stands from the words that say it, 「整体正确或已验收」/ "overall correctness
+    // nor acceptance", so the test's sheet does not stand alone through the English line's 2 s before "acceptance".
+    acceptance: cue(s, "整体正确或已验收", "overall correctness nor acceptance"),
     agentSays: cue(s, "智能体说完成了", "And an Agent reporting completion"),
     complete: cueFrom(s, "也不等于完成了", "the work complete", 0)
   };
@@ -5485,8 +5513,14 @@ var C3 = { y: 425, pile: 170, clear: 34 };
 var PILE = () => L("一堆背景材料", "A pile of context");
 function boundaryStage(s, t, c, g) {
   const ats = c.five, items = L(
-    ["目的和范围", "交什么", "限制和权限", "怎么验收", "什么时候停"],
-    ["Purpose and scope", "Deliverable", "Limits and permissions", "Acceptance", "When to stop"]
+    ["目的和范围", "交什么", "限制和权限", "怎么验收", "停下交接"],
+    [
+      "Purpose and scope",
+      "Deliverable",
+      "Limits and permissions",
+      "Acceptance",
+      "Stop and hand off"
+    ]
   ), half = Math.max(...items.map((v) => measure(v) / 2 + 36)), name = L("边界", "A clear boundary"), room = L(120, 72), pileHalf = Math.max(60, (measure(PILE()) + 42) / 2), toPile = half + C3.clear + pileHalf, x = glide(t, centring(-half, half), [[c.pile, centring(-toPile - pileHalf, half)]]), grown = ats.reduce((v, at2) => v + travel(t, at2 - 0.6, 0.6), 0), y = C3.y, top = y - room, bottom = mix(y + room, y + 161, Math.min(1, grown)) + 52 * Math.max(0, grown - 1);
   agent(x, y, { alpha: g, size: 2 });
   boundary(x - half, top, x + half, bottom, { alpha: g, width: 3.5 });
@@ -5530,7 +5564,7 @@ function cuesOf7(s) {
     decision: cue(s, "哪个决定", "which decision"),
     first3: cue(s, "委托时要划清边界", "So delegate with a clear boundary"),
     clear: cue(s, "边界", "a clear boundary"),
-    pile: cue(s, "丢过去一堆", "not a pile of context"),
+    pile: cue(s, "只给一堆", "not a pile of context"),
     important: cue(s, "重要的委托", "A consequential delegation"),
     five: cues(s, [
       ["目的和范围", "purpose and scope"],
@@ -5651,7 +5685,7 @@ function lanesStage(s, t, c, g0) {
 }
 var G = { x0: 700, x1: 1220, ys: [360, 480, 600], reach: 24, drop: 28 };
 function aimStage(s, t, c, g) {
-  const ats = c.gains, starts = [cue(s, "下一次故障", "find the next failure earlier"), ats[1], ats[2]], [y0, y1, y2] = G.ys, mid = (G.x0 + G.x1) / 2, top = y0 - G.reach, bottom = y2 + G.reach;
+  const ats = c.gains, starts = [cue(s, "下一次失败", "find the next failure earlier"), ats[1], ats[2]], [y0, y1, y2] = G.ys, mid = (G.x0 + G.x1) / 2, top = y0 - G.reach, bottom = y2 + G.reach;
   nameText(L("学习的目的", "The aim of learning"), G.x0, y0 - 34 - NAME_GAP, {
     align: "left",
     valign: "bottom",
@@ -5858,7 +5892,7 @@ function monitorStage(s, t, c, g) {
   recoverIcon(lx, M.y + 150, 26, { alpha: look, color: P.evidence, upto: soon(t, c.look3, 0.8) });
   line(lx, M.y + 150, lx, M.y + 134, { color: P.evidence, alpha: look, width: 3 });
   line(lx, M.y + 150, lx + 11, M.y + 156, { color: P.evidence, alpha: look, width: 3 });
-  nameText(L("回头看看", "A later look"), lx, M.y + 176 + NAME_GAP, { valign: "top", alpha: look });
+  nameText(L("复查", "A later look"), lx, M.y + 176 + NAME_GAP, { valign: "top", alpha: look });
   const asks = g * named(t, c.earlier);
   openMark(m.arrival, M.y - 60, 18, { alpha: asks });
   nameText(L("更早发现问题", "Problems caught earlier"), m.arrival + 18 + NAME_GAP, M.y - 60, {
@@ -5866,9 +5900,9 @@ function monitorStage(s, t, c, g) {
     alpha: asks
   });
 }
-var R = { x: 960, y: 420, rail: 640, half: () => L(520, 670), pitch: () => L(300, 400) };
+var R = { x: 960, y: 420, rail: 640, pitch: () => L(300, 400) };
 var REASONS = () => L(
-  ["对象没了", "没人在用", "跟权威来源重复", "得不偿失"],
+  ["失去适用对象", "没人在用", "和权威来源重复", "得不偿失"],
   [
     "Nothing left to govern",
     "No user",
@@ -5878,13 +5912,13 @@ var REASONS = () => L(
 );
 var widest2 = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line2) => measure(line2)));
 function retireRow() {
-  const names = REASONS(), [first, last] = [widest2(names[0]), widest2(names[3])], x = L(R.x, R.x - (last - first) / 4), left = x - 1.5 * R.pitch() - first / 2, right = x + 1.5 * R.pitch() + last / 2;
-  return { x, railX: (left + right) / 2, half: L(R.half(), (right - left) / 2 + 20) };
+  const names = REASONS(), [first, last] = [widest2(names[0]), widest2(names[3])], x = R.x - (last - first) / 4, left = x - 1.5 * R.pitch() - first / 2, right = x + 1.5 * R.pitch() + last / 2;
+  return { x, railX: (left + right) / 2, half: (right - left) / 2 + 20 };
 }
 function retireStage(s, t, c, g) {
   const lifted = soon(t, c.lift, 0.7), page = g * mix(1, 0.45, lifted), row = retireRow(), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => row.x + k * R.pitch()), ats = c.retire, carried = ramp(t, ats[0] - 0.15, 0.4);
   rulePage(R.x, R.y, { alpha: page, sealAlpha: g * (1 - lifted), w: 120, h: 156, sealAt: -0.34 });
-  nameText(L("规矩", "A rule"), R.x, R.y - 78 - NAME_GAP, {
+  nameText(L("规则", "A rule"), R.x, R.y - 78 - NAME_GAP, {
     valign: "bottom",
     alpha: g * early(t, c.first3b, c.rule3)
   });
@@ -6001,14 +6035,14 @@ function cuesOf8(s) {
     guard: cue(s, "该有的防护", "a safeguard that is needed"),
     wait: cue(s, "等出了事", "wait for an incident"),
     first3: cue(s, "那个监控", "The monitor needs"),
-    look3: cue(s, "回头看看", "a later look"),
+    look3: cue(s, "复查", "a later look"),
     earlier: cue(s, "更早发现了问题", "caught problems earlier"),
-    first3b: cue(s, "一条规矩", "Retire a rule"),
-    rule3: cue(s, "一条规矩", "a rule"),
+    first3b: cue(s, "一条规则", "Retire a rule"),
+    rule3: cue(s, "一条规则", "a rule"),
     retire: cues(s, [
-      ["对象没了", "nothing left to govern"],
+      ["失去适用对象", "nothing left to govern"],
       ["没人在用", "has no user"],
-      ["跟权威来源重复", "duplicates"],
+      ["和权威来源重复", "duplicates"],
       ["得不偿失", "costs more"]
     ]),
     retired: cue(s, "撤掉", "Retire"),
