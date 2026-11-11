@@ -283,10 +283,12 @@ const S = { w: 550, h: 285, card: [320, 160], inset: 18 },
   WORK = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
 const USES = () => L(["共享", "投产", "决策"], ["Sharing", "Production", "Decisions"]);
 /* The data is named by all three things still unknown about it, in the voice's words: meaning, quality and
- * availability, without "historical", since the voice's whole phrase is a caption line, which no label may repeat word
- * for word (EN12-n3). The name wraps as names do within the scope's inset, and each line it takes deepens the scope by
+ * historical availability. The voice's whole phrase, "Data with unknown meaning, quality or historical availability",
+ * is a caption line, which no label may repeat word for word, so the English name leaves out "Data with", which the
+ * scope's card already shows, and keeps "historical", when the data first became available (最早能拿到的时间;
+ * EN12-n3, EN13-n3). The name wraps as names do within the scope's inset, and each line it takes deepens the scope by
  * a line, so the way out keeps its length under it. */
-const UNCLEAR = () => L("还说不清", "Data with unknown meaning, quality or availability");
+const UNCLEAR = () => L("还说不清", "Unknown meaning, quality or historical availability");
 const unclearLines = () => wrapName(UNCLEAR(), S.w - 2 * S.inset);
 const scopeHeight = () => S.h + (unclearLines().length - 1) * labelSize(LABEL) * LEADING;
 /* The scope's top: the stage grows from the scope with its name over it to the whole with the row under it, and the

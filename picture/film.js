@@ -1903,7 +1903,17 @@ function compactNight(a, t) {
     }
   });
 }
-var arrivals = (c) => [c.vendor, c.patch, c.meeting, c.pages - 0.25];
+var arrivals = (c) => [c.vendor, c.patch, c.meeting + 0.2, c.pages - 0.25];
+var GLIDE = 1.15;
+function opening(t, c) {
+  const at2 = c.meeting + 0.05, pitch = XS[1] - XS[0];
+  return {
+    dx: pitch * (1 - travel(t, at2, GLIDE)),
+    span: SPAN3 - pitch * (1 - drawShare(t, at2, pitch)),
+    hang: c.meeting + 0.45,
+    close: drawShare(t, arrivals(c)[3] + 0.05, BRACKET_Y - CROSS_Y)
+  };
+}
 function figure(k, x, t, a, c, busy = false) {
   const on = a * ramp(t, arrivals(c)[k] - 0.15, 0.4), part = (at2) => ramp(t, at2 - 0.15, 0.4);
   if (k === 0)
@@ -1939,23 +1949,24 @@ function figure(k, x, t, a, c, busy = false) {
 }
 function stageFailures(t, a, c) {
   compactNight(a, t);
+  const { dx, span, hang, close } = opening(t, c);
   const rail = { color: P.line, alpha: a * ramp(t, c.vendor - 0.15, 0.4), width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
   path(
     [
-      [960 - SPAN3, BRACKET_Y],
-      [960 - SPAN3, CROSS_Y],
-      [960 + SPAN3, CROSS_Y],
-      [960 + SPAN3, BRACKET_Y]
+      [960 - span, BRACKET_Y],
+      [960 - span, CROSS_Y],
+      [960 + span, CROSS_Y],
+      ...close > 0 ? [[960 + span, CROSS_Y + (BRACKET_Y - CROSS_Y) * close]] : []
     ],
     rail
   );
   const ats = arrivals(c), terms = TERMS(), quals = QUALS(), qualAts = [[c.facts], [c.mechanism], [], [c.judgment, c.judgment]], seats = [c.decide, c.act];
   ats.forEach((at2, k) => {
-    const x = XS[k], [dx, dy] = TOPS[k];
-    link(x + dx, CROSS_Y, x + dx, ROW_Y + dy, {
+    const x = XS[k] + dx, [dx2, dy] = TOPS[k];
+    link(x + dx2, CROSS_Y, x + dx2, ROW_Y + dy, {
       alpha: a * ramp(t, at2 - 0.15, 0.3),
-      draw: { t, at: at2 + 0.05 }
+      draw: { t, at: k < 2 ? at2 + 0.05 : Math.max(at2 + 0.05, hang) }
     });
     figure(k, x, t, a, c);
     termRow(t, [terms[k]], [at2], quals[k], qualAts[k], x, NAME_TOP, {
@@ -2555,7 +2566,6 @@ var OUT_Y = 680;
 var OUT_NAMES = OUT_Y + 32 + NAME_GAP;
 var HANDED_X = [600, 840, 1080, 1320].map((x) => x + SHIFT);
 var OUTPUT_X = [720, 960, 1200].map((x) => x + SHIFT);
-var OTHERS = [1594 + SHIFT, 1640 + SHIFT];
 var OTHERS_X = 1617 + SHIFT;
 var OVER = WAY_Y - 7 - NAME_GAP;
 var REFUSAL_CROSS = Math.min(26, labelSize(LABEL) * 0.9);
@@ -2613,7 +2623,8 @@ function stageWay(t, a, c) {
     });
   });
   const others = a * ramp(t, c.others - 0.15, 0.4);
-  people2(OTHERS, WAY_Y, { size: 0.8, alpha: others });
+  ring(OTHERS_X, WAY_Y, 22, { color: P.evidence, alpha: others, width: 3 });
+  check(OTHERS_X, WAY_Y + 1, 22, { alpha: others });
   const own = nameText(L("可靠", "Reliable"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.others)
@@ -3548,7 +3559,7 @@ var FIELD = { y: 480, h: 440 };
 var TOP2 = FIELD.y - FIELD.h / 2;
 var ROWS2 = () => L(
   [
-    ["说真话", ["不编造、", "隐瞒、", "挑着说，", "不把没把握说成有把握"]],
+    ["说真话", ["不编造、", "隐瞒、", "挑着说，", "没把握的不说成有把握"]],
     ["守边界", ["对象和时间、", "专业能力和权限，", "数据、", "安全、", "合规和行动"]],
     ["责任落到人", ["重要的判断、", "决定、", "变更和验收"]],
     ["不虚报完成", ["做完、", "做对、", "能用、", "有人在用，", "要有当前的、", "对得上的证据"]]
@@ -3562,7 +3573,7 @@ var ROWS2 = () => L(
       "Staying in bounds",
       [
         "subject, time, ",
-        "competence, permission, ",
+        "professional competence, permission, ",
         "data, ",
         "security, ",
         "compliance, ",
@@ -3783,8 +3794,8 @@ var blockWidth = ({ term, qual, items = [], width = Infinity, noteWidth: noteWid
   ),
   ...items.map((v) => measure(v, NOTE))
 );
-function spineX2(c) {
-  const head = HEAD2(), top = measure(head.top) / 2, records = recordTimes(c), parts = [
+function spinePlaces(c) {
+  const head = HEAD2(), top = measure(head.top) / 2, records = recordTimes(c), turns = [c.tiers[0], records[0].term[0], c.tiers[2]], parts = [
     [
       c.risk,
       top,
@@ -3794,15 +3805,23 @@ function spineX2(c) {
     ...RECORD3().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)])
   ].sort((p, q) => p[0] - q[0]);
   let left = 0, right = 0;
-  const offsets = parts.map(([, l, r]) => {
+  const stretches = turns.map(() => []).concat([[]]);
+  parts.forEach(([at2, l, r]) => {
     left = Math.max(left, l);
     right = Math.max(right, r);
-    return (right - left) / 2;
+    stretches[turns.filter((turn) => at2 >= turn).length].push((right - left) / 2);
   });
-  return 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2;
+  return {
+    places: stretches.map((offsets) => 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2),
+    turns
+  };
 }
 function stageLadder(t, a, c) {
-  const x = spineX2(c), head = HEAD2(), top = SPINE[0];
+  const { places, turns } = spinePlaces(c), x = glide(
+    t,
+    places[0],
+    turns.map((at2, k) => [at2, places[k + 1]])
+  ), head = HEAD2(), top = SPINE[0];
   line(x, top, x, SPINE[1], { color: P.line, alpha: a, width: 4 });
   dot(x, top, 6, { color: P.line, alpha: a });
   dot(x, SPINE[1], 6, { color: P.line, alpha: a });
@@ -3964,7 +3983,7 @@ function cuesOf4(s) {
       ],
       [
         cue(s, "对象和时间", "subject"),
-        cue(s, "专业能力和权限", "competence"),
+        cue(s, "专业能力和权限", "professional competence"),
         cue(s, "数据", "data"),
         ...each(
           () => [cue(s, "安全", ""), cue(s, "合规", "")],
@@ -4272,7 +4291,7 @@ function questionsStage(s, t, c, g) {
 var S = { w: 550, h: 285, card: [320, 160], inset: 18 };
 var WORK2 = { below: 80, half: 20, icon: 56, toName: 62, gap: 64 };
 var USES = () => L(["共享", "投产", "决策"], ["Sharing", "Production", "Decisions"]);
-var UNCLEAR = () => L("还说不清", "Data with unknown meaning, quality or availability");
+var UNCLEAR = () => L("还说不清", "Unknown meaning, quality or historical availability");
 var unclearLines = () => wrapName(UNCLEAR(), S.w - 2 * S.inset);
 var scopeHeight = () => S.h + (unclearLines().length - 1) * labelSize(LABEL) * LEADING;
 function scopeTop() {
@@ -5098,17 +5117,19 @@ function pairsStage(s, t, c, g) {
       at: c.test,
       to: c.acceptance,
       from: L("测试通过", "A passing test"),
-      not: L("已验收", "Acceptance")
+      not: [L("整体正确", "Overall correctness"), L("已验收", "Acceptance")],
+      notAt: [c.correct, c.accepted]
     },
     {
       y: 640,
       at: c.agentSays,
       to: c.complete,
       from: L("智能体说完成了", "An Agent reporting completion"),
-      not: L("完成了", "Complete")
+      not: [L("完成了", "Complete")],
+      notAt: [c.complete]
     }
   ];
-  const r = 56, reachLeft = Math.max(50, ...rows.map((row) => measure(row.from) / 2)), reachRight = Math.max(r, ...rows.map((row) => measure(row.not) / 2)), lx = 600 + centring(600 - reachLeft, 1320 + reachRight), rx = lx + 720;
+  const r = 56, reachLeft = Math.max(50, ...rows.map((row) => measure(row.from) / 2)), reachRight = Math.max(r, ...rows.flatMap((row) => row.not.map((v) => measure(v) / 2))), lx = 600 + centring(600 - reachLeft, 1320 + reachRight), rx = lx + 720;
   rows.forEach((row, i) => {
     const a = g * (i ? named(t, row.at) : early(t, c.first7, row.at)), b = g * named(t, row.to), wayAt = i ? row.at : c.first7;
     if (i === 0) {
@@ -5128,7 +5149,13 @@ function pairsStage(s, t, c, g) {
     bar(rx - r - 26, row.y, { alpha: b, vertical: true, length: 100 });
     openMark(rx, row.y, r, { alpha: b });
     nameText(row.from, lx, row.y + 70 + NAME_GAP, { valign: "top", alpha: a });
-    nameText(row.not, rx, row.y + 70 + NAME_GAP, { valign: "top", alpha: b });
+    row.not.forEach(
+      (v, k) => nameText(v, rx, row.y + 70 + NAME_GAP + k * labelSize(LABEL) * LEADING, {
+        valign: "top",
+        alpha: g * named(t, row.notAt[k]),
+        set: i ? null : "not made"
+      })
+    );
   });
 }
 
@@ -5167,7 +5194,7 @@ function cuesOf6(s) {
     first3: cue(s, "决策负责人批准", "The decision owner approves"),
     stations: cues(s, [
       ["决策负责人批准", "The decision owner approves"],
-      ["划定了范围", "and sets its limits"],
+      ["划定了范围", "its limits"],
       ["改动只在这个范围里做", "The job is changed"],
       ["当前的运行", "The runs since the change"],
       ["话只说到", "The claim stays"],
@@ -5208,10 +5235,13 @@ function cuesOf6(s) {
     // What a passing test does not make stands from the words that say it, 「整体正确或已验收」/ "overall correctness
     // nor acceptance", so the test's sheet does not stand alone through the English line's 2 s before "acceptance".
     acceptance: cue(s, "整体正确或已验收", "overall correctness nor acceptance"),
+    // The two states a passing test does not make are named each on its own words (ZH13-n1, ZH13-n2, EN13-n15).
+    correct: cue(s, "整体正确", "overall correctness"),
     agentSays: cue(s, "智能体说完成了", "And an Agent reporting completion"),
     complete: cueFrom(s, "也不等于完成了", "the work complete", 0)
   };
   c.approved = cueFrom(s, "任务提前启动", "an earlier start", c.first3);
+  c.accepted = cueFrom(s, "已验收", "acceptance", c.test);
   c.bounds[3] = cueFrom(s, "限度", "limit", c.first5b);
   return c;
 }
@@ -5571,7 +5601,7 @@ function cuesOf7(s) {
       ["交什么", "the deliverable"],
       ["限制和权限", "the limits and permissions"],
       ["怎么验收", "how the result will be accepted"],
-      ["什么时候必须停", "when to stop"]
+      ["停下交接", "when to stop"]
     ]),
     first4: cue(s, "比如这样委托", "A delegation for last night"),
     delegation: cue(s, "这样委托", "A delegation for last night"),

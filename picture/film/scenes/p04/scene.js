@@ -61,7 +61,7 @@ function cuesOf(s) {
       ],
       [
         cue(s, "对象和时间", "subject"),
-        cue(s, "专业能力和权限", "competence"),
+        cue(s, "专业能力和权限", "professional competence"),
         cue(s, "数据", "data"),
         ...each(
           () => [cue(s, "安全", ""), cue(s, "合规", "")],

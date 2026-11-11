@@ -46,7 +46,7 @@ function cuesOf(s) {
     first3: cue(s, "决策负责人批准", "The decision owner approves"),
     stations: cues(s, [
       ["决策负责人批准", "The decision owner approves"],
-      ["划定了范围", "and sets its limits"],
+      ["划定了范围", "its limits"],
       ["改动只在这个范围里做", "The job is changed"],
       ["当前的运行", "The runs since the change"],
       ["话只说到", "The claim stays"],
@@ -87,11 +87,15 @@ function cuesOf(s) {
     // What a passing test does not make stands from the words that say it, 「整体正确或已验收」/ "overall correctness
     // nor acceptance", so the test's sheet does not stand alone through the English line's 2 s before "acceptance".
     acceptance: cue(s, "整体正确或已验收", "overall correctness nor acceptance"),
+    // The two states a passing test does not make are named each on its own words (ZH13-n1, ZH13-n2, EN13-n15).
+    correct: cue(s, "整体正确", "overall correctness"),
     agentSays: cue(s, "智能体说完成了", "And an Agent reporting completion"),
     complete: cueFrom(s, "也不等于完成了", "the work complete", 0),
   };
   // The earlier start is first said in 06.2 in Chinese, so the one that is approved is cued from 06.3's first words.
   c.approved = cueFrom(s, "任务提前启动", "an earlier start", c.first3);
+  // "acceptance" is said in 06.3 already, so the refused acceptance of 06.6 is cued from its test.
+  c.accepted = cueFrom(s, "已验收", "acceptance", c.test);
   // "limits" is said in 06.3 already, so the bound is cued from the words that verify.
   c.bounds[3] = cueFrom(s, "限度", "limit", c.first5b);
   return c;

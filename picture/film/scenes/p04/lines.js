@@ -28,7 +28,7 @@ const TOP = FIELD.y - FIELD.h / 2;
 const ROWS = () =>
   L(
     [
-      ["说真话", ["不编造、", "隐瞒、", "挑着说，", "不把没把握说成有把握"]],
+      ["说真话", ["不编造、", "隐瞒、", "挑着说，", "没把握的不说成有把握"]],
       ["守边界", ["对象和时间、", "专业能力和权限，", "数据、", "安全、", "合规和行动"]],
       ["责任落到人", ["重要的判断、", "决定、", "变更和验收"]],
       ["不虚报完成", ["做完、", "做对、", "能用、", "有人在用，", "要有当前的、", "对得上的证据"]],
@@ -42,7 +42,7 @@ const ROWS = () =>
         "Staying in bounds",
         [
           "subject, time, ",
-          "competence, permission, ",
+          "professional competence, permission, ",
           "data, ",
           "security, ",
           "compliance, ",

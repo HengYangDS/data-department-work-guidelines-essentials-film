@@ -37,7 +37,7 @@ function cuesOf(s) {
       ["交什么", "the deliverable"],
       ["限制和权限", "the limits and permissions"],
       ["怎么验收", "how the result will be accepted"],
-      ["什么时候必须停", "when to stop"],
+      ["停下交接", "when to stop"],
     ]),
     first4: cue(s, "比如这样委托", "A delegation for last night"),
     delegation: cue(s, "这样委托", "A delegation for last night"),

@@ -1,10 +1,11 @@
-/* 01 晚了两个小时 / Two hours late, chapter 01 一次延迟 / One delay. The opening quiet shows the title signature and hands
- * the picture to last night's timeline in one swap just before the first word (A, 01.1). On 01.2's first words the
- * timeline re-forms compact in the top band, its two hours leading down to a rail across the whole row, and the four
- * failures build that row below it, each hanging from the rail by its own link (B, 01.2-01.3); the timeline leaves,
- * the failures stand told and three open questions stand over them (C, 01.4); the guidelines' document takes the top
- * band and its links reach the four failures (D, 01.5). The whole part is the made-up case, so the Illustrative chip
- * stands from the swap. */
+/* 01 晚了两个小时 / Two hours late, chapter 01 一次延迟 / One delay. The opening quiet shows the title signature and hands the
+ * picture to last night's timeline in one swap just before the first word (A, 01.1). On 01.2's first words the timeline
+ * re-forms compact in the top band, its two hours leading down to a rail over the row, and the four failures build that
+ * row below it, each hanging from the rail by its own link: 01.2's two under a rail of their two places, open at its
+ * right, which opens to the whole row on 01.3's first words as they glide once to its left and closes as the last
+ * failure arrives (B, 01.2-01.3); the timeline leaves, the failures stand told and three open questions stand over them
+ * (C, 01.4); the guidelines' document takes the top band and its links reach the four failures (D, 01.5). The whole
+ * part is the made-up case, so the Illustrative chip stands from the swap. */
 
 import { link } from "../../drawing/links.js";
 import { line, path } from "../../drawing/strokes.js";
@@ -127,8 +128,30 @@ function compactNight(a, t) {
 }
 
 /* When each failure arrives with its link and its name: on the words that bring it, the fourth, the AI system with
- * its pages, 0.25 s before 「十页分析」/ "ten pages", so its name is read within 0.3 s of its words (ZH7-2). */
-const arrivals = (c) => [c.vendor, c.patch, c.meeting, c.pages - 0.25];
+ * its pages, 0.25 s before 「十页分析」/ "ten pages", so its name is read within 0.3 s of its words (ZH7-2). The
+ * meeting, the first of 01.3, arrives 0.2 s into its words, as the row opens for it (`opening`), and its name is still
+ * read within 0.3 s of 「一场会」/ "meeting". */
+const arrivals = (c) => [c.vendor, c.patch, c.meeting + 0.2, c.pages - 0.25];
+/* 01.2 tells two failures, so the row holds their two places, centred under a rail half the row's width that turns down
+ * at its left end and stands open at its right, where the row goes on. On 01.3's first words, 「开了一场会」/ "A meeting", the
+ * rail's two ends draw outward at the tip pace to the whole row's width, and the two members glide once, in voice time,
+ * one pitch to their places at the row's left, peaking at 1.5 x 340 / 1.15, under 450 px/s, as the meeting arrives at
+ * the third place, which moves with them. The open end carries no stroke across the names it passes, and it closes,
+ * turning down to the names' line, as the row's last failure arrives. Every state stays centred, no place stands empty
+ * across 01.2, and no member leaves; this is the stage's one glide (EN9-n5). Returns the row's shift, the rail's half
+ * width, when a member told while the rail opens hangs from it (once its end has passed the member's link), and the
+ * share of the closing turn drawn. */
+const GLIDE = 1.15;
+function opening(t, c) {
+  const at = c.meeting + 0.05,
+    pitch = XS[1] - XS[0];
+  return {
+    dx: pitch * (1 - travel(t, at, GLIDE)),
+    span: SPAN - pitch * (1 - drawShare(t, at, pitch)),
+    hang: c.meeting + 0.45,
+    close: drawShare(t, arrivals(c)[3] + 0.05, BRACKET_Y - CROSS_Y),
+  };
+}
 /* One failure's figure at (x, ROW_Y), its parts on their words; `busy` shows it as it stands once told: the fork's
  * taken way and the dripping pipe keep running as flows in voice time, while the meeting and the stack of pages, whose
  * marks count the speakers and the material, hold still. The stack climbs its six pages over 2.4 s of voice time, so
@@ -170,23 +193,25 @@ function figure(k, x, t, a, c, busy = false) {
 }
 
 /* B, from 01.2's first words: the compact timeline over the row of failures. Its two hours lead down to a rail across
- * the row's whole width, whose two ends reach down to the line of the bracket that holds the row's names in C and D;
- * the rail stands with the first failure, on its words, so it never waits empty for its members, and from then on the
- * picture has its final extent, top to bottom, and stays balanced while the failures fill it. The row builds left to
- * right, each failure at its own place from its words and joined to the rail by its own link, and what went wrong joins
- * its name on its own words. */
+ * the row, whose ends reach down to the line of the bracket that holds the row's names in C and D; the rail stands
+ * with the first failure, on its words, over the places of the thought being told (`opening`), so it never waits empty
+ * across a thought for its members, and from 01.3's first words the picture has its final extent, top to bottom, and
+ * stays balanced while the failures fill it. The row builds left to right, each failure at its own place from its
+ * words and joined to the rail by its own link, and what went wrong joins its name on its own words. */
 function stageFailures(t, a, c) {
   compactNight(a, t);
+  const { dx, span, hang, close } = opening(t, c);
   // The rail is a bracket over the row, the one that holds the row's names in C and D turned to face it.
   const rail = { color: P.line, alpha: a * ramp(t, c.vendor - 0.15, 0.4), width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
-  // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names.
+  // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names; its
+  // right end turns down as it closes.
   path(
     [
-      [960 - SPAN, BRACKET_Y],
-      [960 - SPAN, CROSS_Y],
-      [960 + SPAN, CROSS_Y],
-      [960 + SPAN, BRACKET_Y],
+      [960 - span, BRACKET_Y],
+      [960 - span, CROSS_Y],
+      [960 + span, CROSS_Y],
+      ...(close > 0 ? [[960 + span, CROSS_Y + (BRACKET_Y - CROSS_Y) * close]] : []),
     ],
     rail,
   );
@@ -196,11 +221,11 @@ function stageFailures(t, a, c) {
     qualAts = [[c.facts], [c.mechanism], [], [c.judgment, c.judgment]],
     seats = [c.decide, c.act];
   ats.forEach((at, k) => {
-    const x = XS[k],
-      [dx, dy] = TOPS[k];
-    link(x + dx, CROSS_Y, x + dx, ROW_Y + dy, {
+    const x = XS[k] + dx,
+      [dx2, dy] = TOPS[k];
+    link(x + dx2, CROSS_Y, x + dx2, ROW_Y + dy, {
       alpha: a * ramp(t, at - 0.15, 0.3),
-      draw: { t, at: at + 0.05 },
+      draw: { t, at: k < 2 ? at + 0.05 : Math.max(at + 0.05, hang) },
     });
     figure(k, x, t, a, c);
     termRow(t, [terms[k]], [at], quals[k], qualAts[k], x, NAME_TOP, {

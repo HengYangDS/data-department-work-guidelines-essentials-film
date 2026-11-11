@@ -6,12 +6,12 @@
  * below it, one thing on each one's words; on its words a signal from the world runs in at the way's left. From
  * 「变成」/ "into reliable judgments" the refused things stand on at the list's second level, their crosses at full ink,
  * and what the signal becomes hangs from the way under them, judgments, data assets and actions, carried along the way
- * to the others at its end, named for what the outputs must be, 可靠 / "Reliable", in English with the qualities under
- * them. C and C2 (02.3-02.4) are drawn by tasks.js. */
+ * to what they must be at its end, a verified mark named 可靠 / "Reliable", in English with the qualities under it;
+ * the voice names no one there, so no one stands at the way's end (ZH13-n3). C and C2 (02.3-02.4) are drawn by tasks.js. */
 
 import { link } from "../../drawing/links.js";
-import { dot, flowAt, flowDot, labelSize, line, measure } from "../../drawing/strokes.js";
-import { cross } from "../../drawing/symbols.js";
+import { dot, flowAt, flowDot, labelSize, line, measure, ring } from "../../drawing/strokes.js";
+import { check, cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { SECOND, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, NOTE, TERM_STACK, growName, nameText, rejectedName } from "../../naming/names.js";
@@ -168,7 +168,6 @@ const SHIFT = L(-20, 0),
   OUT_NAMES = OUT_Y + 32 + NAME_GAP,
   HANDED_X = [600, 840, 1080, 1320].map((x) => x + SHIFT),
   OUTPUT_X = [720, 960, 1200].map((x) => x + SHIFT),
-  OTHERS = [1594 + SHIFT, 1640 + SHIFT],
   OTHERS_X = 1617 + SHIFT,
   OVER = WAY_Y - 7 - NAME_GAP;
 /* The size of a refusal's cross (rejectedName). The refused things recede to the list's second level, SECOND
@@ -227,7 +226,7 @@ function stageWay(t, a, c) {
       width: 3,
     });
   });
-  // A point travels the way once, from the signal to the others, once they stand at its end; the work item of the
+  // A point travels the way once, from the signal to the mark at its end, once it stands; the work item of the
   // actions makes its one run along its lane on its words. Each then rests.
   const carried = flowAt(t, end - WAVE_END, { from: c.others, passes: 1 });
   flowDot(mix(WAVE_END, end, carried?.q ?? 0), WAY_Y, 6, carried, { color: P.evidence, alpha: a });
@@ -243,15 +242,17 @@ function stageWay(t, a, c) {
     });
   });
   const others = a * ramp(t, c.others - 0.15, 0.4);
-  people(OTHERS, WAY_Y, { size: 0.8, alpha: others });
+  ring(OTHERS_X, WAY_Y, 22, { color: P.evidence, alpha: others, width: 3 });
+  check(OTHERS_X, WAY_Y + 1, 22, { alpha: others });
   const own = nameText(L("可靠", "Reliable"), OTHERS_X, WAY_Y + 18 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.others),
   });
-  // The qualities the others rely on, under their name in English: one name of parts, each joining it on its words, so
-  // the way's twelve-name limit holds with the refused things standing. The first two share a line and the third takes
-  // the next, so each line spans enough of the other's width to read as one block at rest. The Chinese caption says the
-  // qualities word for word (讲得清、经得起查，能用到哪里也清楚), so there the others stand named alone.
+  // The qualities that make the outputs reliable, under the mark's name in English: one name of parts, each joining
+  // it on its words, so the way's twelve-name limit holds with the refused things standing. The first two share a line
+  // and the third takes the next, so each line spans enough of the other's width to read as one block at rest. The
+  // Chinese caption says the qualities word for word (讲得清、经得起查，能用到哪里也清楚), so there the mark stands
+  // named alone.
   if (!en) return;
   growName(t, QUALITIES(), c.qualities, OTHERS_X, own.bottom + 18, {
     width: measure(QUALITIES().slice(0, 2).join(""), NOTE),

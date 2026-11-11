@@ -6,14 +6,14 @@
  * reached state against the state it does not make. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { box, dot, flowAt, flowDot, labelSize, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { agent, check, documentIcon, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { bubble, recoverIcon, tagIcon } from "../../drawing/workspace.js";
 import { beats, listIn, named, speaking } from "../../naming/lists.js";
-import { NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
+import { LEADING, NAME_GAP, nameText, rejectedName } from "../../naming/names.js";
 import { railNames } from "../../naming/placement.js";
-import { P } from "../../palette.js";
+import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
@@ -443,7 +443,8 @@ export function claimStage(s, t, c, g) {
 
 /* G: two pairs in rows, the reached state at the left and the state it does not make, hollow and dashed, at the
  * right, each named under its mark, the way between stopped at a tall bar: a test sheet with its check against
- * acceptance, and an Agent reporting completion against completion. The pairs stand wide on the frame's axis, so the
+ * overall correctness and acceptance, the two states it does not make, named one under the other, each on its own
+ * words, and an Agent reporting completion against completion. The pairs stand wide on the frame's axis, so the
  * first fills its share of the frame before the second arrives. */
 export function pairsStage(s, t, c, g) {
   const rows = [
@@ -452,19 +453,21 @@ export function pairsStage(s, t, c, g) {
       at: c.test,
       to: c.acceptance,
       from: L("测试通过", "A passing test"),
-      not: L("已验收", "Acceptance"),
+      not: [L("整体正确", "Overall correctness"), L("已验收", "Acceptance")],
+      notAt: [c.correct, c.accepted],
     },
     {
       y: 640,
       at: c.agentSays,
       to: c.complete,
       from: L("智能体说完成了", "An Agent reporting completion"),
-      not: L("完成了", "Complete"),
+      not: [L("完成了", "Complete")],
+      notAt: [c.complete],
     },
   ];
   const r = 56,
     reachLeft = Math.max(50, ...rows.map((row) => measure(row.from) / 2)),
-    reachRight = Math.max(r, ...rows.map((row) => measure(row.not) / 2)),
+    reachRight = Math.max(r, ...rows.flatMap((row) => row.not.map((v) => measure(v) / 2))),
     lx = 600 + centring(600 - reachLeft, 1320 + reachRight),
     rx = lx + 720;
   rows.forEach((row, i) => {
@@ -488,6 +491,12 @@ export function pairsStage(s, t, c, g) {
     bar(rx - r - 26, row.y, { alpha: b, vertical: true, length: 100 });
     openMark(rx, row.y, r, { alpha: b });
     nameText(row.from, lx, row.y + 70 + NAME_GAP, { valign: "top", alpha: a });
-    nameText(row.not, rx, row.y + 70 + NAME_GAP, { valign: "top", alpha: b });
+    row.not.forEach((v, k) =>
+      nameText(v, rx, row.y + 70 + NAME_GAP + k * labelSize(LABEL) * LEADING, {
+        valign: "top",
+        alpha: g * named(t, row.notAt[k]),
+        set: i ? null : "not made",
+      }),
+    );
   });
 }

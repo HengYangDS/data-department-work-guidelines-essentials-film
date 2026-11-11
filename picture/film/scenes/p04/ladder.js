@@ -2,11 +2,11 @@
  * its top (in Chinese with the question it answers, 要留多少记录, before 看风险); three tiers join it on their words, the work
  * of each at the spine's left and, at its right, the record it needs, a document as large as its risk calls for: one
  * clear exchange; the existing work record; a written decision with what else it takes, said one by one. A point on the
- * spine stands at the tier being told. E, from 「昨晚的事」/ "Last night's case", the made-up case: the highest tier's
- * document at the left with its work, last night's timeline compact at the right, its two possible fixes branching into
- * the tier; the tier lights as it is said to belong there; under them, at the left, the author and the Agent, whose own
- * accounts stop at a bar on their way to the independent review at the right, a lens with what it examines, joined to
- * that bar by its own link. */
+ * spine stands at the tier being told, and the whole ladder glides three times to stay centred as it builds. E, from
+ * 「昨晚的事」/ "Last night's case", the made-up case: the highest tier's document at the left with its work, last night's
+ * timeline compact at the right, its two possible fixes branching into the tier; the tier lights as it is said to
+ * belong there; under them, at the left, the author and the Agent, whose own accounts stop at a bar on their way to the
+ * independent review at the right, a lens with what it examines, joined to that bar by its own link. */
 
 import { link } from "../../drawing/links.js";
 import { blend } from "../../drawing/colour.js";
@@ -30,6 +30,7 @@ import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
 import { bar } from "../p03/marks.js";
+import { glide } from "../p05/kit.js";
 import { lens, speaker, tierDoc } from "./marks.js";
 
 /* Each tier's two sides are term rows: at the spine's left the work (a term and its qualifier), at its right the
@@ -139,14 +140,19 @@ const blockWidth = ({ term, qual, items = [], width = Infinity, noteWidth = widt
     ),
     ...items.map((v) => measure(v, NOTE)),
   );
-/* The spine's x: it never moves, so no name moves once shown. The ladder builds side by side, and each state it holds
- * stands off the frame's centre by half the difference of its two sides; the spine stands where the most off-centre
- * of those states, at either side, is off by as little as possible, which keeps every state within the reviewers'
- * 90 px. */
-function spineX(c) {
+/* The spine's places. The ladder builds side by side, and each state it holds stands off the frame's centre by half
+ * the difference of its two sides: the heading alone leans right, the first tier's work at the spine's left leans
+ * it left, the first record leans it right again, and the highest tier's wide work leans it left. No one place keeps
+ * all of them within the reviewers' 50 px, so the whole ladder stands at one place for each stretch of its build, each
+ * where the most off-centre of that stretch's states, at either side, is off by as little as possible, and glides as
+ * one between them (p05/kit.js, glide): on the first tier's words, on the first record's words and on the highest
+ * tier's words, each glide about 150 px or less over 0.9 s of voice time, under 250 px/s. Returns the places and the
+ * words of the glides. */
+function spinePlaces(c) {
   const head = HEAD(),
     top = measure(head.top) / 2,
     records = recordTimes(c),
+    turns = [c.tiers[0], records[0].term[0], c.tiers[2]],
     parts = [
       [
         c.risk,
@@ -158,15 +164,24 @@ function spineX(c) {
     ].sort((p, q) => p[0] - q[0]);
   let left = 0,
     right = 0;
-  const offsets = parts.map(([, l, r]) => {
+  const stretches = turns.map(() => []).concat([[]]);
+  parts.forEach(([at, l, r]) => {
     left = Math.max(left, l);
     right = Math.max(right, r);
-    return (right - left) / 2;
+    stretches[turns.filter((turn) => at >= turn).length].push((right - left) / 2);
   });
-  return 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2;
+  return {
+    places: stretches.map((offsets) => 960 - (Math.max(...offsets) + Math.min(...offsets)) / 2),
+    turns,
+  };
 }
 export function stageLadder(t, a, c) {
-  const x = spineX(c),
+  const { places, turns } = spinePlaces(c),
+    x = glide(
+      t,
+      places[0],
+      turns.map((at, k) => [at, places[k + 1]]),
+    ),
     head = HEAD(),
     top = SPINE[0];
   line(x, top, x, SPINE[1], { color: P.line, alpha: a, width: 4 });
