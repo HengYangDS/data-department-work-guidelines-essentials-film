@@ -68,9 +68,15 @@ export function collaborationStage(s, t, c, g) {
     deep = travel(t, c.refusals[0] - 0.6, 0.6),
     halfW = mix(110, wide, grow),
     y = A.y,
-    ax = A.ax,
-    px = A.px,
-    size = 1.05;
+    size = 1.05,
+    // In Chinese the people and the bare Agent hold 2.4 s before the boundary's words, longer than the reviewers'
+    // 2 s, so the stage stands right of the English, midway between the shifts that centre that state and the people
+    // with the grown boundary (the idiom of p06's chainShift); in English the boundary comes with the Agent 1.4 s
+    // after the cut, and the grown boundary leans 27 px right.
+    left = A.px + GROUP[0][0] - 15 * size * 1.55,
+    shift = L((centring(left, A.ax + 44) + centring(left, A.ax + wide + 1.25)) / 2, 0),
+    ax = A.ax + shift,
+    px = A.px + shift;
   // Both sides stand whole from the cut: the collaboration's name on the link between them names both. Each side's own
   // name comes on its own words; the English says "people" only after the Agent and its boundary.
   const peopleIn = named(t, c.people);

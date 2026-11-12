@@ -197,10 +197,11 @@ export function aimStage(s, t, c, g) {
  * direction, each named, standing midway between neighbouring nights. Then a needed safeguard, dashed, stands at the
  * row's right, and the incident it must not wait for is refused under it. While the row builds, the stage stands where
  * the row alone stays within the reviewers' 90 px of the centre and the row with its delays named at its left, which
- * holds for seconds, within their 50 px for a settled picture; when the safeguard comes it glides once (a structural
- * glide, timing/pauses.js travel) to centre the whole, less `lean`, since the safeguard and its refusal weigh the
- * right: so the settled weight stands within 60 px of the centre while the settled box stays within 50 px (the English
- * row stood 156 px off while it built at a lean of 90 held from the cut). */
+ * holds for seconds, within their 50 px for a settled picture; in Chinese, whose row alone holds 2.3 s before its
+ * delays are named, it stands midway between the two, within 50 px of both; when the safeguard comes it glides once (a
+ * structural glide, timing/pauses.js travel) to centre the whole, less `lean`, since the safeguard and its refusal
+ * weigh the right: so the settled weight stands within 60 px of the centre while the settled box stays within 50 px
+ * (the English row stood 156 px off while it built at a lean of 90 held from the cut). */
 const B = {
   y: 480,
   xs: [500, 760, 1020, 1280],
@@ -216,8 +217,9 @@ export function signsStage(s, t, c, g) {
     left = B.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")),
     rowStart = B.xs[0] - 108,
     rowEnd = B.xs[3] + 108,
-    // The row alone may stand 90 px off; the row named at its left stands about 8 px left of its box's centre.
-    building = (centring(left, rowEnd) - 42 + centring(rowStart, rowEnd) + 90) / 2,
+    // The row alone may stand 90 px off where it holds under 1.5 s, as in English; the row named at its left stands
+    // about 8 px left of its box's centre.
+    building = (centring(left, rowEnd) + centring(rowStart, rowEnd)) / 2 + L(0, 24),
     shift = mix(building, centring(left, right) - B.lean(), travel(t, c.guard - 0.15, 0.9)),
     xs = B.xs.map((x) => x + shift),
     cardTop = B.y - 34 - B.card,

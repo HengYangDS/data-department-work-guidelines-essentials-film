@@ -2914,58 +2914,62 @@ function decideX() {
   const half = measure(SETTLED().join(""), NOTE) / 2;
   return Math.min(DECIDE_X, MISSING_X - measure(MISSING()) / 2 - NAME_GAP - half);
 }
+function meetingShift(t, c) {
+  const course = [COURSE[0] - 5, COURSE[1] + 3], agenda = COURSE[0] - Math.max(...AGENDA().map((v) => measure(v))) / 2, ends = COURSE[1] + Math.max(STATION_R + 2, measure(L("散会时", "When it ends")) / 2), whole = MISSING_X + measure(MISSING()) / 2, midway = ([a0, a1], [b0, b1]) => (centring(a0, a1) + centring(b0, b1)) / 2;
+  return glide(t, midway(course, [agenda, course[1]]), [[c.ends, midway([agenda, ends], [agenda, whole])]]);
+}
 var at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 function stageMeeting(t, a, c) {
-  const vt = voiceTime(t), { x, y, k } = MEET, decision = a * ramp(t, c.decision - 0.15, 0.4), doer = a * ramp(t, c.whoDoes - 0.15, 0.4);
+  const vt = voiceTime(t), dx = meetingShift(t, c), { y, k } = MEET, x = MEET.x + dx, [c0, c1] = COURSE.map((v) => v + dx), decision = a * ramp(t, c.decision - 0.15, 0.4), doer = a * ramp(t, c.whoDoes - 0.15, 0.4);
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(k, k);
   ctx.translate(-x, -y);
   meetingMark(x, y, { alpha: a, seats: [0, 0] });
   ctx.restore();
-  const top = at(x, y - 10 - 14 - 2.15 * 9)[1], half = at(x + 86, y)[0] - x;
+  const top = at(x, y - 10 - 14 - 2.15 * 9)[1], half = at(MEET.x + 86, y)[0] - MEET.x;
   nameText(L("那场会", "The meeting"), x, top - NAME_GAP, {
     valign: "bottom",
     alpha: a * early(t, c.meeting, c.meetingName)
   });
   stroke(
     () => {
-      ctx.moveTo(COURSE[0], COURSE_Y);
+      ctx.moveTo(c0, COURSE_Y);
       ctx.lineTo(x - half - 6, COURSE_Y);
       ctx.moveTo(x + half + 6, COURSE_Y);
-      ctx.lineTo(COURSE[1], COURSE_Y);
+      ctx.lineTo(c1, COURSE_Y);
     },
     { color: P.line, alpha: a, width: 4 }
   );
   const runs = flowAt(t, COURSE[1] - COURSE[0]);
-  flowDot(mix(COURSE[0], COURSE[1], runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
+  flowDot(mix(c0, c1, runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
   const before = a * ramp(t, c.before - 0.15, 0.4), over = COURSE_Y - STATION_R - NAME_GAP, under = COURSE_Y + STATION_R + NAME_GAP;
-  station(COURSE[0], COURSE_Y, before);
-  nameText(L("会前", "Before it"), COURSE[0], over, {
+  station(c0, COURSE_Y, before);
+  nameText(L("会前", "Before it"), c0, over, {
     valign: "bottom",
     alpha: a * named(t, c.before)
   });
   AGENDA().forEach(
-    (v, i) => nameText(v, COURSE[0], under + i * 46, {
+    (v, i) => nameText(v, c0, under + i * 46, {
       valign: "top",
       alpha: a * listIn(t, c.items, i),
       set: "agenda"
     })
   );
   const ends = a * ramp(t, c.ends - 0.15, 0.4);
-  station(COURSE[1], COURSE_Y, ends);
-  nameText(L("散会时", "When it ends"), COURSE[1], over, {
+  station(c1, COURSE_Y, ends);
+  nameText(L("散会时", "When it ends"), c1, over, {
     valign: "bottom",
     alpha: a * named(t, c.ends)
   });
-  const forkY = COURSE_Y + FORK, nodeY = COURSE_Y + NODE, decisionX = decideX(), missing = a * ramp(t, c.missing - 0.15, 0.4);
-  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
+  const forkY = COURSE_Y + FORK, nodeY = COURSE_Y + NODE, decisionX = decideX() + dx, missingX = MISSING_X + dx, missing = a * ramp(t, c.missing - 0.15, 0.4);
+  link(c1, COURSE_Y + STATION_R + 2, c1, forkY, {
     alpha: decision,
     draw: { t, at: c.decision - 0.35 },
     end: false,
     width: 2.5
   });
-  link(COURSE[1], forkY, decisionX, nodeY - 22, {
+  link(c1, forkY, decisionX, nodeY - 22, {
     route: "hv",
     alpha: decision,
     draw: { t, at: c.decision - 0.1 },
@@ -2984,14 +2988,14 @@ function stageMeeting(t, a, c) {
     nodeY + 30 + NAME_GAP,
     { align: "center", inline: false, alpha: a }
   );
-  link(COURSE[1], forkY, MISSING_X, nodeY - 24, {
+  link(c1, forkY, missingX, nodeY - 24, {
     route: "hv",
     alpha: missing,
     draw: { t, at: c.orSay - 0.1 },
     width: 2.5
   });
-  openMark2(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(MISSING(), MISSING_X, nodeY + 30 + NAME_GAP, {
+  openMark2(missingX, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
+  nameText(MISSING(), missingX, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing)
   });
@@ -4248,7 +4252,7 @@ function ringArcs(t, at2, alpha) {
   stroke(
     () => {
       for (let k = 0; k < 6; k++) {
-        const q = drawShare(t, at2 + 0.12 * k, ARC_LENGTHS[k]);
+        const q = drawShare(t, at2, ARC_LENGTHS[k]);
         if (q <= 0) break;
         const a0 = -Math.PI / 2 + k * Math.PI / 3 + GAP, a1 = a0 + (Math.PI / 3 - 2 * GAP) * q;
         for (let j = 0; j <= 16; j++) {
@@ -5129,7 +5133,10 @@ function pairsStage(s, t, c, g) {
       notAt: [c.complete]
     }
   ];
-  const r = 56, reachLeft = Math.max(50, ...rows.map((row) => measure(row.from) / 2)), reachRight = Math.max(r, ...rows.flatMap((row) => row.not.map((v) => measure(v) / 2))), lx = 600 + centring(600 - reachLeft, 1320 + reachRight), rx = lx + 720;
+  const r = 56, place = (list) => 600 + centring(
+    600 - Math.max(50, ...list.map((row) => measure(row.from) / 2)),
+    1320 + Math.max(r, ...list.flatMap((row) => row.not.map((v) => measure(v) / 2)))
+  ), lx = glide(t, place(rows.slice(0, 1)), [[rows[1].at, place(rows)]]), rx = lx + 720;
   rows.forEach((row, i) => {
     const a = g * (i ? named(t, row.at) : early(t, c.first7, row.at)), b = g * named(t, row.to), wayAt = i ? row.at : c.first7;
     if (i === 0) {
@@ -5460,7 +5467,7 @@ var GROUP = [
   [31, 34]
 ];
 function collaborationStage(s, t, c, g) {
-  const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = travel(t, c.extend - 0.6, 0.6), deep = travel(t, c.refusals[0] - 0.6, 0.6), halfW = mix(110, wide, grow), y = A3.y, ax = A3.ax, px = A3.px, size = 1.05;
+  const term = L("调查、推理和动手", "Investigation, reasoning, action"), wide = Math.max(measure(term) / 2 + 34, L(150, 230)), grow = travel(t, c.extend - 0.6, 0.6), deep = travel(t, c.refusals[0] - 0.6, 0.6), halfW = mix(110, wide, grow), y = A3.y, size = 1.05, left = A3.px + GROUP[0][0] - 15 * size * 1.55, shift = L((centring(left, A3.ax + 44) + centring(left, A3.ax + wide + 1.25)) / 2, 0), ax = A3.ax + shift, px = A3.px + shift;
   const peopleIn = named(t, c.people);
   people3(
     GROUP.map(([dx, dy]) => [px + dx, y + dy]),
@@ -5789,7 +5796,7 @@ var B5 = {
 };
 var SAFEGUARD = () => L("该有的防护", "A needed safeguard");
 function signsStage(s, t, c, g) {
-  const right = B5.guard + measure(SAFEGUARD()) / 2, left = B5.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")), rowStart = B5.xs[0] - 108, rowEnd = B5.xs[3] + 108, building = (centring(left, rowEnd) - 42 + centring(rowStart, rowEnd) + 90) / 2, shift = mix(building, centring(left, right) - B5.lean(), travel(t, c.guard - 0.15, 0.9)), xs = B5.xs.map((x) => x + shift), cardTop = B5.y - 34 - B5.card, lateIn = g * named(t, c.minutes);
+  const right = B5.guard + measure(SAFEGUARD()) / 2, left = B5.xs[0] - 108 - NAME_GAP - measure(L("晚几分钟", "A few minutes late")), rowStart = B5.xs[0] - 108, rowEnd = B5.xs[3] + 108, building = (centring(left, rowEnd) + centring(rowStart, rowEnd)) / 2 + L(0, 24), shift = mix(building, centring(left, right) - B5.lean(), travel(t, c.guard - 0.15, 0.9)), xs = B5.xs.map((x) => x + shift), cardTop = B5.y - 34 - B5.card, lateIn = g * named(t, c.minutes);
   nights(xs, B5.y, 0.3, { alpha: g, arrival: 1, lit: lateIn, lateBy: B5.late });
   stroke(
     () => xs.forEach((x) => {

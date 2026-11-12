@@ -20,7 +20,7 @@ import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
 import { drawShare, voiceTime } from "../../timing/pauses.js";
 import { meetingMark, openMark, people } from "../p01/failures.js";
-import { early } from "../p05/kit.js";
+import { centring, early, glide } from "../p05/kit.js";
 import { actionMark, bar, conflictMark, dashedPage, recordMark, reportMark } from "./marks.js";
 
 /* E: the meeting drawn at K times failure 3's size about its centre, so that with its course it covers a tenth of the
@@ -51,11 +51,27 @@ function decideX() {
   const half = measure(SETTLED().join(""), NOTE) / 2;
   return Math.min(DECIDE_X, MISSING_X - measure(MISSING()) / 2 - NAME_GAP - half);
 }
+/* The stage's shift right of the axis, the idiom of p06's chainShift: before the meeting ends it stands midway
+ * between the shifts that centre its course alone and the course with the agenda hanging under its first station;
+ * on the words of its end it glides as one (p05/kit.js glide) to stand midway between those that centre the course
+ * named at its end and the whole, the open question named, so no state stands far off (EN13-n10: the English
+ * agenda stood 57 px left for 2.4 s before its end was named). */
+function meetingShift(t, c) {
+  const course = [COURSE[0] - 5, COURSE[1] + 3],
+    agenda = COURSE[0] - Math.max(...AGENDA().map((v) => measure(v))) / 2,
+    ends = COURSE[1] + Math.max(STATION_R + 2, measure(L("散会时", "When it ends")) / 2),
+    whole = MISSING_X + measure(MISSING()) / 2,
+    midway = ([a0, a1], [b0, b1]) => (centring(a0, a1) + centring(b0, b1)) / 2;
+  return glide(t, midway(course, [agenda, course[1]]), [[c.ends, midway([agenda, ends], [agenda, whole])]]);
+}
 /* The meeting's point (x, y) on the screen, from a point of failure 3's mark. */
 const at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
 export function stageMeeting(t, a, c) {
   const vt = voiceTime(t),
-    { x, y, k } = MEET,
+    dx = meetingShift(t, c),
+    { y, k } = MEET,
+    x = MEET.x + dx,
+    [c0, c1] = COURSE.map((v) => v + dx),
     decision = a * ramp(t, c.decision - 0.15, 0.4),
     doer = a * ramp(t, c.whoDoes - 0.15, 0.4);
   ctx.save();
@@ -65,7 +81,7 @@ export function stageMeeting(t, a, c) {
   meetingMark(x, y, { alpha: a, seats: [0, 0] });
   ctx.restore();
   const top = at(x, y - 10 - 14 - 2.15 * 9)[1],
-    half = at(x + 86, y)[0] - x;
+    half = at(MEET.x + 86, y)[0] - MEET.x;
   // The meeting stands from the stage's first words; its name at most `LEAD` ahead of its own (ZH8-3).
   nameText(L("那场会", "The meeting"), x, top - NAME_GAP, {
     valign: "bottom",
@@ -75,26 +91,26 @@ export function stageMeeting(t, a, c) {
   // The course touches the table at both sides, so the meeting and its course read as one mark.
   stroke(
     () => {
-      ctx.moveTo(COURSE[0], COURSE_Y);
+      ctx.moveTo(c0, COURSE_Y);
       ctx.lineTo(x - half - 6, COURSE_Y);
       ctx.moveTo(x + half + 6, COURSE_Y);
-      ctx.lineTo(COURSE[1], COURSE_Y);
+      ctx.lineTo(c1, COURSE_Y);
     },
     { color: P.line, alpha: a, width: 4 },
   );
   const runs = flowAt(t, COURSE[1] - COURSE[0]);
-  flowDot(mix(COURSE[0], COURSE[1], runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
+  flowDot(mix(c0, c1, runs?.q ?? 0), COURSE_Y, 5, runs, { color: P.ink, alpha: a });
   // Before it: the station and its agenda, one list.
   const before = a * ramp(t, c.before - 0.15, 0.4),
     over = COURSE_Y - STATION_R - NAME_GAP,
     under = COURSE_Y + STATION_R + NAME_GAP;
-  station(COURSE[0], COURSE_Y, before);
-  nameText(L("会前", "Before it"), COURSE[0], over, {
+  station(c0, COURSE_Y, before);
+  nameText(L("会前", "Before it"), c0, over, {
     valign: "bottom",
     alpha: a * named(t, c.before),
   });
   AGENDA().forEach((v, i) =>
-    nameText(v, COURSE[0], under + i * 46, {
+    nameText(v, c0, under + i * 46, {
       valign: "top",
       alpha: a * listIn(t, c.items, i),
       set: "agenda",
@@ -105,22 +121,23 @@ export function stageMeeting(t, a, c) {
   // work, named with who does what by when and what counts as done under it on one line, the decision standing where
   // that line keeps clear of the open question's name (decideX); or to an open question, what is still missing.
   const ends = a * ramp(t, c.ends - 0.15, 0.4);
-  station(COURSE[1], COURSE_Y, ends);
-  nameText(L("散会时", "When it ends"), COURSE[1], over, {
+  station(c1, COURSE_Y, ends);
+  nameText(L("散会时", "When it ends"), c1, over, {
     valign: "bottom",
     alpha: a * named(t, c.ends),
   });
   const forkY = COURSE_Y + FORK,
     nodeY = COURSE_Y + NODE,
-    decisionX = decideX(),
+    decisionX = decideX() + dx,
+    missingX = MISSING_X + dx,
     missing = a * ramp(t, c.missing - 0.15, 0.4);
-  link(COURSE[1], COURSE_Y + STATION_R + 2, COURSE[1], forkY, {
+  link(c1, COURSE_Y + STATION_R + 2, c1, forkY, {
     alpha: decision,
     draw: { t, at: c.decision - 0.35 },
     end: false,
     width: 2.5,
   });
-  link(COURSE[1], forkY, decisionX, nodeY - 22, {
+  link(c1, forkY, decisionX, nodeY - 22, {
     route: "hv",
     alpha: decision,
     draw: { t, at: c.decision - 0.1 },
@@ -139,14 +156,14 @@ export function stageMeeting(t, a, c) {
     nodeY + 30 + NAME_GAP,
     { align: "center", inline: false, alpha: a },
   );
-  link(COURSE[1], forkY, MISSING_X, nodeY - 24, {
+  link(c1, forkY, missingX, nodeY - 24, {
     route: "hv",
     alpha: missing,
     draw: { t, at: c.orSay - 0.1 },
     width: 2.5,
   });
-  openMark(MISSING_X, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
-  nameText(MISSING(), MISSING_X, nodeY + 30 + NAME_GAP, {
+  openMark(missingX, nodeY, 20, { alpha: missing, turn: vt * 0.6 });
+  nameText(MISSING(), missingX, nodeY + 30 + NAME_GAP, {
     valign: "top",
     alpha: a * named(t, c.missing),
   });

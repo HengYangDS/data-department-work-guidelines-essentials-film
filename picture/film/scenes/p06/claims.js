@@ -17,7 +17,7 @@ import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
-import { bar, centring, early, openMark } from "../p05/kit.js";
+import { bar, centring, early, glide, openMark } from "../p05/kit.js";
 import { nightPlace, nightWay } from "./night.js";
 
 /* C: the chain of trust. The job's earlier start stands on the compact timeline in the top band, the start the decision
@@ -444,8 +444,9 @@ export function claimStage(s, t, c, g) {
 /* G: two pairs in rows, the reached state at the left and the state it does not make, hollow and dashed, at the
  * right, each named under its mark, the way between stopped at a tall bar: a test sheet with its check against
  * overall correctness and acceptance, the two states it does not make, named one under the other, each on its own
- * words, and an Agent reporting completion against completion. The pairs stand wide on the frame's axis, so the
- * first fills its share of the frame before the second arrives. */
+ * words, and an Agent reporting completion against completion. The pairs stand wide, the first centred on the
+ * frame's axis while it stands alone; on the second's words the stage glides as one (p05/kit.js glide) to centre
+ * both, whose from-name reaches further left (EN13-n15: the English first pair stood 54 px right for 2.4 s). */
 export function pairsStage(s, t, c, g) {
   const rows = [
     {
@@ -466,9 +467,15 @@ export function pairsStage(s, t, c, g) {
     },
   ];
   const r = 56,
-    reachLeft = Math.max(50, ...rows.map((row) => measure(row.from) / 2)),
-    reachRight = Math.max(r, ...rows.flatMap((row) => row.not.map((v) => measure(v) / 2))),
-    lx = 600 + centring(600 - reachLeft, 1320 + reachRight),
+    // The left column's x that centres the given pairs: their from-names reach left of it, the states they do not
+    // make right of the right column, 720 px on.
+    place = (list) =>
+      600 +
+      centring(
+        600 - Math.max(50, ...list.map((row) => measure(row.from) / 2)),
+        1320 + Math.max(r, ...list.flatMap((row) => row.not.map((v) => measure(v) / 2))),
+      ),
+    lx = glide(t, place(rows.slice(0, 1)), [[rows[1].at, place(rows)]]),
     rx = lx + 720;
   rows.forEach((row, i) => {
     const a = g * (i ? named(t, row.at) : early(t, c.first7, row.at)),

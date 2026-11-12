@@ -192,7 +192,8 @@ export function fitStage(s, t, c, g) {
  * (EN9-n12). */
 const B = { x: 952, y: 505, rx: 400, ry: 245, card: [200, 128] };
 /* The ring is six arcs, one between each pair of stations, leaving each station's place open: it reads as one cycle of
- * questions and never as a closed frame waiting to be filled. The arcs are drawn as one stroke, on in turn. */
+ * questions and never as a closed frame waiting to be filled. The arcs are drawn as one stroke, the one mark that holds
+ * the data and its name. */
 const GAP = 0.09;
 /* Each arc's length on the ellipse, sampled as it is drawn. */
 const ARC_LENGTHS = [0, 1, 2, 3, 4, 5].map((k) => {
@@ -205,14 +206,16 @@ const ARC_LENGTHS = [0, 1, 2, 3, 4, 5].map((k) => {
   }
   return length;
 });
-/* The arcs count in one after another, 0.12 s apart, each drawn at the tip pace by its own length, so the ring
- * forms in about a second and no tip races. */
+/* The arcs set off together, each from its own start and at the tip pace by its own length, so the ring forms in
+ * under a second and no tip races. Set off one after another, a later arc began far round the ring from the ink
+ * already drawn, so the stroke's extent leapt within one frame: a pop wherever its ink stood firm by then (the English
+ * 05 at 326.3 s on batch n7's timeline). Set off together, they begin before the stroke holds any ink. */
 function ringArcs(t, at, alpha) {
   if (alpha < 0.01) return;
   stroke(
     () => {
       for (let k = 0; k < 6; k++) {
-        const q = drawShare(t, at + 0.12 * k, ARC_LENGTHS[k]);
+        const q = drawShare(t, at, ARC_LENGTHS[k]);
         if (q <= 0) break;
         const a0 = -Math.PI / 2 + (k * Math.PI) / 3 + GAP,
           a1 = a0 + (Math.PI / 3 - 2 * GAP) * q;
@@ -234,8 +237,7 @@ export function questionsStage(s, t, c, g) {
   tableIcon(B.x - cw / 2, top, cw, ch, { alpha: g });
   nameText(L("数据", "Data"), B.x, top - NAME_GAP, { valign: "bottom", alpha: g });
   // The ring counts in as its name fades in, from the start of the name's fade: its arcs draw on as the name comes
-  // rather than stand part drawn when it does, and the one stroke they share still holds little ink when its second
-  // arc begins, far round the ring from the first.
+  // rather than stand part drawn when it does.
   const six = g * early(t, c.sixClause, c.six);
   ringArcs(t, earliest(c.sixClause, c.six) - 0.15, six);
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
