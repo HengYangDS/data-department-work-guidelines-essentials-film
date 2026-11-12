@@ -23,14 +23,18 @@ function cuesOf(s) {
     lateJob: cue(s, "任务启动晚了", "job started late"),
     first2: cue(s, "这件事要分三层处理", "The fix has three layers"),
     three: cue(s, "三层", "three layers"),
-    // Each layer stands with its name on its words. In Chinese they are the words each name takes (止住影响, 修掉,
-    // 防止它再发生), the first two said after the actions the timeline above shows; in English "to repair", while
-    // Containment and Prevention, which their clauses do not say as such, stand from those clauses' first words.
+    // Each layer stands with its name on its words, the words the sync audit takes for it. In Chinese they are the
+    // words each name takes (止住影响, 修掉, 防止它再发生), the first two said after the actions the timeline above
+    // shows; in English "contain the damage" and "to repair", and for Prevention "did not prevent", a word before
+    // "prevent" in the question the third layer answers, so its name leads it by less than LEAD (p05/kit.js).
     layers: cues(s, [
-      ["止住影响", "First, fill in"],
+      ["止住影响", "contain the damage"],
       ["修掉", "to repair"],
-      ["防止它再发生", "Last, guard against a recurrence"],
+      ["防止它再发生", "did not prevent"],
     ]),
+    // The third layer is said from these words: the second layer's light ends on them, as each layer's does when the
+    // next is said, though the English third layer stands only on its own words.
+    last: cue(s, "防止它再发生", "Last, guard against a recurrence"),
     missing: cue(s, "缺的数据", "the missing data"),
     fill: cue(s, "补上", "fill in"),
     earlier: cue(s, "提前启动", "start the job earlier"),

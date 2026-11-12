@@ -52,7 +52,7 @@ function cuesOf(s) {
     source: cue(s, "从哪里查到的", "where each time came from"),
     unverified: cue(s, "没法核实", "could not verify"),
     schedule: cue(s, "调度", "the schedule"),
-    stop: cue(s, "停下来问我", "Stop and ask"),
+    stop: cue(s, "停下来请示", "Stop and ask"),
     stopWay: cue(s, "要改调度", "Stop and ask"),
     first5: cue(s, "调用智能体的人", "The person who calls an Agent"),
     submit: cue(s, "提交", "Submitting"),

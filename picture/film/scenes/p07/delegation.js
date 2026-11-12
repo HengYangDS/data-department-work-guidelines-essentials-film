@@ -64,7 +64,7 @@ const ROW = { fork: 38.5, lock: 16.55, name: 38.5 + 26 + 10 };
 export function delegationStage(s, t, c, g) {
   // What comes at the right: the stop's name beside the bar, and the schedule's clock with its name under it.
   const reach = Math.max(
-      D.half + NAME_GAP + measure(L("停下来问我", "Stop and ask")),
+      D.half + NAME_GAP + measure(L("停下来请示", "Stop and ask")),
       D.half + D.out + Math.max(22, measure(L("调度", "Schedule")) / 2),
     ),
     cam = cameraOf(s, c.stop),
@@ -163,7 +163,7 @@ export function delegationStage(s, t, c, g) {
   line(x1 + 8, D.rail, sx - 30, D.rail, { color: P.line, alpha: shown, width: 2.5 });
   const stop = g * named(t, c.stop);
   bar(x1, D.rail, { alpha: stop, vertical: true, length: 48 });
-  nameText(L("停下来问我", "Stop and ask"), x1 + NAME_GAP, D.rail - 48, {
+  nameText(L("停下来请示", "Stop and ask"), x1 + NAME_GAP, D.rail - 48, {
     align: "left",
     valign: "bottom",
     alpha: stop,

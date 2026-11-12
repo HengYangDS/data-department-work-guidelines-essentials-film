@@ -2363,7 +2363,7 @@ function stageShift() {
   const half = railHalf(), right = Math.max(TASK.x + half, TASK.x + NAME_GAP + measure(THREE())), reports2 = BESIDE.x - BESIDE.half - NAME_GAP - REFUSAL - measure(REPORTS()), colleague = BESIDE.x - 24 - NAME_GAP - Math.max(measure(COLLEAGUE()), measure(ONLY_FIRST(), NOTE)), shifts = [reports2, colleague].map((left) => 960 - (Math.min(TASK.x - half, left) + right) / 2);
   return (Math.max(...shifts) + Math.min(...shifts)) / 2;
 }
-var LEAVE = 0.3;
+var LEAVE = 0.45;
 function stageOutcomes(s, t, c) {
   const a = stageIn(t, c.task);
   if (a <= 0) return;
@@ -4382,7 +4382,10 @@ function viewIcon(i, x, y, a) {
 function viewsStage(s, t, c, g) {
   const [cw, ch] = E2.card, bottom = E2.top + ch, barY = bottom + 26, views = c.views, xs = E2.xs, reach = views.map((at2) => soon(t, at2 - 0.15, 0.6)), shown = views.map((at2) => g * ramp(t, at2 - 0.15, 0.4));
   tableIcon(960 - cw / 2, E2.top, cw, ch, { alpha: g });
-  nameText(L("数据", "Data"), 960, E2.top - NAME_GAP, { valign: "bottom", alpha: g });
+  nameText(L("数据", "Data"), 960, E2.top - NAME_GAP, {
+    valign: "bottom",
+    alpha: g * L(early(t, c.first5, views[1]), 1)
+  });
   stroke(
     () => {
       ctx.moveTo(960, bottom + 8);
@@ -4522,14 +4525,19 @@ function hindsightStage(s, t, c, g) {
 
 // picture/film/scenes/p05/scene.js
 function cuesOf5(s) {
+  const evidence = cue(s, "证据", "evidence");
   const c = {
     first1: cue(s, "说数据能用", "Calling data usable"),
-    evidence: cue(s, "证据", "evidence"),
-    nonProofs: cues(s, [
-      ["能打开的文件", "A file that opens"],
-      ["好看的图", "a chart that looks good"],
-      ["模型信号", "model signal"]
-    ]),
+    evidence,
+    nonProofs: [
+      // The file stands on its own word: 「文件」 comes half a second into its Chinese clause, 「能打开的文件」, and a
+      // name leads its words by at most LEAD (kit.js; ZH14-n1).
+      cueFrom(s, "文件", "A file that opens", evidence),
+      ...cues(s, [
+        ["好看的图", "a chart that looks good"],
+        ["模型信号", "model signal"]
+      ])
+    ],
     refuse: cue(s, "本身都说明不了", "none of them alone"),
     unknowns: cues(s, [
       ["含义", "meaning"],
@@ -4569,7 +4577,6 @@ function cuesOf5(s) {
       ["做决策", "decisions"]
     ]),
     first3: cue(s, "昨晚那份价格", "Last night's prices"),
-    measure: cue(s, "比平时", "two hours later"),
     usual: cue(s, "平时", "usual"),
     backtest: cue(s, "回测", "backtest"),
     later: cue(s, "晚到的时间", "that later time"),
@@ -4594,6 +4601,7 @@ function cuesOf5(s) {
   };
   c.fit2 = cueFrom(s, "证明它适合", "qualified", c.first2b);
   c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);
+  c.measure = cueFrom(s, "晚了两个小时", "two hours later", c.first3);
   return c;
 }
 scenes["05"] = function(s, t) {
@@ -4751,8 +4759,9 @@ function layersStage(s, t, c, g) {
     alpha: count
   });
   const done = g * ramp(t, c.firstTwo - 0.1, 0.4);
+  const said = [ats[0], ats[1], c.last];
   B3.ys.forEach((y, i) => {
-    const q2 = g * ramp(t, ats[i] - 0.15, 0.4), lit = g * speaking(t, ats, i);
+    const q2 = g * ramp(t, ats[i] - 0.15, 0.4), lit = g * speaking(t, i < 2 ? said : ats, i);
     line(spine, y, x0, y, { color: P.line, alpha: q2, width: 2 });
     box(x0, y - B3.h / 2, x1 - x0, B3.h, {
       fill: P.row,
@@ -4764,7 +4773,7 @@ function layersStage(s, t, c, g) {
     box(x0, y - B3.h / 2, x1 - x0, B3.h, { stroke: P.ink, alpha: q2 * lit, radius: 10, width: 3 });
     if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
     else {
-      const asked = g * ramp(t, c.asks[0] + 0.05, 0.4);
+      const asked = g * ramp(t, Math.max(c.asks[0] + 0.05, ats[2] - 0.15), 0.4);
       openMark(x0 + 190, y, 17, { alpha: asked });
       beats(t, x0 + 190, y, 26, c.asks.slice(1), { alpha: asked });
     }
@@ -5178,14 +5187,18 @@ function cuesOf6(s) {
     lateJob: cue(s, "任务启动晚了", "job started late"),
     first2: cue(s, "这件事要分三层处理", "The fix has three layers"),
     three: cue(s, "三层", "three layers"),
-    // Each layer stands with its name on its words. In Chinese they are the words each name takes (止住影响, 修掉,
-    // 防止它再发生), the first two said after the actions the timeline above shows; in English "to repair", while
-    // Containment and Prevention, which their clauses do not say as such, stand from those clauses' first words.
+    // Each layer stands with its name on its words, the words the sync audit takes for it. In Chinese they are the
+    // words each name takes (止住影响, 修掉, 防止它再发生), the first two said after the actions the timeline above
+    // shows; in English "contain the damage" and "to repair", and for Prevention "did not prevent", a word before
+    // "prevent" in the question the third layer answers, so its name leads it by less than LEAD (p05/kit.js).
     layers: cues(s, [
-      ["止住影响", "First, fill in"],
+      ["止住影响", "contain the damage"],
       ["修掉", "to repair"],
-      ["防止它再发生", "Last, guard against a recurrence"]
+      ["防止它再发生", "did not prevent"]
     ]),
+    // The third layer is said from these words: the second layer's light ends on them, as each layer's does when the
+    // next is said, though the English third layer stands only on its own words.
+    last: cue(s, "防止它再发生", "Last, guard against a recurrence"),
     missing: cue(s, "缺的数据", "the missing data"),
     fill: cue(s, "补上", "fill in"),
     earlier: cue(s, "提前启动", "start the job earlier"),
@@ -5298,7 +5311,7 @@ var D2 = {
 var ROW2 = { fork: 38.5, lock: 16.55, name: 38.5 + 26 + 10 };
 function delegationStage(s, t, c, g) {
   const reach = Math.max(
-    D2.half + NAME_GAP + measure(L("停下来问我", "Stop and ask")),
+    D2.half + NAME_GAP + measure(L("停下来请示", "Stop and ask")),
     D2.half + D2.out + Math.max(22, measure(L("调度", "Schedule")) / 2)
   ), cam = cameraOf(s, c.stop), x = cam.ax + (960 - cam.ox) / cam.k - (reach - D2.half) / 4, x0 = x - D2.half, x1 = x + D2.half;
   stroke(
@@ -5377,7 +5390,7 @@ function delegationStage(s, t, c, g) {
   line(x1 + 8, D2.rail, sx - 30, D2.rail, { color: P.line, alpha: shown, width: 2.5 });
   const stop = g * named(t, c.stop);
   bar(x1, D2.rail, { alpha: stop, vertical: true, length: 48 });
-  nameText(L("停下来问我", "Stop and ask"), x1 + NAME_GAP, D2.rail - 48, {
+  nameText(L("停下来请示", "Stop and ask"), x1 + NAME_GAP, D2.rail - 48, {
     align: "left",
     valign: "bottom",
     alpha: stop
@@ -5623,7 +5636,7 @@ function cuesOf7(s) {
     source: cue(s, "从哪里查到的", "where each time came from"),
     unverified: cue(s, "没法核实", "could not verify"),
     schedule: cue(s, "调度", "the schedule"),
-    stop: cue(s, "停下来问我", "Stop and ask"),
+    stop: cue(s, "停下来请示", "Stop and ask"),
     stopWay: cue(s, "要改调度", "Stop and ask"),
     first5: cue(s, "调用智能体的人", "The person who calls an Agent"),
     submit: cue(s, "提交", "Submitting"),

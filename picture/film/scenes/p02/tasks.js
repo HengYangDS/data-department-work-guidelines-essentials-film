@@ -127,8 +127,10 @@ function stageShift() {
  * frame never goes bare; C adds the reports, C2 the colleague and the first outcome reached. The reports leave over
  * LEAVE seconds from just after 02.4's first word, and the colleague enters where they stood on its own words,
  * 「那位同事」/ "The colleague", its fade beginning no sooner than the reports' last tenth of a second: the two never
- * stand together, so nothing ghosts, and no mark arrives at a cut. */
-const LEAVE = 0.3;
+ * stand together, so nothing ghosts, and no mark arrives at a cut. The leave lasts long enough that no frame takes
+ * the pages' outline from firm (ink 60) to unseen (25) at once, whatever the frames' phase on the timeline: over
+ * 0.3 s the n8 Chinese timeline sampled it at 61 and then 25 (a pop). */
+const LEAVE = 0.45;
 export function stageOutcomes(s, t, c) {
   const a = stageIn(t, c.task);
   if (a <= 0) return;

@@ -410,7 +410,13 @@ export function viewsStage(s, t, c, g) {
     reach = views.map((at) => soon(t, at - 0.15, 0.6)),
     shown = views.map((at) => g * ramp(t, at - 0.15, 0.4));
   tableIcon(960 - cw / 2, E.top, cw, ch, { alpha: g });
-  nameText(L("数据", "Data"), 960, E.top - NAME_GAP, { valign: "bottom", alpha: g });
+  // The data's name shows it again. The Chinese clause first says 数据 inside 「数据目录」, half a second in, which the
+  // sync audit takes as its words, so there it leads them by at most LEAD (early); the English clause never says it,
+  // so there it stands from the cut, a recall.
+  nameText(L("数据", "Data"), 960, E.top - NAME_GAP, {
+    valign: "bottom",
+    alpha: g * L(early(t, c.first5, views[1]), 1),
+  });
   // The trunk, the crossing row and the drops are one stroke, the one structure the views hang from. The trunk and
   // the whole row stand from the stage's first frame, as a rail does, so the picture spans the row from the first
   // view and no view moves; each view's drop reaches down to its icon as it is named.

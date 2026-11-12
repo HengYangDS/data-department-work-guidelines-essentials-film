@@ -14,14 +14,19 @@ import { hindsightStage, nightStage } from "./night.js";
 
 /* The spoken cues, in the order they are said. */
 function cuesOf(s) {
+  const evidence = cue(s, "证据", "evidence");
   const c = {
     first1: cue(s, "说数据能用", "Calling data usable"),
-    evidence: cue(s, "证据", "evidence"),
-    nonProofs: cues(s, [
-      ["能打开的文件", "A file that opens"],
-      ["好看的图", "a chart that looks good"],
-      ["模型信号", "model signal"],
-    ]),
+    evidence,
+    nonProofs: [
+      // The file stands on its own word: 「文件」 comes half a second into its Chinese clause, 「能打开的文件」, and a
+      // name leads its words by at most LEAD (kit.js; ZH14-n1).
+      cueFrom(s, "文件", "A file that opens", evidence),
+      ...cues(s, [
+        ["好看的图", "a chart that looks good"],
+        ["模型信号", "model signal"],
+      ]),
+    ],
     refuse: cue(s, "本身都说明不了", "none of them alone"),
     unknowns: cues(s, [
       ["含义", "meaning"],
@@ -61,7 +66,6 @@ function cuesOf(s) {
       ["做决策", "decisions"],
     ]),
     first3: cue(s, "昨晚那份价格", "Last night's prices"),
-    measure: cue(s, "比平时", "two hours later"),
     usual: cue(s, "平时", "usual"),
     backtest: cue(s, "回测", "backtest"),
     later: cue(s, "晚到的时间", "that later time"),
@@ -88,6 +92,9 @@ function cuesOf(s) {
   // The Chinese names the arrival on the words that say when the prices could first be had, in 05.3, since 05.2 says
   // 最早能拿到 first; the English names it with the measure, on "two hours later".
   c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);
+  // The two hours draw on and are named on their own words: in Chinese 「晚了两个小时」, half a second after 「比平时」
+  // opens the clause, so the name leads its words by at most LEAD (ZH14-n1); in English "two hours later".
+  c.measure = cueFrom(s, "晚了两个小时", "two hours later", c.first3);
   return c;
 }
 

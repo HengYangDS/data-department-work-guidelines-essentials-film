@@ -217,9 +217,11 @@ export function layersStage(s, t, c, g) {
     alpha: count,
   });
   const done = g * ramp(t, c.firstTwo - 0.1, 0.4);
+  // A layer lights while it is said, until the next one is; the third is said from c.last, before its own words.
+  const said = [ats[0], ats[1], c.last];
   B.ys.forEach((y, i) => {
     const q = g * ramp(t, ats[i] - 0.15, 0.4),
-      lit = g * speaking(t, ats, i);
+      lit = g * speaking(t, i < 2 ? said : ats, i);
     line(spine, y, x0, y, { color: P.line, alpha: q, width: 2 });
     box(x0, y - B.h / 2, x1 - x0, B.h, {
       fill: P.row,
@@ -230,14 +232,15 @@ export function layersStage(s, t, c, g) {
     });
     box(x0, y - B.h / 2, x1 - x0, B.h, { stroke: P.ink, alpha: q * lit, radius: 10, width: 3 });
     // The first two take their checks once they are said to be done; the third keeps the open question of why the
-    // existing system neither prevented nor caught the delay, from the words that ask it, and a ring beats once in ink
-    // around the question on each of its two parts, 「预防」/ "prevent" and 「发现」/ "detect", as their points arrive
-    // on the rail above, outside its dashed ring so the question never reads as closed: in the reviewers' grey frame
-    // the points alone, or a beat in the question's clay, change too little to be seen arriving, and the Chinese
-    // picture held still through 3.9 s of the question (n5 draft).
+    // existing system neither prevented nor caught the delay, from the words that ask it, or with its layer where the
+    // layer arrives within them (the English "did not prevent"), and a ring beats once in ink around the question on
+    // each of its two parts, 「预防」/ "prevent" and 「发现」/ "detect", as their points arrive on the rail above,
+    // outside its dashed ring so the question never reads as closed: in the reviewers' grey frame the points alone, or
+    // a beat in the question's clay, change too little to be seen arriving, and the Chinese picture held still through
+    // 3.9 s of the question (n5 draft).
     if (i < 2) check(x0 + 190, y, 30, { alpha: done, upto: soon(t, c.firstTwo + i * 0.2, 0.4) });
     else {
-      const asked = g * ramp(t, c.asks[0] + 0.05, 0.4);
+      const asked = g * ramp(t, Math.max(c.asks[0] + 0.05, ats[2] - 0.15), 0.4);
       openMark(x0 + 190, y, 17, { alpha: asked });
       beats(t, x0 + 190, y, 26, c.asks.slice(1), { alpha: asked });
     }
