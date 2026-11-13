@@ -6,7 +6,17 @@
  * reached state against the state it does not make. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, flowAt, flowDot, labelSize, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import {
+  box,
+  dot,
+  flowAt,
+  flowDot,
+  labelSize,
+  line,
+  measure,
+  ring,
+  stroke,
+} from "../../drawing/strokes.js";
 import { agent, check, documentIcon, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { bubble, recoverIcon, tagIcon } from "../../drawing/workspace.js";
@@ -212,11 +222,17 @@ export function stateStage(s, t, c, g) {
     effort = g * named(t, nameAt),
     ey = E1.y + E1.effort;
   box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: inked, radius: 6, width: 2 });
-  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effortClause, (E1.x1 - E1.x0 - 8) * 0.9), 20, {
-    fill: P.muted,
-    alpha: inked * 0.55,
-    radius: 4,
-  });
+  box(
+    E1.x0 + 4,
+    ey - 10,
+    (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effortClause, (E1.x1 - E1.x0 - 8) * 0.9),
+    20,
+    {
+      fill: P.muted,
+      alpha: inked * 0.55,
+      radius: 4,
+    },
+  );
   rejectedName(L("力气", "Effort"), (E1.x0 + E1.x1) / 2, ey + 14 + NAME_GAP, {
     valign: "top",
     alpha: effort,
@@ -498,11 +514,17 @@ export function pairsStage(s, t, c, g) {
       agent(lx, row.y, { alpha: a, size: 2 });
       bubble(lx + 74, row.y - 52, 20, { alpha: a, color: P.ink });
     }
-    line(lx + 80, row.y, mix(lx + 80, rx - r - 34, drawShare(t, wayAt + 0.2, rx - r - 114 - lx)), row.y, {
-      color: P.line,
-      alpha: a,
-      width: 3,
-    });
+    line(
+      lx + 80,
+      row.y,
+      mix(lx + 80, rx - r - 34, drawShare(t, wayAt + 0.2, rx - r - 114 - lx)),
+      row.y,
+      {
+        color: P.line,
+        alpha: a,
+        width: 3,
+      },
+    );
     bar(rx - r - 26, row.y, { alpha: b, vertical: true, length: 100 });
     openMark(rx, row.y, r, { alpha: b });
     nameText(row.from, lx, row.y + 70 + NAME_GAP, { valign: "top", alpha: a });

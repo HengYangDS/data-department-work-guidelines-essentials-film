@@ -111,10 +111,15 @@ export function collaborationStage(s, t, c, g) {
   // The relationship is the link between the two groups, named on it, centred between the people and the grown
   // boundary, so the one name stands at both sides of the collaboration from its words.
   const right = px - GROUP[0][0] + 15 * size * 1.55;
-  nameText(L("人与人工智能的协作", "Human–AI collaboration"), (right + ax - wide) / 2, y - NAME_GAP, {
-    valign: "bottom",
-    alpha: g * (en ? named(t, c.collab) : early(t, c.first1, c.collab)),
-  });
+  nameText(
+    L("人与人工智能的协作", "Human–AI collaboration"),
+    (right + ax - wide) / 2,
+    y - NAME_GAP,
+    {
+      valign: "bottom",
+      alpha: g * (en ? named(t, c.collab) : early(t, c.first1, c.collab)),
+    },
+  );
   nameText(term, ax, y + 128, { alpha: g * named(t, c.extend) });
   // Each refusal's cross keeps full ink while its name steps to the list's second level (naming/names.js).
   L(["组织的授权", "承诺"], ["Organizational authorization", "Commitments"]).forEach((v, i) =>

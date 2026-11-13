@@ -14,7 +14,14 @@ import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { seal } from "../../drawing/symbols.js";
 import { listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, nameText, rejectedName, termRow, termRowLayout } from "../../naming/names.js";
+import {
+  NAME_GAP,
+  NOTE,
+  nameText,
+  rejectedName,
+  termRow,
+  termRowLayout,
+} from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp } from "../../timing/easing.js";
@@ -62,7 +69,9 @@ function meetingShift(t, c) {
     ends = COURSE[1] + Math.max(STATION_R + 2, measure(L("散会时", "When it ends")) / 2),
     whole = MISSING_X + measure(MISSING()) / 2,
     midway = ([a0, a1], [b0, b1]) => (centring(a0, a1) + centring(b0, b1)) / 2;
-  return glide(t, midway(course, [agenda, course[1]]), [[c.ends, midway([agenda, ends], [agenda, whole])]]);
+  return glide(t, midway(course, [agenda, course[1]]), [
+    [c.ends, midway([agenda, ends], [agenda, whole])],
+  ]);
 }
 /* The meeting's point (x, y) on the screen, from a point of failure 3's mark. */
 const at = (x, y) => [MEET.x + (x - MEET.x) * MEET.k, MEET.y + (y - MEET.y) * MEET.k];
@@ -226,7 +235,11 @@ export function stageApart(t, a, c) {
   // the substitution refused, and each kind's way toward the other stops at a bar beside it.
   // Every way and divider draws at the tip pace by its own length.
   const ways = a * ramp(t, c.substitute - 0.15, 0.4),
-    reach = drawShare(t, c.substitute + 0.05, Math.max(BARS[0] - SIDES[0] - 52, SIDES[1] - 50 - BARS[1])),
+    reach = drawShare(
+      t,
+      c.substitute + 0.05,
+      Math.max(BARS[0] - SIDES[0] - 52, SIDES[1] - 50 - BARS[1]),
+    ),
     rise = drawShare(t, c.substitute + 0.05, DIVIDER[1] - DIVIDER[0]);
   if (rise > 0)
     line(960, DIVIDER[1], 960, mix(DIVIDER[1], DIVIDER[0], rise), {
@@ -248,10 +261,16 @@ export function stageApart(t, a, c) {
   // Authority to act cannot make a false fact true: the seal's way down to it stops at a bar.
   const falseOn = a * ramp(t, c.falseTrue - 0.15, 0.4),
     [stop, stop2] = STOPS;
-  line(SIDES[0], TOP + 50, SIDES[0], mix(TOP + 50, stop - 6, drawShare(t, c.falseTrue + 0.05, stop - 56 - TOP)), {
-    alpha: falseOn,
-    width: 2.5,
-  });
+  line(
+    SIDES[0],
+    TOP + 50,
+    SIDES[0],
+    mix(TOP + 50, stop - 6, drawShare(t, c.falseTrue + 0.05, stop - 56 - TOP)),
+    {
+      alpha: falseOn,
+      width: 2.5,
+    },
+  );
   bar(SIDES[0], stop, { alpha: falseOn * ramp(t, c.falseTrue + 0.45, 0.3) });
   dashedPage(SIDES[0], MID, 84, 104, { alpha: falseOn });
   nameText(L("假的事实", "A false fact"), SIDES[0], MID_NAMES, {
@@ -261,10 +280,16 @@ export function stageApart(t, a, c) {
   // A fact does not grant permission to act: the record's way down to the action stops at a bar.
   const actOn = a * ramp(t, c.permission - 0.15, 0.4);
   // The record's way is shorter than the seal's, its bar nearer the record: two refusals, not one repeated shape.
-  line(SIDES[1], TOP + 60, SIDES[1], mix(TOP + 60, stop2 - 6, drawShare(t, c.permission + 0.05, stop2 - 66 - TOP)), {
-    alpha: actOn,
-    width: 2.5,
-  });
+  line(
+    SIDES[1],
+    TOP + 60,
+    SIDES[1],
+    mix(TOP + 60, stop2 - 6, drawShare(t, c.permission + 0.05, stop2 - 66 - TOP)),
+    {
+      alpha: actOn,
+      width: 2.5,
+    },
+  );
   bar(SIDES[1], stop2, { alpha: actOn * ramp(t, c.permission + 0.45, 0.3), length: 34 });
   // Once refused, a point runs down each way in voice time and stops at its bar, its first from the way's top.
   [
@@ -290,10 +315,16 @@ export function stageApart(t, a, c) {
     flowDot(mix(from, to, runs?.q ?? 0), TOP, 4.5, runs, { color: P.line, alpha: a });
   });
   const conflict = a * ramp(t, c.conflict - 0.15, 0.4);
-  line(960, DIVIDER[1], 960, mix(DIVIDER[1], CONFLICT_Y - 12, drawShare(t, c.conflict + 0.05, CONFLICT_Y - 12 - DIVIDER[1])), {
-    alpha: conflict,
-    width: 3,
-  });
+  line(
+    960,
+    DIVIDER[1],
+    960,
+    mix(DIVIDER[1], CONFLICT_Y - 12, drawShare(t, c.conflict + 0.05, CONFLICT_Y - 12 - DIVIDER[1])),
+    {
+      alpha: conflict,
+      width: 3,
+    },
+  );
   conflictMark(960, CONFLICT_Y, { alpha: conflict });
   nameText(L("冲突", "Conflict"), 960 + 22 + NAME_GAP, CONFLICT_Y, {
     align: "left",

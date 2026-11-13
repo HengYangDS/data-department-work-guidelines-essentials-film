@@ -281,10 +281,15 @@ export function signsStage(s, t, c, g) {
     },
     { color: P.line, alpha: rescue, width: 2 },
   );
-  nameText(L("临时救场", "Stepping in again and again"), (xs[1] + xs[3]) / 2, bracketY + NAME_GAP - 6, {
-    valign: "top",
-    alpha: rescue,
-  });
+  nameText(
+    L("临时救场", "Stepping in again and again"),
+    (xs[1] + xs[3]) / 2,
+    bracketY + NAME_GAP - 6,
+    {
+      valign: "top",
+      alpha: rescue,
+    },
+  );
   // The pattern, the impact and the direction: three checks under the row, midway between neighbouring nights.
   const checks = c.look,
     checkXs = [0, 1, 2].map((i) => (xs[i] + xs[i + 1]) / 2);

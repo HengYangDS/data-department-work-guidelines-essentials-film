@@ -14,9 +14,7 @@ export const rowNameTop = (bottoms, gap = NAME_GAP) => Math.max(...bottoms) + ga
  * its neighbours wraps onto a second line instead of stepping off the baseline. */
 export const RAIL_CLEAR = 30;
 const widestLine = (v, size) =>
-  Math.max(
-    ...(Array.isArray(v) ? v : String(v).split("\n")).map((line) => measure(line, size)),
-  );
+  Math.max(...(Array.isArray(v) ? v : String(v).split("\n")).map((line) => measure(line, size)));
 export function railNames(
   names,
   xs,

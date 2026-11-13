@@ -8,7 +8,17 @@
  * top band is the same figure with the same words. */
 
 import { ctx } from "../canvas.js";
-import { dot, drawnShare, flowAt, flowDot, labelSize, line, measure, ring, stroke } from "./strokes.js";
+import {
+  dot,
+  drawnShare,
+  flowAt,
+  flowDot,
+  labelSize,
+  line,
+  measure,
+  ring,
+  stroke,
+} from "./strokes.js";
 import { tableIcon } from "./symbols.js";
 import { LEADING, NAME_GAP, nameText, wrapName } from "../naming/names.js";
 import { LABEL, P } from "../palette.js";
@@ -185,8 +195,7 @@ export function lastNight(
   ].forEach(([part, length]) => {
     if (part.draw) part.upto = drawnShare(part.draw, length, clamp(part.upto));
   });
-  const
-    // The card fades in over the first 0.4 of its share and settles onto its place over the first 0.6; its stem
+  const // The card fades in over the first 0.4 of its share and settles onto its place over the first 0.6; its stem
     // reaches down to the rail over the last 0.6, and the arrival's point grows by its size over the stem's last 0.4
     // and stands whole as it touches down, unless given, so it enters as a point lands rather than popping in at ink.
     settle = ease(clamp(C.upto / 0.6)),

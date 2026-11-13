@@ -206,7 +206,8 @@ export function aimsStage(s, t, c, g) {
     px + 62,
   );
   // The evidence line grows from the judgment as a tip, from the moment it has length, so no stub of it appears whole.
-  if (reach > px + 62 + 0.5) line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
+  if (reach > px + 62 + 0.5)
+    line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4);
     dot(x, y, 34, { color: P.ground, alpha: a });

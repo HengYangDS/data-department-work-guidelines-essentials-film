@@ -1,7 +1,16 @@
 /* Drawn relations: orthogonal links that end in a quiet point. From ddwg-film v1.0.0 (c4e8aac), picture/film.js. */
 
 import { ctx } from "../canvas.js";
-import { along, dot, drawnShare, flowAt, flowDot, landedShare, lengthOf, stroke } from "./strokes.js";
+import {
+  along,
+  dot,
+  drawnShare,
+  flowAt,
+  flowDot,
+  landedShare,
+  lengthOf,
+  stroke,
+} from "./strokes.js";
 import { P } from "../palette.js";
 import { clamp, ease } from "../timing/easing.js";
 
@@ -101,7 +110,8 @@ export function link(
     });
   // The end point grows by its size as the stroke lands on it: over the last twentieth of its length, or, drawn at the
   // tip pace, over its last LANDING seconds (landedShare), so a short link's point does not appear whole in a frame.
-  const grown = draw && extent >= 1 ? landedShare(draw, lengthOf(points)) : ease(clamp((upto - 0.95) / 0.05));
+  const grown =
+    draw && extent >= 1 ? landedShare(draw, lengthOf(points)) : ease(clamp((upto - 0.95) / 0.05));
   if (end && grown > 0) dot(x2, y2, (width + 2.5) * grown, { color, alpha });
   const state = flow ? flowAt(flow.t, lengthOf(points), flow) : null;
   if (state && state.q < upto) {

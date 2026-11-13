@@ -115,10 +115,7 @@ const recordTimes = (c) => [
  * heading reaches far enough from the spine that the spine and it cover a tenth of the band before the first tier
  * joins; stacked on the documents they covered a twentieth for three seconds. */
 const HEAD = () =>
-  L(
-    { top: "风险", right: ["多少记录", "、多少手续"] },
-    { top: "Risk", right: ["Process"] },
-  );
+  L({ top: "风险", right: ["多少记录", "、多少手续"] }, { top: "Risk", right: ["Process"] });
 const headTimes = (c) => L([c.risk, c.process], [c.process]);
 /* The tiers stand at one pitch down the spine, so the gaps between them read alike. */
 const TIER_Y = [330, 525, 720],
@@ -155,11 +152,7 @@ function spinePlaces(c) {
     records = recordTimes(c),
     turns = [c.tiers[0], records[0].term[0], c.tiers[2]],
     parts = [
-      [
-        c.risk,
-        top,
-        Math.max(top, DOC_RIGHT - DOCS[2][0] + measure(head.right.join(""))),
-      ],
+      [c.risk, top, Math.max(top, DOC_RIGHT - DOCS[2][0] + measure(head.right.join("")))],
       ...WORK().map((row, k) => [c.tiers[k], TO_WORK + blockWidth(row), 0]),
       ...RECORD().map((row, k) => [records[k].term[0], 0, DOC_RIGHT + NAME_GAP + blockWidth(row)]),
     ].sort((p, q) => p[0] - q[0]);
@@ -194,10 +187,17 @@ export function stageLadder(t, a, c) {
     alpha: a * named(t, L(c.riskWord, c.risk)),
   });
   // The records' heading beside the spine's top, on the documents' left edge, each part on its words.
-  growName(t, head.right, headTimes(c), x + DOC_RIGHT - DOCS[2][0], top + 12 - labelSize(LABEL) / 2, {
-    alpha: a,
-    build: true,
-  });
+  growName(
+    t,
+    head.right,
+    headTimes(c),
+    x + DOC_RIGHT - DOCS[2][0],
+    top + 12 - labelSize(LABEL) / 2,
+    {
+      alpha: a,
+      build: true,
+    },
+  );
   const works = workTimes(c);
   WORK().forEach(({ term, qual, width = Infinity, noteWidth = width }, k) => {
     // A tier's tick joins the spine with the part of its name that reaches the spine, the last of its first line, so

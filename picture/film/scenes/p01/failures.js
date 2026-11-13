@@ -94,7 +94,10 @@ function forkBranch(fx, y) {
     Array.from({ length: 9 }, (_, i) => {
       const q = i / 8,
         u = 1 - q;
-      return [u * u * a[0] + 2 * u * q * c[0] + q * q * b[0], u * u * a[1] + 2 * u * q * c[1] + q * q * b[1]];
+      return [
+        u * u * a[0] + 2 * u * q * c[0] + q * q * b[0],
+        u * u * a[1] + 2 * u * q * c[1] + q * q * b[1],
+      ];
     });
   return [
     [fx, y],
@@ -190,10 +193,11 @@ export function pagesMark(cx, cy, { alpha = 1, pages = 3, bars = 0 } = {}) {
   stroke(slabs(0, whole), { color: P.ink, alpha, width: 2 });
   if (part > 0.01) {
     const lift = (1 - part) * 10;
-    stroke(
-      () => ctx.roundRect(cx - 48, slab(whole) - lift, 62, 8, 2),
-      { color: P.ink, alpha: alpha * part, width: 2 },
-    );
+    stroke(() => ctx.roundRect(cx - 48, slab(whole) - lift, 62, 8, 2), {
+      color: P.ink,
+      alpha: alpha * part,
+      width: 2,
+    });
   }
   if (bars > 0.01) {
     const shape = () => {

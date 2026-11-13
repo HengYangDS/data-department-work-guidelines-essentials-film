@@ -14,7 +14,14 @@ import { dot, flowAt, flowDot, labelSize, line, measure, ring } from "../../draw
 import { check, cross } from "../../drawing/symbols.js";
 import { clearOfTitle } from "../../framing/chapters.js";
 import { SECOND, listIn, named } from "../../naming/lists.js";
-import { NAME_GAP, NOTE, TERM_STACK, growName, nameText, rejectedName } from "../../naming/names.js";
+import {
+  NAME_GAP,
+  NOTE,
+  TERM_STACK,
+  growName,
+  nameText,
+  rejectedName,
+} from "../../naming/names.js";
 import { LABEL, P } from "../../palette.js";
 import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
