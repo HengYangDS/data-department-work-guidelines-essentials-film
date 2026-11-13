@@ -8,7 +8,9 @@ Author: Yang HENG.
 
 ## The films
 
-A release publishes the films as release assets, together with their captions, transcripts, covers, independent review records and `SHA256SUMS`. Its manifest, `content/release.json`, records each asset's name, size and SHA-256, the digests of the soundtrack and staged picture each edition was made from, and those of the film-bound sources whose exact bytes the build reads. The independent review scores the audio from automated evidence; human listening is a separate acceptance.
+All four films of each edition are published as release assets, together with their captions, transcripts, covers, independent review records and `SHA256SUMS`: 21 assets. [`content/release.json`](content/release.json) records each asset's name, size and SHA-256, the digests of the soundtrack and of the two staged pictures, with captions and without them, that each edition was made from, and those of the film-bound sources: the scripts, narration texts, casts, pronunciation contract, reference recordings, source manifest, covers, fonts, composition and entry page whose exact bytes the build reads. The independent review of the `v1.0.0` films scored the Chinese edition 99.8 and the English edition 99.1 out of 100, with every one of its twelve dimensions at 96 or above, each of its three levels, 信, 达 and 雅, passing and no material or minor finding; the published review records list its notes. That review scores the audio from automated evidence; human listening is a separate acceptance.
+
+The films of `v1.0.0` are the current editions.
 
 ## Rebuilding the films
 
@@ -32,7 +34,7 @@ mise run bootstrap
 mise run film:supply
 ```
 
-`film:build` then narrates both editions from the seeds in their casts, assembles the soundtracks and captions, renders and packages the pictures and verifies every film, offline and only under `build/`.
+`film:build` then narrates both editions from the seeds in their casts, assembles the soundtracks and captions, renders each edition's picture with its captions and again without them, compares the two at every frame, packages the films and verifies every film, offline and only under `build/`.
 
 ```bash
 mise run film:build
@@ -42,28 +44,32 @@ The stages also run one at a time: `film:narrate`, `film:sound`, `film:picture`,
 
 ## Comparing a rebuild with the published films
 
-Download a release's assets into `build/artifacts/release/` and compare:
+Download the release assets into `build/artifacts/release/` and compare:
+
+```bash
+gh release download v1.0.0 --repo HengYangDS/data-department-work-guidelines-essentials-film --dir build/artifacts/release
+```
 
 ```bash
 mise run film:compare
 ```
 
-The comparison refuses a published asset or a film-bound source that differs from the release manifest, and accepts a published review only when it binds the published films and the current script and composition. It then compares the rebuild layer by layer: each soundtrack and staged picture document must hold the recorded bytes, the captions, transcripts and covers the published bytes, and each film must have the published frame count, decoded audio, streams, chapters and tags, with every decoded frame's PSNR at or above the floor the manifest records. The picture alone is not byte-identical, because GPU capture and encoding vary between renders of the same stage. The report goes to `build/evidence/reproduction/report.json`.
+The comparison refuses a published asset or a film-bound source that differs from the release manifest, and accepts a published review only when it binds the published films and the current script and composition. It then compares the rebuild layer by layer: each soundtrack and each edition's two staged picture documents, with captions and without them, must hold the recorded bytes, the captions, transcripts and covers the published bytes, and each of the eight films must have the published frame count, decoded audio, streams, chapters and tags, with every decoded frame's PSNR at or above the floor the manifest records, 45 dB for each film. The films are not compared byte for byte, since packaging stamps each film with the time it was made. Each picture is drawn in Chrome's software rasterizer, which `content/film.toml` declares. The report goes to `build/evidence/reproduction/report.json`.
 
 ## Checks
 
-`mise run check` runs the picture and Python test suites and the Markdown format check. The repository is governed by [ETHOS](https://github.com/HengYangDS/ethos): `ethos prove --full --execute` runs the portable proof, including the `film-checks` gate, which runs the Python tests of the declaration, narration mirrors and fonts through the installed engine, and after a rebuild `ethos prove --host --gate film-media --gate film-reproduction --execute` verifies the films and their reproduction on this host. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to change, verify, rebuild and release the films.
+`mise run check` runs the picture and Python test suites and the Markdown format check. The repository is governed by [ETHOS](https://github.com/HengYangDS/ethos): `ethos prove --full --execute` runs the portable proof, including the `film-checks` gate, which runs the Python tests of the declaration, narration mirrors, fonts and release manifest through the installed engine, and after a rebuild `ethos prove --host --gate film-media --gate film-reproduction --execute` verifies the films and their reproduction on this host. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to change, verify, rebuild and release the films.
 
 ## Layout
 
-| Path                            | Contents                                                                                                                                                                                                                    |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `content/`                      | The film's declaration `film.toml`, which holds the summary and colours of the players the engine renders, both editions' scripts, casts and narration texts, the entry page, the concept contract and the source manifest. |
-| `picture/`                      | The film's picture composition: the modules under `picture/film/` and the bundle `picture/film.js` the renderer loads.                                                                                                      |
-| `assets/`                       | The narrator's reference recordings, the covers and the fonts.                                                                                                                                                              |
-| `tests/`                        | The film's tests: its composition against both scripts, its fonts, its declaration and its narration mirrors.                                                                                                               |
-| `openspec/`                     | The accepted specification and any open Change.                                                                                                                                                                             |
-| `system/gates.toml`, `.config/` | The ETHOS gates, the check policies and the locked toolchain with its tasks.                                                                                                                                                |
+| Path                            | Contents                                                                                                                                                                                                                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `content/`                      | The film's declaration `film.toml`, which holds the summary and colours of the players the engine renders, both editions' scripts, casts and narration texts, the pronunciation contract, the entry page, the concept contract, the review prompt and readings, the source manifest and the release manifest. |
+| `picture/`                      | The film's picture composition: the modules under `picture/film/` and the bundle `picture/film.js` the renderer loads.                                                                                                                                                                                        |
+| `assets/`                       | The narrator's reference recordings, the covers and the fonts.                                                                                                                                                                                                                                                |
+| `tests/`                        | The film's tests: its composition against both scripts, its fonts, its declaration, its narration mirrors and its release manifest.                                                                                                                                                                           |
+| `openspec/`                     | The accepted specification and any open Change.                                                                                                                                                                                                                                                               |
+| `system/gates.toml`, `.config/` | The ETHOS gates, the check policies and the locked toolchain with its tasks.                                                                                                                                                                                                                                  |
 
 ## License
 

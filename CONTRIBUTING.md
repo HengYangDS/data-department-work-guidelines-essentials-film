@@ -47,7 +47,7 @@ Generated output belongs under the ignored `build/`; the tracked tree holds sour
 mise run check
 ```
 
-The check runs the picture and Python suites and checks the Markdown format without writing; `mise run fix` applies the Markdown formatter. Before a render, `mise run film:picture` stages each edition and checks its geometry, its cover and its frame, motion and sync audits, and refuses a gated finding. A committed head must then pass the full proof, which runs every gate the repository declares in [`system/gates.toml`](system/gates.toml), the film's own checks included:
+The check confirms that the locks are current and the installed dependencies match them, runs the picture and Python suites and checks the Markdown format without writing; `mise run fix` applies the Markdown formatter. `mise run film:picture` stages each edition and checks its geometry, its cover and its frame, motion and sync audits, and refuses a gated finding before it renders the edition's two pictures, validates them and compares them at every frame. A committed head must then pass the full proof, which runs every gate the repository declares in [`system/gates.toml`](system/gates.toml), the film's own checks included:
 
 ```bash
 ethos prove --host --execute --full --json
@@ -77,7 +77,7 @@ Sign every commit with your own SSH key; ETHOS's hooks check each commit's signa
 
 ## Release
 
-`VERSION` holds the version, and `CHANGELOG.md` follows Keep a Changelog: record each change under `Unreleased` as it lands, and date its heading only when the release is cut. The release manifest `content/release.json` records every published asset and the sources each film was made from. A release is a signed `v*` tag cut from the accepted head, published with the films as release assets, their captions, transcripts, covers, review records and `SHA256SUMS`.
+`VERSION` holds the version, and `CHANGELOG.md` follows Keep a Changelog: record each change under `Unreleased` as it lands, and date its heading only when the release is cut. [`content/release.json`](content/release.json) records every published asset and the sources each film was made from. A release is a signed `v*` tag cut from the accepted head, published with the films as release assets, their captions, transcripts, covers, review records and `SHA256SUMS`.
 
 ## License
 

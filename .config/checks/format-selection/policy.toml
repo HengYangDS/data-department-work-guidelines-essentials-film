@@ -1,12 +1,13 @@
-# Sources whose SHA-256 the film's build records bind and that film-media checks against a
-# build's receipts: the reference recordings, covers and fonts, the scripts and casts, the source
-# manifest, the entry page, and the composition and its page. A new production changes them
-# together, through a full render and review.
+# Sources whose SHA-256 the release manifest records and the film-checks gate compares with the
+# tracked bytes in every proof, and that film-media also checks against a build's receipts: the
+# reference recording each cast reads, the covers and fonts, the scripts and casts, the
+# pronunciation contract, the source manifest, the entry page, and the composition and its page.
+# A new production changes them together with the manifest, through a full render and review.
 [[ownership]]
 id = "film-media-bound-sources"
 paths = [
   "assets/audio/en/narration-reference.wav",
-  "assets/audio/narration-reference.wav",
+  "assets/audio/narration-reference-natural.wav",
   "assets/cover/ddwg-essentials-cover-en.png",
   "assets/cover/ddwg-essentials-cover.png",
   "assets/fonts/ibm-plex-sans-bold.ttf",
@@ -27,18 +28,19 @@ paths = [
 format_owner = "immutable-carrier"
 format_command = "not-applicable:film-media-bound"
 format_check = "ethos prove --full --execute --json"
-validation_owner = "native-behavior"
+validation_owner = "film-checks"
 validation_command = "ethos prove --full --execute --json"
 mutation_policy = "forbidden"
 
-# Narration texts that film-media compares with the script: each must equal its edition's
-# segment texts joined by one blank line, so a Markdown formatter must not rewrite them.
+# Narration texts that film-checks and film-media compare with the script: each must equal its
+# edition's segment texts joined by one blank line, so a Markdown formatter must not rewrite them.
+# The release manifest records them too.
 [[ownership]]
 id = "film-media-bound-narration"
 paths = ["content/en/narration.md", "content/narration.md"]
 format_owner = "immutable-carrier"
 format_command = "not-applicable:film-media-bound"
 format_check = "ethos prove --full --execute --json"
-validation_owner = "native-behavior"
+validation_owner = "film-checks"
 validation_command = "ethos prove --full --execute --json"
 mutation_policy = "forbidden"
