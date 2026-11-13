@@ -250,9 +250,12 @@ test(`${CODE} key-word labels arrive on their words`, () => {
 
 if (!process.env.PARTS_EDITION)
   test("en edition passes the same checks", () => {
-    // The child runs as a test runner of its own, not as a subprocess reporting to this one.
+    // The child runs as a test runner of its own, not as a subprocess reporting to this one, and with its own reporter:
+    // a runner that wraps this one may name its reporter and one destination in NODE_OPTIONS, as ETHOS's behavior gate
+    // does, and the child's reporter cannot share them.
     const env = { ...process.env, PARTS_EDITION: "en" };
     delete env.NODE_TEST_CONTEXT;
+    delete env.NODE_OPTIONS;
     const run = spawnSync(
       process.execPath,
       ["--test", "--test-reporter=tap", fileURLToPath(import.meta.url)],

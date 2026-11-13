@@ -53,9 +53,11 @@ const STAGES = {
 
 if (!process.env.PARTS_B_EDITION)
   test("the English edition passes the same checks in its own process", () => {
-    // The child runs as a test runner of its own, not as a subtest of this one.
+    // The child runs as a test runner of its own, not as a subtest of this one, and reports to its own standard output:
+    // a runner that wraps this one may send its reporter elsewhere through NODE_OPTIONS, as ETHOS's behavior gate does.
     const env = { ...process.env, PARTS_B_EDITION: "en" };
     delete env.NODE_TEST_CONTEXT;
+    delete env.NODE_OPTIONS;
     const run = spawnSync(process.execPath, ["--test", fileURLToPath(import.meta.url)], {
       env,
       encoding: "utf8",
