@@ -16,8 +16,8 @@ import { railNames } from "../../naming/placement.js";
 import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { ease, mix, ramp, soon } from "../../timing/easing.js";
-import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
-import { bar, centring, early, glide, openMark } from "../p05/kit.js";
+import { drawShare, thoughtEnd, travel, voiceTime } from "../../timing/pauses.js";
+import { bar, centring, early, earliest, glide, openMark } from "../p05/kit.js";
 import { nightPlace, nightWay } from "./night.js";
 
 /* C: the chain of trust. The job's earlier start stands on the compact timeline in the top band, the start the decision
@@ -151,9 +151,12 @@ export function chainStage(s, t, c, g) {
     alpha: lighter,
   });
   // A way that skips a link: from the third station over the fourth toward the fifth, stopped at a bar over the fourth.
+  // The way and its name come on the words of the skip; the bar and the name's cross stand as the way reaches the bar,
+  // and settle before the thought's quiet, which in English begins 0.64 s after "skip".
   const skip = g * named(t, c.skip),
     wy = C.icon - 70,
-    run = drawShare(t, c.skip - 0.1, xs[3] - 10 - xs[2] + C.icon - 24 - wy);
+    run = drawShare(t, c.skip - 0.1, xs[3] - 10 - xs[2] + C.icon - 24 - wy),
+    shut = Math.min(c.skip + 0.45, thoughtEnd(c.skip) - 0.35);
   stroke(
     () => {
       ctx.moveTo(xs[2], C.icon - 24);
@@ -162,11 +165,11 @@ export function chainStage(s, t, c, g) {
     },
     { color: P.line, alpha: skip, width: 2.5 },
   );
-  bar(xs[3], wy, { alpha: g * ramp(t, c.skip + 0.45, 0.3), vertical: true, length: 40 });
-  rejectedName(L("少一环", "A skipped link"), xs[3], wy - 20 - NAME_GAP, {
+  bar(xs[3], wy, { alpha: g * ramp(t, shut, 0.3), vertical: true, length: 40 });
+  rejectedName(L("少一环", "Skipping a link"), xs[3], wy - 20 - NAME_GAP, {
     valign: "bottom",
     alpha: skip,
-    mark: ramp(t, c.skip + 0.45, 0.3),
+    mark: ramp(t, shut, 0.3),
   });
 }
 
@@ -199,20 +202,25 @@ export function stateStage(s, t, c, g) {
     alpha: g * named(t, c.first5),
   });
   nameText(L("哪一步", "State"), reached, E1.y + 7 + NAME_GAP, { valign: "top", alpha: state });
-  // The effort: a long bar under the rail, nine tenths full, refused at its end.
-  const effort = g * named(t, c.effort),
+  // The effort: a long bar under the rail, nine tenths full, refused at its end. The bar inks on the first words of its
+  // clause and fills at the tip pace by its own length, 749 px in 1.37 s: in Chinese from 「不说」, so the fill is whole
+  // and at rest before 06.4.2's stage cut on 「核验通过了」, which stopped it at 88 % when it set off on 「多少力气」
+  // (ZH15-n1). Its name and cross follow, the Chinese name at most LEAD ahead of 「力气」, so it is read on 「花了」 and
+  // the bar waits under 0.6 s for it.
+  const nameAt = L(earliest(c.effortClause, c.effort), c.effort),
+    inked = g * named(t, c.effortClause),
+    effort = g * named(t, nameAt),
     ey = E1.y + E1.effort;
-  box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: effort, radius: 6, width: 2 });
-  // It fills at the tip pace by its own length.
-  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effort, (E1.x1 - E1.x0 - 8) * 0.9), 20, {
+  box(E1.x0, ey - 14, E1.x1 - E1.x0, 28, { stroke: P.line, alpha: inked, radius: 6, width: 2 });
+  box(E1.x0 + 4, ey - 10, (E1.x1 - E1.x0 - 8) * 0.9 * drawShare(t, c.effortClause, (E1.x1 - E1.x0 - 8) * 0.9), 20, {
     fill: P.muted,
-    alpha: effort * 0.55,
+    alpha: inked * 0.55,
     radius: 4,
   });
   rejectedName(L("力气", "Effort"), (E1.x0 + E1.x1) / 2, ey + 14 + NAME_GAP, {
     valign: "top",
     alpha: effort,
-    mark: ramp(t, c.effort + 0.4, 0.3),
+    mark: ramp(t, nameAt + 0.4, 0.3),
   });
 }
 

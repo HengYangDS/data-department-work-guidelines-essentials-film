@@ -131,8 +131,9 @@ const C = {
   ring: 17,
 };
 const FREE = () => L(["自主", "探索", "创造"], ["Autonomy", "Exploration", "Creative work"]);
-/* The English names begin alike in case, as the names of one list do. */
-const EDGE = () => L(["停下来", "讲出来", "上报"], ["Stop", "Make it visible", "Escalate"]);
+/* The English names begin alike in case, as the names of one list do, and keep the voice's key words, as the caption
+ * says the whole phrase (EN15-n6). */
+const EDGE = () => L(["停下来", "讲出来", "上报"], ["Stop", "Make visible", "Escalate"]);
 const widest = (names) => Math.max(...names.map((v) => measure(v)));
 /* The field's width and the x of each list's centre, the free list's and the edge list's. */
 function caseColumns() {

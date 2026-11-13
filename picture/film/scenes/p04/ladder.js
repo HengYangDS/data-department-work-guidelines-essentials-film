@@ -72,7 +72,8 @@ const WORK = () =>
   );
 /* The records: one clear exchange, the existing work record and, for the highest tier, a written decision with its
  * explicit authorization and its other requirements, each part on its own words. Each record is its form over what it
- * holds, as both editions say the record before its contents. */
+ * holds, as both editions say the record before its contents. The English review stands as its key word, "review",
+ * while the caption says "independent review and human acceptance", and E's lens keeps the whole name (EN15-n6). */
 const RECORD = () =>
   L(
     [
@@ -90,7 +91,7 @@ const RECORD = () =>
       {
         term: ["A written decision, ", "explicit authorization"],
         qual: [],
-        items: ["a rollback or degradation path", "independent review", "human acceptance"],
+        items: ["a rollback or degradation path", "review", "human acceptance"],
         width: 310,
       },
     ],

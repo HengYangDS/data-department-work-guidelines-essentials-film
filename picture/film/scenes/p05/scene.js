@@ -90,8 +90,10 @@ function cuesOf(s) {
   };
   c.fit2 = cueFrom(s, "证明它适合", "qualified", c.first2b);
   // The Chinese names the arrival on the words that say when the prices could first be had, in 05.3, since 05.2 says
-  // 最早能拿到 first; the English names it with the measure, on "two hours later".
-  c.arrival = cueFrom(s, "最早能拿到", "two hours later", c.first3);
+  // 最早能拿到 first; the English names it "Arrival" on "reached us", the words that say it (EN15-n11). The voice's own
+  // words "Reached us" would raise the stage's labels to 90 % of the caption "Last night's prices reached us two hours
+  // later than usual,", an echo the gate records (EN15-n6), against 70 % with "Arrival".
+  c.arrival = cueFrom(s, "最早能拿到", "reached us", c.first3);
   // The two hours draw on and are named on their own words: in Chinese 「晚了两个小时」, half a second after 「比平时」
   // opens the clause, so the name leads its words by at most LEAD (ZH14-n1); in English "two hours later".
   c.measure = cueFrom(s, "晚了两个小时", "two hours later", c.first3);

@@ -187,10 +187,12 @@ export function fitStage(s, t, c, g) {
 
 /* B: six questions ring the data. The ring is counted in on its words and named under the data; each question's
  * station fills on the ring as it is asked and is named outside it by what it asks about, one list; the station of
- * availability carries a clock, the time the example returns to. The ring stands 8 px left of the frame's axis, as
- * the stations asked first are named at its right, so each state it holds stays within the reviewers' 50 px
- * (EN9-n12). */
-const B = { x: 952, y: 505, rx: 400, ry: 245, card: [200, 128] };
+ * availability carries a clock, the time the example returns to. The ring stands left of the frame's axis, as the
+ * stations asked first are named at its right, so each state it holds stays within the reviewers' 50 px (EN9-n12): 8
+ * px in Chinese, and 35 px in English, whose third station's name, "What it means", reaches 45 px past the second's
+ * and holds the picture's right edge for 2 s before a name stands at the ring's left; the ring before its stations are
+ * named and that state then stand about 42 px either side of the axis. */
+const B = { x: L(952, 925), y: 505, rx: 400, ry: 245, card: [200, 128] };
 /* The ring is six arcs, one between each pair of stations, leaving each station's place open: it reads as one cycle of
  * questions and never as a closed frame waiting to be filled. The arcs are drawn as one stroke, the one mark that holds
  * the data and its name. */
@@ -241,9 +243,12 @@ export function questionsStage(s, t, c, g) {
   const six = g * early(t, c.sixClause, c.six);
   ringArcs(t, earliest(c.sixClause, c.six) - 0.15, six);
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
+  // Three English stations take their question's own words (EN15-n11, B1): "Origin" is not said, and "Meaning" and
+  // "Quality" are said only in 05.2's next thought, within 8 s, whose words the sync audit takes for theirs, so those
+  // stations stood before their clause.
   const names = L(
     ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
-    ["Origin", "Availability", "Meaning", "Changes", "Quality", "Use"],
+    ["Came from", "Availability", "What it means", "Changes", "How good", "Use"],
   );
   c.asks.forEach((at, i) => {
     const a = -Math.PI / 2 + (i * Math.PI) / 3,

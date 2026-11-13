@@ -156,9 +156,11 @@ export function aimStage(s, t, c, g) {
     },
     { color: P.muted, alpha: r, width: 12, cap: "butt" },
   );
+  // Each gain is named in the voice's words, so no name turns a verb of the narration into a noun of its own
+  // (EN15-n11).
   L(
     ["更早被发现", "更容易判断", "少靠人救火"],
-    ["Earlier detection", "Easier judgment", "Less manual rescue"],
+    ["Find it earlier", "Judge it more easily", "Less manual rescue"],
   ).forEach((v, i) =>
     nameText(v, mid, G.ys[i] + G.drop, {
       valign: "top",

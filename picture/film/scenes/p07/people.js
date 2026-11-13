@@ -1,8 +1,9 @@
 /* Part 07, stages A, B and C: human-AI collaboration. A: people and an Agent joined by one relationship, the link
- * between them, named on it as the whole; the Agent works inside a delegated boundary that grows with what it holds, extends what people can
- * do, gives no organizational authorization and makes no commitments; what stays with people builds under them. B: the
- * ten pages return, and the decision they should have served comes before them. C: a clear boundary, not a pile of
- * context; the five things a consequential delegation states build inside it. */
+ * between them, named on it as the whole; the Agent works inside a delegated boundary that grows with what it holds,
+ * extends people's capacity to investigate, reason and act, gives no organizational authorization and makes no
+ * commitments; what stays with people builds under them. B: the ten pages return, and the decision they should have
+ * served comes before them. C: a clear boundary, not a pile of context; the five things a consequential delegation
+ * states build inside it. */
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
@@ -62,8 +63,11 @@ const GROUP = [
   [31, 34],
 ];
 export function collaborationStage(s, t, c, g) {
-  const term = L("调查、推理和动手", "Investigation, reasoning, action"),
-    wide = Math.max(measure(term) / 2 + 34, L(150, 230)),
+  // What the Agent extends, in the voice's words, as the source says them (EN15-n11).
+  const term = L("调查、推理和动手", "Investigate, reason, act"),
+    // The grown boundary keeps its widest name at least 34 px inside its sides: the term, or in English the first
+    // refusal, whose words and cross span 411 px.
+    wide = Math.max(measure(term) / 2 + 34, L(150, 240)),
     grow = travel(t, c.extend - 0.6, 0.6),
     deep = travel(t, c.refusals[0] - 0.6, 0.6),
     halfW = mix(110, wide, grow),

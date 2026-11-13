@@ -83,16 +83,11 @@ export function monitorStage(s, t, c, g) {
 /* The English reasons are longer, so their stations stand wider apart. */
 const R = { x: 960, y: 420, rail: 640, pitch: () => L(300, 400) };
 /* The reasons' names. "Duplicates a source of truth" fits one line, so no line ends on "a" and "source of truth"
- * stays whole; "Costs more than it returns" takes two lines of near equal width. */
+ * stays whole; the last reason keeps its key words, "Costs more", as the caption says the whole phrase (EN15-n6). */
 const REASONS = () =>
   L(
     ["失去适用对象", "没人在用", "和权威来源重复", "得不偿失"],
-    [
-      "Nothing left to govern",
-      "No user",
-      "Duplicates a source of truth",
-      ["Costs more", "than it returns"],
-    ],
+    ["Nothing left to govern", "No user", "Duplicates a source of truth", "Costs more"],
   );
 const widest = (v) => Math.max(...(Array.isArray(v) ? v : [v]).map((line) => measure(line)));
 /* The stations keep one pitch about `x`. In both editions the row of names centres on the frame's axis rather than on

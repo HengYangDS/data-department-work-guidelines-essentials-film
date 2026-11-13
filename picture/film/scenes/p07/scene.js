@@ -1,9 +1,9 @@
-/* 07 Human-AI collaboration. People and Agents in one relationship: the Agent extends what people can do inside a
- * delegated boundary, never their authorization or commitments, and direction, authorization, decisions and the
- * responsibility for consequences stay with people (07.1); the ten pages and the decision that should have come first
- * (07.2); a clear boundary and the five things a delegation states (07.3); last night's delegation (07.4); and who
- * answers for an Agent's work (07.5). Each thought's stage cuts in on its first words. The Illustrative chip stands
- * while the made-up case shows (07.2, 07.4). */
+/* 07 Human-AI collaboration. People and Agents in one relationship: the Agent extends people's capacity to investigate,
+ * reason and act inside a delegated boundary, never their authorization or commitments, and direction, authorization,
+ * decisions and the responsibility for consequences stay with people (07.1); the ten pages and the decision that should
+ * have come first (07.2); a clear boundary and the five things a delegation states (07.3); last night's delegation
+ * (07.4); and who answers for an Agent's work (07.5). Each thought's stage cuts in on its first words. The Illustrative
+ * chip stands while the made-up case shows (07.2, 07.4). */
 
 import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
@@ -32,11 +32,13 @@ function cuesOf(s) {
     clear: cue(s, "边界", "a clear boundary"),
     pile: cue(s, "只给一堆", "not a pile of context"),
     important: cue(s, "重要的委托", "A consequential delegation"),
+    // Each of the five comes on its own words; the English acceptance on "will be accepted", so its name, Acceptance,
+    // leads "accepted" by under LEAD (p05/kit.js; EN15-n9), where "how the result" led it by 0.85 s.
     five: cues(s, [
       ["目的和范围", "purpose and scope"],
       ["交什么", "the deliverable"],
       ["限制和权限", "the limits and permissions"],
-      ["怎么验收", "how the result will be accepted"],
+      ["怎么验收", "will be accepted"],
       ["停下交接", "when to stop"],
     ]),
     first4: cue(s, "比如这样委托", "A delegation for last night"),

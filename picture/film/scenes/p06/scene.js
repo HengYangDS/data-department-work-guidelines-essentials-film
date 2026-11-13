@@ -60,11 +60,16 @@ function cuesOf(s) {
     chainClause: cue(s, "这是一条信任链", "This is a chain of trust"),
     chain: cue(s, "信任链", "chain of trust"),
     lighter: cue(s, "手续可以随风险变轻", "less process"),
-    skip: cue(s, "但一环都不能少", "but the chain cannot skip"),
+    // The skipped link is drawn and named on its words, in English "skip a link", which its name's stems repeat in
+    // order, so the sync audit times it (EN15-n9).
+    skip: cue(s, "但一环都不能少", "skip a link"),
     first5: cue(s, "汇报时", "Report the state"),
     stateClause: cue(s, "说做到哪一步", "Report the state"),
     state: cue(s, "哪一步", "the state"),
-    effort: cue(s, "多少力气", "not the effort"),
+    // The effort's bar inks from the first words of its clause, 「不说」 in Chinese, and its name comes on its own words,
+    // in Chinese 「力气」, which claims.js leads by at most LEAD (ZH15-n1); in English both come on "not the effort".
+    effortClause: cue(s, "不说", "not the effort"),
+    effort: cue(s, "力气", "not the effort"),
     first5b: cue(s, "核验通过了", "Verified means"),
     bounds: cues(s, [
       ["对象", "subject"],

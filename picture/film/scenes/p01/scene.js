@@ -1,11 +1,11 @@
 /* 01 晚了两个小时 / Two hours late, chapter 01 一次延迟 / One delay. The opening quiet shows the title signature and hands the
  * picture to last night's timeline in one swap just before the first word (A, 01.1). On 01.2's first words the timeline
  * re-forms compact in the top band, its two hours leading down to a rail over the row, and the four failures build that
- * row below it, each hanging from the rail by its own link: 01.2's two under a rail of their two places, open at its
- * right, which opens to the whole row on 01.3's first words as they glide once to its left and closes as the last
- * failure arrives (B, 01.2-01.3); the timeline leaves, the failures stand told and three open questions stand over them
- * (C, 01.4); the guidelines' document takes the top band and its links reach the four failures (D, 01.5). The whole
- * part is the made-up case, so the Illustrative chip stands from the swap. */
+ * row below it, each hanging from the rail by its own link: 01.2's two under a rail of their two places, its right arm
+ * drawn with the second, open at its right, which opens to the whole row on 01.3's first words as they glide once to
+ * its left and closes as the last failure arrives (B, 01.2-01.3); the timeline leaves, the failures stand told and
+ * three open questions stand over them (C, 01.4); the guidelines' document takes the top band and its links reach the
+ * four failures (D, 01.5). The whole part is the made-up case, so the Illustrative chip stands from the swap. */
 
 import { link } from "../../drawing/links.js";
 import { line, path } from "../../drawing/strokes.js";
@@ -20,7 +20,7 @@ import { P } from "../../palette.js";
 import { L, en } from "../../timeline.js";
 import { cue } from "../../timing/cues.js";
 import { clamp, ease, ramp, soon } from "../../timing/easing.js";
-import { drawShare, travel, voiceTime } from "../../timing/pauses.js";
+import { drawShare, drawTime, travel, voiceTime } from "../../timing/pauses.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
 import { earliest } from "../p05/kit.js";
@@ -133,21 +133,27 @@ function compactNight(a, t) {
  * read within 0.3 s of 「一场会」/ "meeting". */
 const arrivals = (c) => [c.vendor, c.patch, c.meeting + 0.2, c.pages - 0.25];
 /* 01.2 tells two failures, so the row holds their two places, centred under a rail half the row's width that turns down
- * at its left end and stands open at its right, where the row goes on. On 01.3's first words, 「开了一场会」/ "A meeting", the
- * rail's two ends draw outward at the tip pace to the whole row's width, and the two members glide once, in voice time,
- * one pitch to their places at the row's left, peaking at 1.5 x 340 / 1.15, under 450 px/s, as the meeting arrives at
- * the third place, which moves with them. The open end carries no stroke across the names it passes, and it closes,
- * turning down to the names' line, as the row's last failure arrives. Every state stays centred, no place stands empty
- * across 01.2, and no member leaves; this is the stage's one glide (EN9-n5). Returns the row's shift, the rail's half
- * width, when a member told while the rail opens hangs from it (once its end has passed the member's link), and the
- * share of the closing turn drawn. */
+ * at its left end and stands open at its right, where the row goes on. The rail's left arm holds the first place from
+ * the first failure's words; the second failure is told some four seconds later, so the right arm, which holds its
+ * place, draws on from the stem at the tip pace on the patch's words, passing the second link's top as that link sets
+ * off, and no arm stands empty before its failure is told (EN15-n4). On 01.3's first words, 「开了一场会」/ "A meeting",
+ * the rail's two ends draw outward at the tip pace to the whole row's width, and the two members glide once, in voice
+ * time, one pitch to their places at the row's left, peaking at 1.5 x 340 / 1.15, under 450 px/s, as the meeting
+ * arrives at the third place, which moves with them. The open end carries no stroke across the names it passes, and it
+ * closes, turning down to the names' line, as the row's last failure arrives. Every state stays centred, no place
+ * stands empty across 01.2, and no member leaves; this is the stage's one glide (EN9-n5). Returns the row's shift, the
+ * rail's half width, the share of 01.2's right arm drawn, when a member told while the rail opens hangs from it (once
+ * its end has passed the member's link), and the share of the closing turn drawn. */
 const GLIDE = 1.15;
 function opening(t, c) {
   const at = c.meeting + 0.05,
-    pitch = XS[1] - XS[0];
+    pitch = XS[1] - XS[0],
+    arm = SPAN - pitch;
   return {
     dx: pitch * (1 - travel(t, at, GLIDE)),
     span: SPAN - pitch * (1 - drawShare(t, at, pitch)),
+    // The arm's eased tip passes its middle, the second place's link, half way through its draw.
+    arm: drawShare(t, arrivals(c)[1] + 0.05 - drawTime(arm) / 2, arm),
     hang: c.meeting + 0.45,
     close: drawShare(t, arrivals(c)[3] + 0.05, BRACKET_Y - CROSS_Y),
   };
@@ -194,23 +200,24 @@ function figure(k, x, t, a, c, busy = false) {
 
 /* B, from 01.2's first words: the compact timeline over the row of failures. Its two hours lead down to a rail across
  * the row, whose ends reach down to the line of the bracket that holds the row's names in C and D; the rail stands
- * with the first failure, on its words, over the places of the thought being told (`opening`), so it never waits empty
- * across a thought for its members, and from 01.3's first words the picture has its final extent, top to bottom, and
- * stays balanced while the failures fill it. The row builds left to right, each failure at its own place from its
- * words and joined to the rail by its own link, and what went wrong joins its name on its own words. */
+ * with the first failure, on its words, over that failure's place, and reaches over each later place as its failure is
+ * told (`opening`), so it never waits empty across a thought for its members, and from 01.3's first words the picture
+ * has its final extent, top to bottom, and stays balanced while the failures fill it. The row builds left to right,
+ * each failure at its own place from its words and joined to the rail by its own link, and what went wrong joins its
+ * name on its own words. */
 function stageFailures(t, a, c) {
   compactNight(a, t);
-  const { dx, span, hang, close } = opening(t, c);
+  const { dx, span, arm, hang, close } = opening(t, c);
   // The rail is a bracket over the row, the one that holds the row's names in C and D turned to face it.
   const rail = { color: P.line, alpha: a * ramp(t, c.vendor - 0.15, 0.4), width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
-  // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names; its
-  // right end turns down as it closes.
+  // Its ends and its span are one stroke, so the bracket is one mark, which the timeline's name over it names, and its
+  // right arm grows from the stem as the stroke's tip; its right end turns down as it closes.
   path(
     [
       [960 - span, BRACKET_Y],
       [960 - span, CROSS_Y],
-      [960 + span, CROSS_Y],
+      [960 + span * arm, CROSS_Y],
       ...(close > 0 ? [[960 + span, CROSS_Y + (BRACKET_Y - CROSS_Y) * close]] : []),
     ],
     rail,

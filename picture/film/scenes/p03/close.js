@@ -306,7 +306,8 @@ export function stageApart(t, a, c) {
     width: 2.5,
   });
   reportMark(960, MID, { alpha: report });
-  nameText(L("冲突和影响", "The conflict and its impact"), 960, MID_NAMES, {
+  // The report is named by its key terms, as the caption says the whole phrase (EN15-n6).
+  nameText(L("冲突和影响", "Conflict and impact"), 960, MID_NAMES, {
     valign: "top",
     alpha: a * named(t, c.report),
   });
