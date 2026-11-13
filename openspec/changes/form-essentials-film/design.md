@@ -147,6 +147,8 @@ Both editions are delivered to `~/Documents/ddwg-essentials-film/`, a new folder
 
 Code is MIT, the film content (script, narration, picture, covers and captions) is CC BY 4.0, and the fonts keep the SIL Open Font License; `NOTICE` names the narrator's provenance and the sources. A release carries the films and their checksums as Release assets, as `ddwg-film` and `ethos-film` do. The forge owner, namespace, name and visibility are decided by the user with the push, and the CI projection follows the forges then declared.
 
+The owner decided on 2026-11-04 that the films are public on both forges. The formation Change lands first, on the ETHOS release it was built under and without publication; a second Change from `dev` then binds the current ETHOS release and carries the release declaration and the CI projection; the tag and the first publication follow on that binding. The two steps stay apart so that a failed proof names either the film's content or the new binding, and because the forge identities that a release declaration of the earlier binding would have tracked are kept out of tracked files.
+
 ## Risks / Trade-offs
 
 - [The guidelines change after `v8.0.0`] → The manifest names one commit; a later change reaches the film only through a new adopted text.
@@ -166,4 +168,3 @@ Rollback: before delivery nothing outside the repository changes. The delivery w
 ## Open Questions
 
 - The titles, which the user confirms before the covers are painted.
-- The forge owner, namespace, name and visibility of `ddwg-essentials-film`, decided by the user with the push.

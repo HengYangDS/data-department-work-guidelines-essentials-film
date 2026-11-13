@@ -38,10 +38,10 @@
 ## 6. Publication
 
 - [x] 6.1 Write the README with the supply, build and comparison steps, `LICENSE`, `NOTICE`, the CC BY 4.0 legal code, the fonts' licenses and `CHANGELOG.md`; verify that `ethos lane repair-paradigm --json` reports no gap. On 2026-11-05 the README, `CONTRIBUTING.md` and `CHANGELOG.md` join the license files, and `repair-paradigm` reports the lane conforming with no gap.
-- [ ] 6.2 Record the release manifest from the accepted films and verify a rebuild against it with `film:compare`; prepare `v1.0.0` with `.ethos/release.toml` and the release folder with `SHA256SUMS`.
-- [ ] 6.3 Once the user has named the forges, project the portable gates into their CI; verify that `ethos lane project --check` passes and that each projection validates against its forge's schema.
+- [x] 6.2 Record the release manifest from the accepted films and verify the build against it with `film:compare`; prepare the release folder with `SHA256SUMS`. On 2026-11-14 `content/release.json` records round 16's 21 assets, both editions' soundtracks and two staged pictures, the 20 film-bound sources and a 45 dB PSNR floor for each of the eight films (`34689ea`), and `build/artifacts/release/` holds the assets with `SHA256SUMS`. `film:compare` passes against that folder, which was staged from the accepted build: 8 films, 288,000 frames, every frame identical, every document, soundtrack and staged picture as recorded (`build/evidence/reproduction/report.json`). A rebuild from a clean checkout has not been compared, so the 45 dB floors are the sister films' figure. The release declaration and the CI projection, which this task and a task 6.3 named until 2026-11-14, belong to the binding the repository publishes from (workflow follow-up; design § Publication).
 
 ## Workflow follow-up
 
-- Archive the Change, prove the archived head once, run the film gates on it, land it and close out.
-- After the user confirms the forge owner, namespace, name and visibility: add the remotes, publish, tag `v1.0.0` and upload the release; then read back every asset and `SHA256SUMS` on each forge.
+- Archive the Change, prove the archived head once, run the film gates on it, land it and close out, on the ETHOS release the lane is bound to and without publication.
+- Bind the repository to the current ETHOS release in a Change of its own from `dev`, with the release declaration and the CI projection for both forges; verify that `ethos lane project --check` passes and that each projection validates against its forge's schema.
+- The owner decided on 2026-11-04 that the films are public on both forges: add the remotes, publish, tag `v1.0.0` and upload the release; then read back every asset and `SHA256SUMS` on each forge.
