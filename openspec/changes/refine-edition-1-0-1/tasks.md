@@ -9,23 +9,23 @@
 
 ## 3. Text
 
-- [ ] 3.1 State the natural voice reference and its derivation in the scripts' `pacing_profile`, `provider_notes` and `performance_intent` fields (release finding 1); done when the fields name the recording that `content/voice-reference.json` names as `reference_audio`.
-- [ ] 3.2 Adopt the wording of 08.4.2 that the owner approved on 14 November 2026 (EN16-n6): "the time each fact became available" for "the facts available at the time", 「每项事实最早能拿到的时间」 for 「当时能拿到的事实」, and the labels "When it was available" and 「最早能拿到的时间」; done when both scripts, narration texts and labels hold it and the readings and concept checks pass.
+- [x] 3.1 State the natural voice reference and its derivation in the scripts' `pacing_profile`, `provider_notes` and `performance_intent` fields (release finding 1); done when the fields name the recording that `content/voice-reference.json` names as `reference_audio`. Both scripts' fields name the reference their casts read (15 November): the Chinese one the natural reference derived from the identity root, the English one the unmodified English reference.
+- [x] 3.2 Adopt the wording of 08.4.2 that the owner approved on 14 November 2026 (EN16-n6): "the time each fact became available" for "the facts available at the time", 「每项事实最早能拿到的时间」 for 「当时能拿到的事实」, and the labels "When it was available" and 「最早能拿到的时间」; done when both scripts, narration texts and labels hold it and the readings and concept checks pass. Both scripts, narration texts and labels hold the approved wording; narration's concept and readings checks passed on both editions on 15 November.
 
 ## 4. Voice
 
-- [ ] 4.1 Audition the English thought 03.2 (EN16-n5); done when the selected take reads at most 1.0 dB under the edition on the soundtrack by the note's reverification line, or the design states the rule for short thoughts with the measured spread.
-- [ ] 4.2 Narrate again every segment whose text task 3.2 changes, and qualify the takes; done when the release checks accept both soundtracks at exactly 600 seconds.
+- [x] 4.1 Audition the English thought 03.2 (EN16-n5); done when the selected take reads at most 1.0 dB under the edition on the soundtrack by the note's reverification line, or the design states the rule for short thoughts with the measured spread. Seed 7353512 reads 17.27 dB on the assembled soundtrack, 0.57 dB under the edition (design decision 9).
+- [x] 4.2 Narrate again every segment whose text task 3.2 changes, and qualify the takes; done when the release checks accept both soundtracks at exactly 600 seconds. Both soundtracks pass `check-sound` at exactly 600 seconds on `filmkit` 0.22.2 (15 November), the English one with 01.1 retaken as a run-on (design decision 10).
 
 ## 5. Picture
 
 - [x] 5.1 Name the three stations of 05.2's ring in the words of their questions in the Chinese edition (ZH16-n1); done when the sync audit judges the three renamed stations in sync with words of their own questions and lists none of them as unmatched or far from its words. 从哪里来, 改过 and 用在哪 are judged in sync (−0.14 s, −0.28 s and −0.13 s) in the audits of 15 November; 最早拿到 stays unmatched and declared (design decision 5).
 - [x] 5.2 Declare 01.3's full extent in the design with the measured cost of each repair the notes offer (ZH16-n2, EN16-n3); done when the design states the lit extent and offset of the three-failure state as drawn and with the rail ending at the third link, and the glide the other repair adds.
-- [ ] 5.3 Give the names under 07.5's rail an even distance (ZH16-n3); done when every gap between adjacent names is at least 1.5 em and the rings' pitch is even within 2 px.
-- [ ] 5.4 Restore "independent review" in the English 04.7 list and set the list with its separators like its three neighbours (EN16-n1, EN16-n2); done when both editions' 04.7 lists name the same five things and the echoed cue is declared by name.
-- [ ] 5.5 Light the way of 08.4 through to the listener within the last aim's words in both editions, with no point running it (EN16-n4); done when the way stands whole no later than 0.3 s after the last word and no mark moves in the closing pause.
-- [ ] 5.6 Keep the English cue at 356.27 s declared by name with its measured rate (EN16-n7); done when the engine lists no other caption above 25 characters per second.
-- [ ] 5.7 Run the picture audits on both staged editions; done when `mise run film:picture` reports no gated finding before its first render.
+- [x] 5.3 Give the names under 07.5's rail an even distance (ZH16-n3); done when every gap between adjacent names is at least 1.5 em and the rings' pitch is even within 2 px. The geometry check, gated on row gaps at 1.5 em, passes both staged editions with no pair recorded (15 November); the four stations keep the rail's one pitch, which this repair does not touch.
+- [x] 5.4 Restore "independent review" in the English 04.7 list and set the list with its separators like its three neighbours (EN16-n1, EN16-n2); done when both editions' 04.7 lists name the same five things and the echoed cue is declared by name. Both editions' 04.7 lists name the same five things; the sync audit lists no whole caption echo, and the cue of 282.84 s is recorded as repeated by several labels, as design decision 2 declares.
+- [x] 5.5 Light the way of 08.4 through to the listener within the last aim's words in both editions, with no point running it (EN16-n4); done when the way stands whole no later than 0.3 s after the last word and no mark moves in the closing pause. In both staged editions no mark's extent changes after 594.77 s, before the last word ends (595.15 s in Chinese, 595.36 s in English), and the motion audit passes.
+- [x] 5.6 Keep the English cue at 356.27 s declared by name with its measured rate (EN16-n7); done when the engine lists no other caption above 25 characters per second. The engine lists one English cue above the rate, at 356.30 s with 25.6 characters per second; it stays declared by name.
+- [x] 5.7 Run the picture audits on both staged editions; done when `mise run film:picture` reports no gated finding before its first render. Both staged editions pass the geometry check and `check-picture` with no gated finding on their final timelines (15 November, composition `875a7dca`), after three repairs the audits asked for: the ring's names (decision 5), the chain's pitch (decision 8) and the due ring's ramp (decision 12).
 
 ## 6. Edition
 

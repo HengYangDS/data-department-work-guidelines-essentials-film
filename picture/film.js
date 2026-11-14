@@ -4499,7 +4499,9 @@ function nightStage(s, t, c, g) {
   const m = lastNight(x, y, 1, {
     alpha: g,
     card: soon(t, c.first3 - 0.15, 0.8),
-    due: soon(t, c.usual - 0.1, 0.4),
+    // The due hour's ring inks in with its name, on the name's own ramp: on the movement curve its ink rose from
+    // nothing to a firm mark between two frames, which the motion audit reads as a mark appearing at once.
+    due: named(t, c.usual),
     late: { draw: { t, at: c.measure + 0.05 } },
     flow: { t, from: c.later + 0.6 },
     names
