@@ -7,7 +7,7 @@ The notes are recorded, each with its observation, repair and reverification lin
 ## What Changes
 
 - The picture names what the voice says where three notes found it does not: the six stations of 05.2's ring in the Chinese edition (ZH16-n1), and "independent review" in the English 04.7 list, set like its neighbours (EN16-n1, EN16-n2).
-- No part of the picture waits for words that have not come: 01.3's fourth arm is drawn on its own words in both editions (ZH16-n2, EN16-n3), and the point of 08.4 reaches its listener by the last word (EN16-n4).
+- The way of 08.4 lights through to its listener by the last word, with no point cut short by the credits (EN16-n4). 01.3's fourth place keeps standing under the rail before its words, declared with its measured reason, since either repair breaks the balance or adds a glide (ZH16-n2, EN16-n3).
 - The names under 07.5's rail keep an even distance (ZH16-n3).
 - The English thought 03.2 is auditioned for a clearer take (EN16-n5).
 - The one English cue above the caption reading rate stays declared by name (EN16-n7).
