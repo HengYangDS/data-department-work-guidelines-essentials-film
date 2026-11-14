@@ -180,11 +180,6 @@
           "text_sha256": "da4220dcf14cbd7b63072a054197378d02c590a4dbef1154d276716d681731a0",
           "spoken_sha256": "da4220dcf14cbd7b63072a054197378d02c590a4dbef1154d276716d681731a0"
         },
-        "4": {
-          "seed": 139308,
-          "text_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862",
-          "spoken_sha256": "89bc141552670e34b6587c7a233f88bbd9afbd240f539768fc7d4468cd292862"
-        },
         "1": {
           "seed": 3243556,
           "text_sha256": "636d16afe508141b3096850d4aa47caa3b10d975a57d88e731d85969cc840a6d",
