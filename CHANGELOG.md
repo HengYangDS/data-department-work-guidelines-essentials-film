@@ -4,6 +4,10 @@ All notable changes to the DDWG essentials films and their build are recorded he
 
 ## [Unreleased]
 
+### Added
+
+- Release 1.0.0 is rebuilt from a clean checkout. On 14 November 2026 an anonymous clone of the `v1.0.0` tag built both editions by the README's steps, with nothing taken from the production build, and `film:compare` passed against the assets downloaded from the release: both soundtracks hold the recorded bytes, the captions, transcripts and covers the published bytes, and each of the eight films decodes to the published film's 36,000 frames with every frame, the decoded audio and the container identical. The recorded picture floors of 45 dB stand; a rebuild on another host or renderer build is not yet compared.
+
 ## [1.0.0] - 2026-11-14
 
 ### Added

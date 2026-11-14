@@ -4,8 +4,8 @@
 
 ## 2. Reproduction
 
-- [ ] 2.1 Rebuild release 1.0.0 from an anonymous clone of the `v1.0.0` tag that holds no earlier output, by the README's steps, and compare it with the published assets (release finding 3); done when the reproduction report lists a minimum for each of the eight films.
-- [ ] 2.2 Inspect each film's lowest frames side by side and record its floor in `content/release.json` at or below the measured minimum; done when the comparison passes against the recorded floors.
+- [x] 2.1 Rebuild release 1.0.0 from an anonymous clone of the `v1.0.0` tag that holds no earlier output, by the README's steps, and compare it with the published assets (release finding 3); done when the reproduction report lists a minimum for each of the eight films. On 14 November 2026 an anonymous clone of `v1.0.0` (`d0f69ce`) built both editions by the README's steps and `film:compare` passed against the assets downloaded from the release: both soundtracks hold the recorded bytes, the captions, transcripts and covers the published bytes, and each of the eight films decodes to the published film's 36,000 frames with every frame identical and the decoded audio and container identical, so no film has a finite minimum.
+- [x] 2.2 Inspect each film's lowest frames side by side and record its floor in `content/release.json` at or below the measured minimum; done when the comparison passes against the recorded floors. Every frame of every film is identical, so there is no lowest frame to inspect and the recorded floors of 45 dB stand; they bound a rebuild on another renderer build or host, which this comparison did not exercise.
 
 ## 3. Text
 
