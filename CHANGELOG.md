@@ -27,6 +27,9 @@ All notable changes to the DDWG essentials films and their build are recorded he
 - ETHOS governance with its portable proof, whose `film-checks` gate runs the film's Python tests of the declaration, narration mirrors, fonts and release manifest through the installed engine.
 - The MIT License for the code and CC BY 4.0 for the films' content, with the fonts under the SIL Open Font License 1.1 and the third-party notices and the narrator's provenance in `NOTICE`.
 - `README.md` and `CONTRIBUTING.md`: how to rebuild the films and compare a rebuild with a release, and how to change, verify, commit and release them.
+- The repository runs ETHOS 0.2.0-beta.10, declares its GitLab and GitHub publication peers by
+  remote name, and verifies every change with the portable full proof on Apple-silicon macOS in
+  the hosted jobs of both forges.
 
 [Unreleased]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.0
