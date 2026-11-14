@@ -28,7 +28,7 @@
           "spoken_sha256": "6a5b2ad58ac24ec5b1b3d60f1e146a5f829f7bfbfd3b638e0abd8b1b037e6b95"
         },
         "2": {
-          "seed": 1778536,
+          "seed": 7353512,
           "text_sha256": "aa3e66b69af2fb828bbdc3d268826794ae56eeeacf160f9e55e7ed7b81778812",
           "spoken_sha256": "aa3e66b69af2fb828bbdc3d268826794ae56eeeacf160f9e55e7ed7b81778812"
         },
@@ -184,7 +184,7 @@
           "spoken_sha256": "c45487a2a731d4f6e422733d53f67bc192cc744283cffc700ee5f9412cb8b9f3"
         },
         "5": {
-          "seed": 1049992,
+          "seed": 7353516,
           "text_sha256": "d47f9c339d6b40c203f517b641847cf9b3325e746a3524ea60bc855a2fd90435",
           "spoken_sha256": "d47f9c339d6b40c203f517b641847cf9b3325e746a3524ea60bc855a2fd90435"
         },
@@ -237,9 +237,13 @@
           "spoken_sha256": "30cea6defaf7db3d1a32e4868489446aea2cad4e5d201eb9a4a0b0693c9abad4"
         },
         "1": {
-          "seed": 2800085,
+          "seed": 7195130,
           "text_sha256": "1024019ff7358b545ca8e688d0ebaaf1a55f2d79f7f935ae579398a7e8291e99",
-          "spoken_sha256": "1024019ff7358b545ca8e688d0ebaaf1a55f2d79f7f935ae579398a7e8291e99"
+          "spoken_sha256": "1024019ff7358b545ca8e688d0ebaaf1a55f2d79f7f935ae579398a7e8291e99",
+          "run_on": {
+            "spoken_text": "Someone says at once: change the vendor. The choice is made before the facts are in. Someone patches the data by hand overnight, and next month the collection fails again: the symptom is gone, but the mechanism behind it is untouched. ",
+            "cut_sample": 96720
+          }
         },
         "4": {
           "seed": 2910951,
