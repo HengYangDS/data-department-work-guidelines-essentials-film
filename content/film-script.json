@@ -48,10 +48,10 @@
     "purpose": "Explain the essentials of the Data Department Work Guidelines to a first-time listener in spoken Chinese, what and why before how: one made-up incident, the four failures it invites and the guidelines' answers to them; source conditions, modalities and roles preserved; the incident marked as illustrative."
   },
   "voice_performance": {
-    "performance_intent": "Selected neutral magnetic female narrator from the identity-root reference; clear, lively connected explanation; firm sentence endings; no theatrical delivery.",
+    "performance_intent": "Selected neutral magnetic female narrator, read from the natural reference derived from the identity root; clear, lively connected explanation; firm sentence endings; no theatrical delivery.",
     "energy_curve": "Concrete opening on the late data, purposeful explanatory body, firmer rules, settled close.",
     "assembly_mode": "native-speech-designed-pauses",
-    "pacing_profile": "Ear-first copy spoken at the voice's native rate from the unmodified identity root, with the settings of the revision-7 samples the user approved. Speech is never time-stretched or pitch-shifted, and the native pauses inside a thought are kept as recorded; only one longer than the declared inner cap, which lies above every pause the samples hold, is shortened, and each one lasts at least the floor of its punctuation, so a sentence end inside a thought is heard as a longer break than a clause mark and a clause mark as a longer one than a comma. Designed quiet separates complete thoughts, longer after longer ones, and each thought boundary outlasts the longest pause inside its thought by at least a fifth; the remaining runtime opens the picture between parts and chapters within declared bounds.",
+    "pacing_profile": "Ear-first copy spoken at the voice's native rate from the natural reference, which is derived from the identity root in the two steps that content/voice-reference.json records, with the settings of the revision-7 samples the user approved. Speech is never time-stretched or pitch-shifted, and the native pauses inside a thought are kept as recorded; only one longer than the declared inner cap, which lies above every pause the samples hold, is shortened, and each one lasts at least the floor of its punctuation, so a sentence end inside a thought is heard as a longer break than a clause mark and a clause mark as a longer one than a comma. Designed quiet separates complete thoughts, longer after longer ones, and each thought boundary outlasts the longest pause inside its thought by at least a fifth; the remaining runtime opens the picture between parts and chapters within declared bounds.",
     "designed_pauses": {
       "thought": 1.68,
       "question": 2.25,
@@ -84,7 +84,7 @@
     },
     "tail_guard_seconds": 0.3,
     "provider_notes": {
-      "native": "Unmodified identity root and fixed seed; natural punctuation only; no instruction tokens, pitch or tempo transform, or music."
+      "native": "Natural reference, derived from the identity root in two recorded steps, and fixed seed; natural punctuation only; no instruction tokens, pitch or tempo transform, or music."
     },
     "inner_pause_cap_seconds": 0.6,
     "inner_pause_floors_seconds": {
@@ -330,10 +330,10 @@
         "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次失败更早被发现、更容易判断、少靠人救火，不是让文件变多。",
         "出事之前，可能早有苗头：偶尔晚几分钟，有人一再临时救场。这些小变化，要先看清规律、影响和走向，再决定怎么处理。不过，该有的防护，不能等出了事才加上。",
         "那个监控要有人负责，过一段时间复查，它是不是真的更早发现了问题。一条规则，失去适用对象、没人在用、和权威来源重复，或者得不偿失，就该撤掉。",
-        "回到开头那份数据。下一位用它的人，需要清楚的含义、当时能拿到的事实、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。"
+        "回到开头那份数据。下一位用它的人，需要清楚的含义、每项事实最早能拿到的时间、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。"
       ],
-      "text": "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次失败更早被发现、更容易判断、少靠人救火，不是让文件变多。出事之前，可能早有苗头：偶尔晚几分钟，有人一再临时救场。这些小变化，要先看清规律、影响和走向，再决定怎么处理。不过，该有的防护，不能等出了事才加上。那个监控要有人负责，过一段时间复查，它是不是真的更早发现了问题。一条规则，失去适用对象、没人在用、和权威来源重复，或者得不偿失，就该撤掉。回到开头那份数据。下一位用它的人，需要清楚的含义、当时能拿到的事实、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。",
-      "spoken_text": "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次失败更早被发现、更容易判断、少靠人救火，不是让文件变多。出事之前，可能早有苗头：偶尔晚几分钟，有人一再临时救场。这些小变化，要先看清规律、影响和走向，再决定怎么处理。不过，该有的防护，不能等出了事才加上。那个监控要有人负责，过一段时间复查，它是不是真的更早发现了问题。一条规则，失去适用对象、没人在用、和权威来源重复，或者得不偿失，就该撤掉。回到开头那份数据。下一位用它的人，需要清楚的含义、当时能拿到的事实、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。"
+      "text": "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次失败更早被发现、更容易判断、少靠人救火，不是让文件变多。出事之前，可能早有苗头：偶尔晚几分钟，有人一再临时救场。这些小变化，要先看清规律、影响和走向，再决定怎么处理。不过，该有的防护，不能等出了事才加上。那个监控要有人负责，过一段时间复查，它是不是真的更早发现了问题。一条规则，失去适用对象、没人在用、和权威来源重复，或者得不偿失，就该撤掉。回到开头那份数据。下一位用它的人，需要清楚的含义、每项事实最早能拿到的时间、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。",
+      "spoken_text": "这种延迟可能还会出现，所以要先留下一个检查，才能说修好了：在调度上加一个监控，到了约定时间数据还没到，就马上告警。学习的目的，是让下一次失败更早被发现、更容易判断、少靠人救火，不是让文件变多。出事之前，可能早有苗头：偶尔晚几分钟，有人一再临时救场。这些小变化，要先看清规律、影响和走向，再决定怎么处理。不过，该有的防护，不能等出了事才加上。那个监控要有人负责，过一段时间复查，它是不是真的更早发现了问题。一条规则，失去适用对象、没人在用、和权威来源重复，或者得不偿失，就该撤掉。回到开头那份数据。下一位用它的人，需要清楚的含义、每项事实最早能拿到的时间、对得上说法的证据，以及获准的、有边界的用途。把判断讲给别人的时候，先求信，再求达，再求雅。"
     }
   ]
 }

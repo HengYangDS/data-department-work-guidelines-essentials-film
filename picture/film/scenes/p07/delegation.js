@@ -5,14 +5,14 @@
  * verification and result, and submitting the work vouches for it. */
 
 import { ctx } from "../../canvas.js";
-import { box, dot, line, measure, path, stroke } from "../../drawing/strokes.js";
+import { box, dot, labelSize, line, measure, path, stroke } from "../../drawing/strokes.js";
 import { agent, check, clock, lock, person } from "../../drawing/symbols.js";
 import { lastNight } from "../../drawing/timeline.js";
 import { cameraOf } from "../../framing/camera.js";
 import { listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, nameText } from "../../naming/names.js";
-import { RAIL_CLEAR, railNames, rowNameTop } from "../../naming/placement.js";
-import { P } from "../../palette.js";
+import { railNames, rowNameTop } from "../../naming/placement.js";
+import { LABEL, P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
 import { travel } from "../../timing/pauses.js";
@@ -175,6 +175,9 @@ export function delegationStage(s, t, c, g) {
  * first station's column, with the three things submitting it vouches for under the other three stations, one list, so
  * every name of the second row hangs under the column of the station above it. */
 const E = { y: 410, caller: 540, agent: 1380 };
+/* The clear gap between an end's name and the outer station's name beside it: one and a half ems of the names' face,
+ * rounded up so that the painted gap holds the line however the glyphs' ink sits in their boxes. */
+const END_CLEAR = Math.ceil(1.5 * labelSize(LABEL)) + 4;
 export function callerStage(s, t, c, g) {
   // The caller and the Agent end one line, so their names hang from one baseline under the lower of the two marks:
   // the figure's shoulders reach 56 px below the line and the Agent's diamond 53 px.
@@ -190,12 +193,14 @@ export function callerStage(s, t, c, g) {
     callerName = L("调用智能体的人", "The caller"),
     agentName = L("智能体", "Agent"),
     // Every name of the line shares one baseline, so the ends stand symmetric about the centre, as far out as E sets
-    // them or far enough that their names keep the rail's clearance from the outer stations' names.
+    // them or far enough that their names keep END_CLEAR from the outer stations' names: a name of an end is not a
+    // station's, so it stands a clear 1.5 em from the station's name beside it, where the rail's own clearance left
+    // the caller's seven-character name 1.14 em from 背景材料 (ZH16-n3).
     reach = Math.max(
       960 - E.caller,
       E.agent - 960,
-      960 - xs[0] + (measure(callerName) + measure(ownNames[0])) / 2 + RAIL_CLEAR,
-      xs[3] - 960 + (measure(ownNames[3]) + measure(agentName)) / 2 + RAIL_CLEAR,
+      960 - xs[0] + (measure(callerName) + measure(ownNames[0])) / 2 + END_CLEAR,
+      xs[3] - 960 + (measure(ownNames[3]) + measure(agentName)) / 2 + END_CLEAR,
     ),
     callerAt = 960 - reach,
     agentAt = 960 + reach;

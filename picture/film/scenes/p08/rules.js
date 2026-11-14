@@ -5,7 +5,7 @@
 
 import { ctx } from "../../canvas.js";
 import { link } from "../../drawing/links.js";
-import { dot, flowAt, flowDot, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { documentIcon, person, seal } from "../../drawing/symbols.js";
 import { HOUR, lastNight } from "../../drawing/timeline.js";
 import { recoverIcon } from "../../drawing/workspace.js";
@@ -168,8 +168,8 @@ export function nextUserStage(s, t, c, g) {
   // The needs, in the voice's words, return to full ink on the last one's words, so the four stand whole before the
   // stage leaves.
   L(
-    ["清楚的含义", "当时能拿到的事实", "对得上说法的证据", "获准的、有边界的用途"],
-    ["Clear meaning", "Facts available then", "Matching evidence", "A permitted, bounded use"],
+    ["清楚的含义", "最早能拿到的时间", "对得上说法的证据", "获准的、有边界的用途"],
+    ["Clear meaning", "When it was available", "Matching evidence", "A permitted, bounded use"],
   ).forEach((v, i) =>
     nameText(v, 960, y + E1.needs + i * E1.pitch, {
       alpha: g * listIn(t, c.needs, i, Infinity, { whole: c.needs.at(-1) - 0.1 }),
@@ -180,7 +180,9 @@ export function nextUserStage(s, t, c, g) {
 
 /* E2: conveying a judgment. The judgment, a page named as it is conveyed, stands at the left with its way running
  * toward someone else at the right; the three aims arrive on the way as nodes, each on its word, the way lighting
- * through them in order, and a point runs it. */
+ * through them in order and on to the listener within the last aim's words, so the passage is complete when the voice
+ * ends. No point runs the way: one that set off after the last aim was cut by the credits a quarter of the way along
+ * (EN16-n4). */
 export function aimsStage(s, t, c, g) {
   const xs = [760, 960, 1160],
     y = 520,
@@ -200,11 +202,14 @@ export function aimsStage(s, t, c, g) {
   const nameTop = rowNameTop([y + 34, y + 62]);
   person(ox, y + 6, { alpha: other, size: 1.2 });
   nameText(L("别人", "Someone else"), ox, nameTop, { valign: "top", alpha: other });
-  // The rail reaches each station on its words at the tip pace, by the length of its own step.
-  const reach = ats.reduce(
-    (v, at, i) => mix(v, xs[i], drawShare(t, at - 0.2, xs[i] - (i ? xs[i - 1] : px + 62))),
-    px + 62,
-  );
+  // The rail reaches each station on its words at the tip pace, by the length of its own step, and then the listener,
+  // once the last station is lit.
+  const end = ox - 40,
+    stations = ats.reduce(
+      (v, at, i) => mix(v, xs[i], drawShare(t, at - 0.2, xs[i] - (i ? xs[i - 1] : px + 62))),
+      px + 62,
+    ),
+    reach = mix(stations, end, drawShare(t, ats[2] + 0.2, end - xs[2]));
   // The evidence line grows from the judgment as a tip, from the moment it has length, so no stub of it appears whole.
   if (reach > px + 62 + 0.5)
     line(px + 62, y, reach, y, { color: P.evidence, alpha: g, width: 3.5 });
@@ -222,6 +227,4 @@ export function aimsStage(s, t, c, g) {
       set: "aims",
     }),
   );
-  const runs = flowAt(t, ox - 40 - (px + 62), { from: ats[2] + 0.5 });
-  flowDot(mix(px + 62, ox - 40, runs?.q ?? 0), y, 6, runs, { color: P.ink, alpha: g });
 }

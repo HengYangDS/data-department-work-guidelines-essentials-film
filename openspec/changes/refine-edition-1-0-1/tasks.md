@@ -23,7 +23,7 @@
 - [ ] 5.2 Draw 01.3's fourth arm on the fourth failure's own words in both editions (ZH16-n2, EN16-n3); done when no rail arm of 01.2 or 01.3 stands more than 1.0 s before the mark and name under it and every state of 2 s or more keeps the balance limit.
 - [ ] 5.3 Give the names under 07.5's rail an even distance (ZH16-n3); done when every gap between adjacent names is at least 1.5 em and the rings' pitch is even within 2 px.
 - [ ] 5.4 Restore "independent review" in the English 04.7 list and set the list with its separators like its three neighbours (EN16-n1, EN16-n2); done when both editions' 04.7 lists name the same five things and the echoed cue is declared by name.
-- [ ] 5.5 Start the point of 08.4 on the words that name the judgment in both editions (EN16-n4); done when the point rests at the listener no later than 0.3 s after the last word.
+- [ ] 5.5 Light the way of 08.4 through to the listener within the last aim's words in both editions, with no point running it (EN16-n4); done when the way stands whole no later than 0.3 s after the last word and no mark moves in the closing pause.
 - [ ] 5.6 Keep the English cue at 356.27 s declared by name with its measured rate (EN16-n7); done when the engine lists no other caption above 25 characters per second.
 - [ ] 5.7 Run the picture audits on both staged editions; done when `mise run film:picture` reports no gated finding before its first render.
 

@@ -61,7 +61,7 @@ function cuesOf(s) {
     user: cue(s, "下一位用它的人", "Its next user"),
     needs: cues(s, [
       ["清楚的含义", "clear meaning"],
-      ["当时能拿到的事实", "the facts available"],
+      ["每项事实最早能拿到的时间", "the time each fact became available"],
       ["对得上说法的证据", "evidence that matches"],
       ["获准的", "a permitted"],
     ]),

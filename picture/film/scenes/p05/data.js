@@ -245,9 +245,10 @@ export function questionsStage(s, t, c, g) {
   nameText(L("六个问题", "Six questions"), B.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   // Three English stations take their question's own words (EN15-n11, B1): "Origin" is not said, and "Meaning" and
   // "Quality" are said only in 05.2's next thought, within 8 s, whose words the sync audit takes for theirs, so those
-  // stations stood before their clause.
+  // stations stood before their clause. The Chinese stations take their questions' words too (ZH16-n1): 来源, 改动 and
+  // 用途 are the source table's nouns, which the voice does not say while it asks 它从哪里来？ 被什么改过？ 能用在哪里？
   const names = L(
-    ["来源", "最早拿到", "含义", "改动", "质量", "用途"],
+    ["从哪里来", "最早拿到", "含义", "被什么改过", "质量", "能用在哪里"],
     ["Came from", "Availability", "What it means", "Changes", "How good", "Use"],
   );
   c.asks.forEach((at, i) => {
