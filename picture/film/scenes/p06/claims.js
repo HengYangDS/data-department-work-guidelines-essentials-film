@@ -37,8 +37,10 @@ import { nightPlace, nightWay } from "./night.js";
  * name. Lower risk, less process: a slim rail under the chain with a point at every station, so the lighter chain keeps
  * every link, fading in whole on its words and named at its end (EN9-n17). The stations stand right of the frame's
  * axis by `chainShift`, so the chain named at its left alone, while its words wait for the lighter chain's, stands
- * within the reviewers' 50 px, as its other states do. */
-const C = { y: 690, pitch: 180, icon: 634, slim: 802 };
+ * within the reviewers' 50 px, as its other states do. The pitch keeps 1.5 em between the English names that stand
+ * closest, "Decision owner" and "Limits", and "The claim" and "Acceptance": at 180 px they stood 44 px apart, half a
+ * pixel under it. */
+const C = { y: 690, pitch: 182, icon: 634, slim: 802 };
 const STATIONS = () =>
     L(
       ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],

@@ -19,7 +19,7 @@
 
 ## 5. Picture
 
-- [ ] 5.1 Name the three stations of 05.2's ring in the words of their questions in the Chinese edition (ZH16-n1); done when the sync audit judges all six stations in sync.
+- [x] 5.1 Name the three stations of 05.2's ring in the words of their questions in the Chinese edition (ZH16-n1); done when the sync audit judges the three renamed stations in sync with words of their own questions and lists none of them as unmatched or far from its words. 从哪里来, 改过 and 用在哪 are judged in sync (−0.14 s, −0.28 s and −0.13 s) in the audits of 15 November; 最早拿到 stays unmatched and declared (design decision 5).
 - [x] 5.2 Declare 01.3's full extent in the design with the measured cost of each repair the notes offer (ZH16-n2, EN16-n3); done when the design states the lit extent and offset of the three-failure state as drawn and with the rail ending at the third link, and the glide the other repair adds.
 - [ ] 5.3 Give the names under 07.5's rail an even distance (ZH16-n3); done when every gap between adjacent names is at least 1.5 em and the rings' pitch is even within 2 px.
 - [ ] 5.4 Restore "independent review" in the English 04.7 list and set the list with its separators like its three neighbours (EN16-n1, EN16-n2); done when both editions' 04.7 lists name the same five things and the echoed cue is declared by name.

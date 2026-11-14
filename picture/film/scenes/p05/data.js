@@ -247,8 +247,10 @@ export function questionsStage(s, t, c, g) {
   // "Quality" are said only in 05.2's next thought, within 8 s, whose words the sync audit takes for theirs, so those
   // stations stood before their clause. The Chinese stations take their questions' words too (ZH16-n1): 来源, 改动 and
   // 用途 are the source table's nouns, which the voice does not say while it asks 它从哪里来？ 被什么改过？ 能用在哪里？
+  // Each name is part of its question, as the English names are: a station that held its whole question, as 被什么改过
+  // would, repeats the caption beside it word for word, which the sync gate refuses.
   const names = L(
-    ["从哪里来", "最早拿到", "含义", "被什么改过", "质量", "能用在哪里"],
+    ["从哪里来", "最早拿到", "含义", "改过", "质量", "用在哪"],
     ["Came from", "Availability", "What it means", "Changes", "How good", "Use"],
   );
   c.asks.forEach((at, i) => {

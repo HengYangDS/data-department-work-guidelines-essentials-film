@@ -4301,7 +4301,7 @@ function questionsStage(s, t, c, g) {
   ringArcs(t, earliest(c.sixClause, c.six) - 0.15, six);
   nameText(L("六个问题", "Six questions"), B2.x, top + ch + NAME_GAP, { valign: "top", alpha: six });
   const names = L(
-    ["从哪里来", "最早拿到", "含义", "被什么改过", "质量", "能用在哪里"],
+    ["从哪里来", "最早拿到", "含义", "改过", "质量", "用在哪"],
     ["Came from", "Availability", "What it means", "Changes", "How good", "Use"]
   );
   c.asks.forEach((at2, i) => {
@@ -4836,7 +4836,7 @@ function layersStage(s, t, c, g) {
 }
 
 // picture/film/scenes/p06/claims.js
-var C2 = { y: 690, pitch: 180, icon: 634, slim: 802 };
+var C2 = { y: 690, pitch: 182, icon: 634, slim: 802 };
 var STATIONS = () => L(
   ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
   ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"]
