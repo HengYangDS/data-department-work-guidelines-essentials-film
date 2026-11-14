@@ -14,6 +14,7 @@ The notes are recorded, each with its observation, repair and reverification lin
 - The scripts' three descriptive fields name the voice reference the casts read.
 - The requirements name the four films and both staged picture documents that each edition publishes.
 - Each film's picture floor comes from a rebuild of release 1.0.0 in a clean checkout.
+- The films are built on `filmkit` 0.22.0, whose sound gate, row-gap gate and clarity rules judge the lines the reviewers hold before a render.
 - The wording of 08.4.2 (EN16-n6) changes only if the owner decides so on the exact text.
 
 The films stay 600 seconds, with the same narrator, chapters and argument. The result is edition 1.0.1.

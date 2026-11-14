@@ -34,3 +34,7 @@
 - [ ] 6.3 Obtain an independent review of each edition; done when every dimension is at 95 or above and no material or minor finding stands.
 - [ ] 6.4 Deliver the reviewed editions; done when the delivery reads back from Documents.
 - [ ] 6.5 Record the 1.0.1 assets in `content/release.json`; done when `tests/delivery/test_release.py` passes against the staged release folder.
+
+## 7. Engine
+
+- [x] 7.1 Adopt `filmkit` 0.22.0: pin its tag, run `check-sound` after each edition's captions in `film:sound`, gate the row gaps in the geometry check, state the engine's segment and thought clarity rules and the measured medium in the review prompt, re-key the English reading that 08.4.2's wording moved, and drop the Prettier and Taplo carriers that repeat ETHOS's shipped settings; done when the lock holds the tag's commit and the picture and Python suites pass apart from the release test, which waits for task 6.5.

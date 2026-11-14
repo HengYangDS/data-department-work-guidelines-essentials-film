@@ -25,7 +25,7 @@ prerelease = "disallow"
 # inflected words and each appearance of a label, joins or holds a caption cue read too fast and
 # joins the keywords as Spotlight imports them.
 [tool.uv.sources]
-filmkit = { git = "https://github.com/HengYangDS/filmkit", tag = "v0.21.2" }
+filmkit = { git = "https://github.com/HengYangDS/filmkit", tag = "v0.22.0" }
 
 # VERSION is the only version source, as ETHOS requires of a repository that tags releases.
 [tool.hatch.version]
