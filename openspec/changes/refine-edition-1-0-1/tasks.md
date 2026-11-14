@@ -10,7 +10,7 @@
 ## 3. Text
 
 - [ ] 3.1 State the natural voice reference and its derivation in the scripts' `pacing_profile`, `provider_notes` and `performance_intent` fields (release finding 1); done when the fields name the recording that `content/voice-reference.json` names as `reference_audio`.
-- [ ] 3.2 Put the exact wording of 08.4.2 and its label to the owner (EN16-n6); done when the owner's decision is recorded here, and, if the text changes, when both languages are adopted and the readings and concept checks pass.
+- [ ] 3.2 Adopt the wording of 08.4.2 that the owner approved on 14 November 2026 (EN16-n6): "the time each fact became available" for "the facts available at the time", 「每项事实最早能拿到的时间」 for 「当时能拿到的事实」, and the labels "When it was available" and 「最早能拿到的时间」; done when both scripts, narration texts and labels hold it and the readings and concept checks pass.
 
 ## 4. Voice
 
