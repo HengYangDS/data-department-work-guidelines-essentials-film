@@ -4,9 +4,32 @@ All notable changes to the DDWG essentials films and their build are recorded he
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-15
+
 ### Added
 
 - Release 1.0.0 is rebuilt from a clean checkout. On 14 November 2026 an anonymous clone of the `v1.0.0` tag built both editions by the README's steps, with nothing taken from the production build, and `film:compare` passed against the assets downloaded from the release: both soundtracks hold the recorded bytes, the captions, transcripts and covers the published bytes, and each of the eight films decodes to the published film's 36,000 frames with every frame, the decoded audio and the container identical. The recorded picture floors of 45 dB stand; a rebuild on another host or renderer build is not yet compared.
+- `film:sound` ends each edition with the engine's sound gate, which refuses a soundtrack with a part under its clarity floor or a thought or heard phrase that stops instead of dying away, and `film:picture` refuses neighbouring names on one row that stand closer than one and a half times their size.
+
+### Changed
+
+- 08.4 names what the next user of the data needs as the owner approved on 14 November 2026: "the time each fact became available" where 1.0.0 said "the facts available at the time", and 「每项事实最早能拿到的时间」 for 「当时能拿到的事实」, with the labels "When it was available" and 「最早能拿到的时间」. 08.4 is narrated again in both editions; nothing else in either narration changes. The Chinese narration has 2,443 Han characters.
+- Each thought stands within 0.4 dB of its part's level, where the tolerance was 0.5 dB, so the largest step between adjacent thoughts inside a part is 0.8 LU in both editions. Each soundtrack still lasts exactly 600 seconds at −16.5 LUFS.
+- The English 03.2 takes a clearer recording, 17.27 dB on the soundtrack where the 1.0.0 take read 16.81 dB, and the English 01.1 a recording whose last word dies away: the engine's sharper ending measure found that the 1.0.0 take faded and was then cut to silence within 2 ms, which no review had heard.
+- The Chinese ring of 05.2 names three of its stations in the words of their questions, 从哪里来, 改过 and 用在哪, as the English ring does. The English list of 04.7 says "independent review" again, so both editions' lists name the same five things, and its high-risk response is set with the voice's separators like its three neighbours.
+- The names under 07.5's rail and along 06's chain stand at least one and a half times their size apart; the chain takes a pitch of 182 px for it. The way of 08.4 lights through its three aims on their words and on to the listener within the last aim's words, so the film's last picture is whole when the voice ends, and the ring of 05.3's due hour inks in on its name.
+- Both scripts' `pacing_profile`, `provider_notes` and `performance_intent` fields name the reference recording that each cast reads.
+- The films are built by `filmkit` 0.22.2 instead of 0.21.2 and rendered with HyperFrames 0.9.46 instead of 0.9.9; GSAP moves to 3.15.1, `puppeteer-core` to 25.17.0, `@puppeteer/browsers` to 3.2.7, `undici` to 7.30.2 and Prettier to 3.10.1. Node, Python, uv and Chrome Headless Shell keep their versions.
+- Review round 17 scored the Chinese edition 99.9 and the English edition 99.4, with every one of the twelve dimensions at 96 or more, each of 信, 达 and 雅 passing and no material or minor finding. Its 1 Chinese note and 6 English notes are listed in the published review records, `ddwg-essentials-zh-production-review.md` and `ddwg-essentials-en-production-review.md`. The review scores the audio from automated evidence; human listening is a separate acceptance.
+
+### Removed
+
+- The Prettier and Taplo configuration files under `.config/checks/`, which repeated the settings ETHOS ships.
+
+### Fixed
+
+- The 1.0.0 section lists ETHOS 0.2.0-alpha.29 in the locked supply. The tree that `v1.0.0` tags locks ETHOS 0.2.0-beta.10, as the same section's last entry says: the films were built and reviewed while the repository ran alpha.29, and the rebind to beta.10 that followed changed no film-bound source.
+- `NOTICE` names Prettier 3.10.1, the version the lock holds.
 
 ## [1.0.0] - 2026-11-14
 
@@ -35,5 +58,6 @@ All notable changes to the DDWG essentials films and their build are recorded he
   remote name, and verifies every change with the portable full proof on Apple-silicon macOS in
   the hosted jobs of both forges.
 
-[Unreleased]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.1
 [1.0.0]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.0

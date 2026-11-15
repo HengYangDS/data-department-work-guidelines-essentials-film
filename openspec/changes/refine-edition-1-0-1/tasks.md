@@ -29,11 +29,11 @@
 
 ## 6. Edition
 
-- [ ] 6.1 Set the version to 1.0.1 and record the edition in the Changelog, with a Fixed entry that corrects how the 1.0.0 section names the ETHOS release the films were built under; done when `mise run check` passes.
-- [ ] 6.2 Build both editions; done when `mise run film:build` ends with every film verified.
-- [ ] 6.3 Obtain an independent review of each edition; done when every dimension is at 95 or above and no material or minor finding stands.
-- [ ] 6.4 Deliver the reviewed editions; done when the delivery reads back from Documents.
-- [ ] 6.5 Record the 1.0.1 assets in `content/release.json`; done when `tests/delivery/test_release.py` passes against the staged release folder.
+- [x] 6.1 Set the version to 1.0.1 and record the edition in the Changelog, with a Fixed entry that corrects how the 1.0.0 section names the ETHOS release the films were built under; done when `mise run check` passes. `VERSION` holds 1.0.1 and the Changelog's 1.0.1 section records the edition, with the Fixed entry on the ETHOS release that the 1.0.0 section names; the repository's check passes on the release content (15 November).
+- [x] 6.2 Build both editions; done when `mise run film:build` ends with every film verified. Both editions are built on `filmkit` 0.22.2 (15 November): each edition's two pictures agree at all 36,000 frames with no one-frame fault, all eight films are packaged, and the technical verification passes. The build ran command by command through the host's queue, each command the one `film:build` names.
+- [x] 6.3 Obtain an independent review of each edition; done when every dimension is at 95 or above and no material or minor finding stands. Review round 17 (15 November) scores the Chinese edition 99.9 and the English edition 99.4, every dimension at 96 or more and each of 信, 达 and 雅 passing, with no material or minor finding; its 1 Chinese and 6 English notes are in the review records (`build/evidence/reviews/round-17/`).
+- [x] 6.4 Deliver the reviewed editions; done when the delivery reads back from Documents. The reviewed editions are delivered to the film's Documents folder on 15 November and read back: 25 members, every digest matching, each film with one author and trimmed keywords.
+- [x] 6.5 Record the 1.0.1 assets in `content/release.json`; done when `tests/delivery/test_release.py` passes against the staged release folder. `content/release.json` records the 21 assets of 1.0.1 from the delivered build, and `tests/delivery/test_release.py` passes against the staged release folder (15 November).
 
 ## 7. Engine
 

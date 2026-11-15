@@ -10,7 +10,7 @@ Author: Yang HENG.
 
 All four films of each edition are published as release assets, together with their captions, transcripts, covers, independent review records and `SHA256SUMS`: 21 assets. [`content/release.json`](content/release.json) records each asset's name, size and SHA-256, the digests of the soundtrack and of the two staged pictures, with captions and without them, that each edition was made from, and those of the film-bound sources: the scripts, narration texts, casts, pronunciation contract, reference recordings, source manifest, covers, fonts, composition and entry page whose exact bytes the build reads. The independent review of the `v1.0.0` films scored the Chinese edition 99.8 and the English edition 99.1 out of 100, with every one of its twelve dimensions at 96 or above, each of its three levels, 信, 达 and 雅, passing and no material or minor finding; the published review records list its notes. That review scores the audio from automated evidence; human listening is a separate acceptance.
 
-The films of `v1.0.0` are the current editions.
+The films of `v1.0.1` are the current editions.
 
 ## Rebuilding the films
 
@@ -47,7 +47,7 @@ The stages also run one at a time: `film:narrate`, `film:sound`, `film:picture`,
 Download the release assets into `build/artifacts/release/` and compare:
 
 ```bash
-gh release download v1.0.0 --repo HengYangDS/data-department-work-guidelines-essentials-film --dir build/artifacts/release
+gh release download v1.0.1 --repo HengYangDS/data-department-work-guidelines-essentials-film --dir build/artifacts/release
 ```
 
 ```bash
