@@ -4,6 +4,10 @@ All notable changes to the DDWG essentials films and their build are recorded he
 
 ## [Unreleased]
 
+### Changed
+
+- Edition 1.0.2 is in preparation: no chapter title travels (the chapter card dissolves where it stands and the running head and the part's name fade in at their places), the film declares its pace limit of 450 px/s and every glide and flow keeps it, neighbouring names on one row stand at least 1.7 times their size apart, three Chinese names say the words of their clauses, the rails of 03.4 and 08.3 light along themselves to each station as it is said, the point of 06.3 runs the whole chain, and the review prompt states the owner's line for a single thought's clarity. No spoken word changes, and both soundtracks are those of 1.0.1. The films are built by `filmkit` 0.22.3.
+
 ## [1.0.1] - 2026-11-15
 
 ### Added
