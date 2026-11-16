@@ -4,9 +4,25 @@ All notable changes to the DDWG essentials films and their build are recorded he
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-11-17
+
+### Added
+
+- The film declares its pace limit, 450 px/s at 1080p, so `film:picture` refuses a glide or a flow that its motion audit measures moving faster, and a picture test holds every chapter title to its place while it fades.
+
 ### Changed
 
-- Edition 1.0.2 is in preparation: no chapter title travels (the chapter card dissolves where it stands and the running head and the part's name fade in at their places), the film declares its pace limit of 450 px/s and every glide and flow keeps it, neighbouring names on one row stand at least 1.7 times their size apart, three Chinese names say the words of their clauses, the rails of 03.4 and 08.3 light along themselves to each station as it is said, the point of 06.3 runs the whole chain, and the review prompt states the owner's line for a single thought's clarity. No spoken word changes, and both soundtracks are those of 1.0.1. The films are built by `filmkit` 0.22.3.
+- No chapter title travels: the chapter card dissolves where it stands, for 1.07 s at half its ink or more in Chinese and 1.67 s in English, and the running head and the first part's name fade in at their own places, where the title rose into the running head at 622 to 688 px/s; a chapter's first scene begins as the card leaves.
+- Every glide and flow the motion audit measures keeps the film's pace limit. The motion audit had recorded three Chinese and four English stretches over it in 1.0.1, the fastest at 518 px/s, and each is timed by its way: 01.3's glide of the two told failures, 04.1's point, 04.2's hand-over of the field and 05's point up the trunk. One mark the audit does not measure stays over the limit, as in 1.0.1: the turned-down end of 01.3's rail travels with the rail's drawing end, at the draw pace of 820 px/s, as the row opens. Review round 18 lists it as EN18-n4, and the next edition recuts it.
+- Neighbouring names on one row stand at least 1.7 times their size apart: 06's chain takes a pitch of 188 px, 07's English stations 202 px, and 04's refused account stands further from the Agent's name.
+- Three Chinese names say the words of their clauses: 什么情况下成立 in 02.3, 不对外承诺 in 04.5 and 修掉直接的原因 in 06.2.
+- 03.4's way over the five leads and 08.3's rail under the rule light along themselves to each station as it is said, as 06.3's chain does, so no lit rail stands ahead of the name under it. 06.3's point runs the whole chain and rests on its last station as its thought ends, where it rested a quarter of the way past the fifth station.
+- 03.4's observation inks in half a second before its words, so its record does not stand alone far off the centre, and the lighter chain of 06.3 ends on its end points.
+- No spoken word changes and nothing is narrated again: both soundtracks, timelines and captions hold the bytes of 1.0.1. The Chinese narration has 2,443 Han characters and the English 1,549 words, and each soundtrack lasts exactly 600 seconds.
+- The review prompt states what a single thought's clarity is judged against, as the owner decided on 16 November 2026: the floor of 18 dB in Chinese and 17 dB in English holds for the soundtrack and for each part, and a single thought is judged against the floor less 1.0 dB. The English 07.5 at 16.86 dB and 02.4 at 16.98 dB stand between the two lines, as in 1.0.1; the English soundtrack reads 17.84 dB.
+- The films are built by `filmkit` 0.22.3 instead of 0.22.2. Every other locked package keeps its version.
+- A release page now carries the release's record (the review records, captions, transcripts, covers and `SHA256SUMS`), and the page of the current edition also one film to watch per edition, the 1080p film with captions; the UHD films and the films without captions are not published, and the pages of 1.0.0 and 1.0.1 keep their records only. The repository's owner decided this on 16 November 2026; the README says what is published and where the comparison runs.
+- Review round 18 scored the Chinese edition 99.8 and the English edition 99.5, with every one of the twelve dimensions at 97 or more, each of 信, 达 and 雅 passing and no material or minor finding. Its 2 Chinese notes and 6 English notes are listed in the published review records, `ddwg-essentials-zh-production-review.md` and `ddwg-essentials-en-production-review.md`. The review scores the audio from measurements; human listening is a separate acceptance.
 
 ## [1.0.1] - 2026-11-15
 
@@ -62,6 +78,7 @@ All notable changes to the DDWG essentials films and their build are recorded he
   remote name, and verifies every change with the portable full proof on Apple-silicon macOS in
   the hosted jobs of both forges.
 
-[Unreleased]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.2
 [1.0.1]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.1
 [1.0.0]: https://github.com/HengYangDS/data-department-work-guidelines-essentials-film/releases/tag/v1.0.0

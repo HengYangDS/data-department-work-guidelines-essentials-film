@@ -8,9 +8,9 @@ Author: Yang HENG.
 
 ## The films
 
-All four films of each edition are published as release assets, together with their captions, transcripts, covers, independent review records and `SHA256SUMS`: 21 assets. [`content/release.json`](content/release.json) records each asset's name, size and SHA-256, the digests of the soundtrack and of the two staged pictures, with captions and without them, that each edition was made from, and those of the film-bound sources: the scripts, narration texts, casts, pronunciation contract, reference recordings, source manifest, covers, fonts, composition and entry page whose exact bytes the build reads. The independent review of the `v1.0.0` films scored the Chinese edition 99.8 and the English edition 99.1 out of 100, with every one of its twelve dimensions at 96 or above, each of its three levels, 信, 达 and 雅, passing and no material or minor finding; the published review records list its notes. That review scores the audio from automated evidence; human listening is a separate acceptance.
+A release page carries the release's record: its independent review records, captions, transcripts, covers and `SHA256SUMS`. The page of the current edition also carries one film to watch per edition, the 1080p film with captions. The UHD films and the films without captions are output of the build and are not published, and the page of a superseded edition keeps its record only; the repository's owner decided this on 16 November 2026. [`content/release.json`](content/release.json) records the name, size and SHA-256 of all 21 assets of the build, the eight films among them, the digests of the soundtrack and of the two staged pictures, with captions and without them, that each edition was made from, and those of the film-bound sources: the scripts, narration texts, casts, pronunciation contract, reference recordings, source manifest, covers, fonts, composition and entry page whose exact bytes the build reads. The independent review of the `v1.0.2` films scored the Chinese edition 99.8 and the English edition 99.5 out of 100, with every one of its twelve dimensions at 97 or above, each of its three levels, 信, 达 and 雅, passing and no material or minor finding; the published review records list its notes. That review scores the audio from automated evidence; human listening is a separate acceptance.
 
-The films of `v1.0.1` are the current editions.
+The films of `v1.0.2` are the current editions.
 
 ## Rebuilding the films
 
@@ -42,12 +42,12 @@ mise run film:build
 
 The stages also run one at a time: `film:narrate`, `film:sound`, `film:picture`, `film:package` and `film:verify`.
 
-## Comparing a rebuild with the published films
+## Comparing a rebuild with the release's films
 
-Download the release assets into `build/artifacts/release/` and compare:
+The comparison reads the release's 21 assets from `build/artifacts/release/` and refuses one that is absent or differs from the release manifest. The release page holds fifteen of them while its edition is current and thirteen afterwards; the other films are not published, so the whole comparison runs where the release's films are at hand. The publisher runs it after each release, from an anonymous clone of the tag against the films as delivered. Download what the page holds and compare:
 
 ```bash
-gh release download v1.0.1 --repo HengYangDS/data-department-work-guidelines-essentials-film --dir build/artifacts/release
+gh release download v1.0.2 --repo HengYangDS/data-department-work-guidelines-essentials-film --dir build/artifacts/release
 ```
 
 ```bash

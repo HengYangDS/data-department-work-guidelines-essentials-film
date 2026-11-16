@@ -24,8 +24,8 @@
 
 ## 5. Edition
 
-- [ ] 5.1 Set the version to 1.0.2 and record the edition in the Changelog; done when `mise run check` passes.
-- [ ] 5.2 Build both editions; done when `mise run film:build` ends with every film verified.
-- [ ] 5.3 Obtain an independent review of each edition; done when every dimension is at 95 or above and no material or minor finding stands.
-- [ ] 5.4 Deliver the reviewed editions; done when the delivery reads back from Documents.
-- [ ] 5.5 Record the 1.0.2 assets in `content/release.json`; done when `tests/delivery/test_release.py` passes against the staged release folder.
+- [x] 5.1 Set the version to 1.0.2 and record the edition in the Changelog; done when `mise run check` passes. `VERSION` holds 1.0.2 and the Changelog's 1.0.2 section records the edition; the repository's check passes on the head that holds them (17 November).
+- [x] 5.2 Build both editions; done when `mise run film:build` ends with every film verified. Both editions are built on `filmkit` 0.22.3 (17 November): each edition's two pictures agree at all 36,000 frames with no one-frame fault, all eight films are packaged, and the technical verification passes.
+- [x] 5.3 Obtain an independent review of each edition; done when every dimension is at 95 or above and no material or minor finding stands. Review round 18 (17 November) scores the Chinese edition 99.8 and the English edition 99.5, every dimension at 97 or more and each of 信, 达 and 雅 passing, with no material or minor finding; its 2 notes on the Chinese edition and 6 notes on the English one are in the published review records. The review is a model's judgment; human listening is a separate acceptance.
+- [x] 5.4 Deliver the reviewed editions; done when the delivery reads back from Documents. The reviewed editions are delivered to the film's delivery folder, `~/Movies/ddwg-essentials-film` (the films' folders left Documents on 17 November 2026) on 17 November and read back: 25 members, every digest matching, each film with one author and trimmed keywords.
+- [x] 5.5 Record the 1.0.2 assets in `content/release.json`; done when `tests/delivery/test_release.py` passes against the staged release folder. `content/release.json` records the 21 assets of 1.0.2 from the delivered build, and `tests/delivery/test_release.py` passes against the staged release folder (17 November).

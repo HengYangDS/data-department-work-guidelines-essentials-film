@@ -1,10 +1,10 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "editions": {
     "zh": {
       "soundtrack_sha256": "0572d588b840909599c3381a0d273c7dbeb96af7fc2d09a8a5f02d0b144da574",
-      "stage_sha256": "1e45f28c4dbfc077c00d025dac4617b5c5ac6536c9e74b3f11ce83f5d1c9acd9",
-      "uncaptioned_stage_sha256": "a5e5c3502dc0594fc1eb3bedd7d14d1d1982ec6da3a612e430ac6f0fcf120580",
+      "stage_sha256": "62c22775b279361c8b161677e5c7ab166ca3ede3a6896151b16ce7c0e5a44c7a",
+      "uncaptioned_stage_sha256": "1f6f7e5c77d283a9dc74104f3d38e4fc1b2825f39aa1ed10ee2f9fd97a93c6f5",
       "picture_floor_db": {
         "ddwg-essentials-zh-uhd.mp4": 45.0,
         "ddwg-essentials-zh-1080p-captioned.mp4": 45.0,
@@ -14,8 +14,8 @@
     },
     "en": {
       "soundtrack_sha256": "ec2bb4e66e846214d452e6e8a3664c49cd78cd0084a05a6c785eefb1bc391242",
-      "stage_sha256": "1292be7cd06dbb70cfc698bef7a5af678a280867cf6c0caae178b814ef03e59b",
-      "uncaptioned_stage_sha256": "974464f817472e4030a52fe41ed6f8cddd3cc3f8d565cd6725be22a97900d5b6",
+      "stage_sha256": "a32d585c6d6dd92fb495976c1aa64f38e5c4b5696d58d371deac80f9bb9884a0",
+      "uncaptioned_stage_sha256": "8eccc0a6a97703d56b16d45a65b9ae198261700088bf182f6d8c81d7c89c8f03",
       "picture_floor_db": {
         "ddwg-essentials-en-uhd.mp4": 45.0,
         "ddwg-essentials-en-1080p-captioned.mp4": 45.0,
@@ -43,29 +43,29 @@
     "content/voice-performance.json": "e764581bb4e1429b71746a2b24e3f58a2bd24030fde17c305cbac75e28701004",
     "content/voice-reference.json": "aeb0228f127021cbfe30adece6b3dcfa5a8067042ecb6f8226c5ebbe6667998d",
     "picture/film.css": "c38964e6999f68824cdea015d0e8e4150e439949050bf29549f9e61506bd5ec0",
-    "picture/film.js": "875a7dca0a63323380de2b3fa4d341862ca1678ec71c654e4e272c8f55e06132",
+    "picture/film.js": "3d39d758cd7821690c912d20c4704172632cc43c6ad4c2e1d854f67690c7523a",
     "picture/index.html": "304963b13e1f25a929f77120437be7ad55da99a2c5e50ed1b6acfc088da42c22"
   },
   "assets": [
     {
       "name": "ddwg-essentials-zh-uhd.mp4",
-      "bytes": 289541887,
-      "sha256": "d01083a7057f1779ae7491f41822d61a96f0550960827cbf572dec4670c6196e"
+      "bytes": 289776882,
+      "sha256": "787a6e23654eb889090ee3d9199db4f4be7d4eade5a8a0cca16b6ccc74322c25"
     },
     {
       "name": "ddwg-essentials-zh-1080p-captioned.mp4",
-      "bytes": 104831556,
-      "sha256": "9493ec20a67d43b957a79c09029e2d0814ed42a7587c790c46dd2837395704c7"
+      "bytes": 105081032,
+      "sha256": "7ad8c85a80ab193e1b2c451ee9c20088205b735d2af2c8c633e85a0f3d64404b"
     },
     {
       "name": "ddwg-essentials-zh-uhd-uncaptioned.mp4",
-      "bytes": 220639448,
-      "sha256": "7c13504c5fc31a160f18df6dad841c5fbd87187b347c76e1816bb0e8de940546"
+      "bytes": 220739388,
+      "sha256": "31e290f2f2c1df9c99836373cb38a33733d75de2f674d49906b6e04b986e160e"
     },
     {
       "name": "ddwg-essentials-zh-1080p-uncaptioned.mp4",
-      "bytes": 81312876,
-      "sha256": "8e091e57f3e6b062bece348c9e740ef9c223abf0ea7d6ff94a63bef00f0e9157"
+      "bytes": 84169551,
+      "sha256": "a69708b48c87b70e6f11ade5529ae67ced44a3f22ef6f2a4721d6fe4c78c014a"
     },
     {
       "name": "ddwg-essentials-zh.srt",
@@ -89,33 +89,33 @@
     },
     {
       "name": "ddwg-essentials-zh-production-review.json",
-      "bytes": 8958,
-      "sha256": "2625cd2d1ae4d415ae48a8ff322204eda6f1eb9706df531dc236eb32bf86ca31"
+      "bytes": 11150,
+      "sha256": "8c71f91cd848712a2388b6fb765069cd8ea6bdeb0b01e337c9942f44fb08887c"
     },
     {
       "name": "ddwg-essentials-zh-production-review.md",
-      "bytes": 21748,
-      "sha256": "cfe5be2251a0b877de61676586cb496d594a3e15a08600461ad4e19c2ba8acf5"
+      "bytes": 18003,
+      "sha256": "af044f88936006edc24daaa4c6061d4eb4ee3de2cae3950f3fbc02a5216badb7"
     },
     {
       "name": "ddwg-essentials-en-uhd.mp4",
-      "bytes": 344042965,
-      "sha256": "2e0359d7b9c333982e27223e17fab25b4a5203b1ea415b26c540c76ac59d3aaa"
+      "bytes": 343536870,
+      "sha256": "baec0707acc49a2c2c1e497b9acd81491cb21600ea266099c7c467c4fc8eca22"
     },
     {
       "name": "ddwg-essentials-en-1080p-captioned.mp4",
-      "bytes": 119019214,
-      "sha256": "9c1a32d8e3fff3058d54bece3e2ce3a11950d07f44016f0272d3ea2d20f5bb76"
+      "bytes": 117922518,
+      "sha256": "ac8b667839bce4a954a76938819c48dc0b5ec7c4c4941f85398959c05dd67618"
     },
     {
       "name": "ddwg-essentials-en-uhd-uncaptioned.mp4",
-      "bytes": 276006783,
-      "sha256": "5d413c27211d656997a7e2c355f2a8f04eaca8bdaf177932df06f94ff5225aa9"
+      "bytes": 275482539,
+      "sha256": "67c8eac2e937c82c5275c0a95f0d20b5915393a364b71d057ed620c3f9a8e912"
     },
     {
       "name": "ddwg-essentials-en-1080p-uncaptioned.mp4",
-      "bytes": 99102316,
-      "sha256": "05fc872336b7abd4ddc87d0b248fbbfde1f4b4d168cfc1b36b63dc33db601397"
+      "bytes": 98172791,
+      "sha256": "2de9ab34178d3c5f096c8b7b5196d2a2fc9c47d0b26174212ec88dab88c6f0ba"
     },
     {
       "name": "ddwg-essentials-en.srt",
@@ -139,18 +139,18 @@
     },
     {
       "name": "ddwg-essentials-en-production-review.json",
-      "bytes": 18626,
-      "sha256": "5587d13381ffc083310702dfedc8e1f591f6f7144ac376537f3e530e403d410a"
+      "bytes": 16117,
+      "sha256": "41424084cd1792bc9cf811081322c3404c95696ebb2b5bd8a12486d2a64de8c1"
     },
     {
       "name": "ddwg-essentials-en-production-review.md",
-      "bytes": 33073,
-      "sha256": "654acf2edadab05004fc2e057bd2a20db0c74113af879ac867feb9025700ce27"
+      "bytes": 25859,
+      "sha256": "fcdca2a62f6995ebd9c3dae43e30cc93cabcca7e3b2fa094de412b0aff553a8e"
     },
     {
       "name": "SHA256SUMS",
       "bytes": 1992,
-      "sha256": "68803d719d8ab8f5a12f6fe2f9df64afa2d4b9859519bcd7e7bb91db4aef4916"
+      "sha256": "4b601c02c367eb6b3e305348a1a2852092b222e2890438dfdeebfc03c82349e1"
     }
   ]
 }
