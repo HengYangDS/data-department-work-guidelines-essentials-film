@@ -1,26 +1,26 @@
 ## 1. Specification
 
-- [ ] 1.1 Add the requirement that marks keep the film's declared pace and that no chapter title travels; done when `openspec validate refine-edition-1-0-2 --strict` passes.
+- [x] 1.1 Add the requirement that marks keep the film's declared pace and that no chapter title travels; done when `openspec validate refine-edition-1-0-2 --strict` passes. The Change validates strictly with the requirement added to `film-production` (16 November).
 
 ## 2. Engine
 
-- [ ] 2.1 Adopt `filmkit` 0.22.3: pin its tag and refresh the lock; done when the lock holds the tag's commit, the repository's check passes, and both soundtracks and timelines assembled on it hold the digests of release 1.0.1.
+- [x] 2.1 Adopt `filmkit` 0.22.3: pin its tag and refresh the lock; done when the lock holds the tag's commit, the repository's check passes, and both soundtracks and timelines assembled on it hold the digests of release 1.0.1. The lock holds the commit of `v0.22.3`; the sound stage on it passes `check-sound` for both editions, and each edition's narration, timeline, captions and transcript hold release 1.0.1's bytes (16 November). The repository's check passed on the adoption; from the first picture change it waits on the release test, as task 5.5 says.
 
 ## 3. Picture
 
-- [ ] 3.1 Dissolve the chapter card where it stands and fade the running head and the part's name in at their places; done when a headless trace at 60 fps finds no title travelling at any chapter opening of either edition and a picture test pins it.
-- [ ] 3.2 Declare the pace limit of 450 px/s and recut the stretches the motion audit refuses; done when `check-picture` reports no stretch over the limit in either staged edition.
-- [ ] 3.3 Set the four English row pairs of 04, 06 and 07 at 1.7 times their size or more; done when the row probe at 1.7 lists no pair in either staged edition.
-- [ ] 3.4 Name the three Chinese labels of ZH17-n1 in their clauses' words; done when the sync audit lists none of the three under other words and no new label out of sync or repeating its whole cue, and the lists keep their edges.
-- [ ] 3.5 Answer EN17-n3 for the rails of 01.3, 03.4 and 08.3; done when no rail in full ink stands more than 1.0 s ahead of the name under it, or the design declares each rail that does by name with its measured reason.
-- [ ] 3.6 Answer EN17-n4 for 06.3's point; done when the point rests on the chain's last station by the last word's end in both editions, or no point runs the chain.
-- [ ] 3.7 Measure the whole-pixel steps of text under the slow camera with and without sub-pixel positioning (EN17-n5); done when the steps are gone with no new finding of the audits, or the design declares whole-pixel text with the measurement.
-- [ ] 3.8 Publish each drawn stroke's share in the frame's layout; done when the part-drawn scan reads the published shares and lists no stroke part-drawn in a quiet of either edition.
-- [ ] 3.9 Run the picture audits on both staged editions; done when `mise run film:picture` reports no gated finding before its first render.
+- [x] 3.1 Dissolve the chapter card where it stands and fade the running head and the part's name in at their places; done when a headless trace at 60 fps finds no title travelling at any chapter opening of either edition and a picture test pins it. The trace finds no travel at the three openings of either edition (`build/evidence/picture/chapter-card-scan.txt`), and `tests/picture/chapters.test.mjs` fails on release 1.0.1's composition and passes here (design decision 2).
+- [x] 3.2 Declare the pace limit of 450 px/s and recut the stretches the motion audit refuses; done when `check-picture` reports no stretch over the limit in either staged edition. `content/film.toml` declares the limit, and `check-picture` passes both staged editions with no gated finding and no stretch recorded over it (16 November; design decision 3).
+- [x] 3.3 Set the four English row pairs of 04, 06 and 07 at 1.7 times their size or more; done when the row probe at 1.7 lists no pair in either staged edition. The probe lists none in either edition; the four pairs stand at 1.74 to 1.82 (design decision 4).
+- [x] 3.4 Name the three Chinese labels of ZH17-n1 in their clauses' words; done when the sync audit lists none of the three under other words and no new label out of sync or repeating its whole cue, and the lists keep their edges. 什么情况下成立, 不对外承诺 and 修掉直接的原因 are runs of their clauses; the sync audit judges 233 Chinese labels with none out of sync and no whole caption echo, and the geometry check passes (design decision 7).
+- [x] 3.5 Answer EN17-n3 for the rails of 01.3, 03.4 and 08.3; done when no rail in full ink stands more than 1.0 s ahead of the name under it, or the design declares each rail that does by name with its measured reason. 03.4's way and 08.3's rail light along themselves to each station as it is said, and the trace finds the lit part at no station before its name (`build/evidence/picture/rail-trace-zh.txt`, `rail-trace-en.txt`); 01.3's rail stays declared (design decision 8).
+- [x] 3.6 Answer EN17-n4 for 06.3's point; done when the point rests on the chain's last station by the last word's end in both editions, or no point runs the chain. The point rests within 2 px of the last station 0.1 s before the thought's last word ends in both editions, peaking at about 350 px/s (design decision 9).
+- [x] 3.7 Measure the whole-pixel steps of text under the slow camera with and without sub-pixel positioning (EN17-n5); done when the steps are gone with no new finding of the audits, or the design declares whole-pixel text with the measurement. The steps stay with sub-pixel positioning in the real browser, so the design declares whole-pixel text with the measurement (design decision 10; `build/evidence/picture/text-steps-en.txt`, `text-steps-zh.txt`).
+- [x] 3.8 Publish each drawn stroke's share in the frame's layout; done when the part-drawn scan reads the published shares and lists no stroke part-drawn in a quiet of either edition. The scan reads the published shares and lists none in the 38 quiets of either edition (`build/evidence/picture/stroke-and-centre-scans-zh.txt`, `stroke-and-centre-scans-en.txt`; design decision 6).
+- [x] 3.9 Run the picture audits on both staged editions; done when `mise run film:picture` reports no gated finding before its first render. Both staged editions pass the geometry check, with the row gaps gated, the cover check and `check-picture` with no gated finding on the composition as committed (16 November), after three repairs the audits asked for: the names' room in 06.2 (decision 7), the lighter chain's rail (decision 12) and the eye's lead in 03.4 (decision 11).
 
 ## 4. Review standard
 
-- [ ] 4.1 State the owner's line for a single thought's clarity in the review prompt (EN17-n1); done when the fourth rejected pattern ends with the owner's sentence and the sound gate lists no thought under 16.0 dB in English or 17.0 dB in Chinese.
+- [x] 4.1 State the owner's line for a single thought's clarity in the review prompt (EN17-n1); done when the fourth rejected pattern ends with the owner's sentence and the sound gate lists no thought under 16.0 dB in English or 17.0 dB in Chinese. The prompt's fourth rejected pattern ends with the owner's sentence; the sound gate lists two English thoughts under the floor, 07.5 at 16.86 dB and 02.4 at 16.98 dB, none under 16.0 dB, and no Chinese thought under 18 dB (design decision 5).
 
 ## 5. Edition
 

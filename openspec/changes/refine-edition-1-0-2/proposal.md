@@ -17,6 +17,7 @@ The notes are recorded, each with its observation, repair and reverification lin
 - The whole-pixel steps of text under the slow camera are measured against a sub-pixel setting, and repaired or declared by what the measurement shows (EN17-n5).
 - The review prompt states the owner's line for a single thought's clarity, by which 07.5 and 02.4 are listed and not findings (EN17-n1).
 - Each stroke that draws on publishes the share it has drawn, so a scan can find one that rests part-drawn in a quiet.
+- Two repairs that the staged audits and scans asked for: 03.4's observation comes half a second before its words, so its record does not stand alone far off the centre, and the lighter chain of 06.3 ends on its end points, so the wider chain stays inside the safe area.
 - The films are built on `filmkit` 0.22.3.
 
 No spoken word changes and nothing is narrated: both soundtracks, timelines and captions stay those of release 1.0.1. The films stay 600 seconds, with the same narrator, chapters and argument. The result is edition 1.0.2.
