@@ -186,8 +186,10 @@ export function callerStage(s, t, c, g) {
       ["背景材料", "权限", "核验", "结果"],
       ["Context", "Permissions", "Verification", "Result"],
     ),
-    // Chinese takes 170 px, so its widest vouched name, 为后果负责, keeps a clear gap from the name beside it.
-    pitch = L(170, 196),
+    // Chinese takes 170 px, so its widest vouched name, 为后果负责, keeps a clear gap from the name beside it. English
+    // takes 202 px, so "Permissions" and "Verification" stand 1.7 times their size apart; at 196 px they stood 45.7 px
+    // apart, 1.54 times.
+    pitch = L(170, 202),
     xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch),
     ats = c.owns,
     callerName = L("调用智能体的人", "The caller"),

@@ -124,7 +124,8 @@ export function nightWay(c) {
   return (v) => (4 - mix(2, -0.6, ease((v - from) / MOVE))) * HOUR * B.scale;
 }
 const THREE = () => L("三层", "Three layers"),
-  LAYERS = () => L(["止住影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]),
+  LAYERS = () =>
+    L(["止住影响", "修掉直接的原因", "防止再发生"], ["Containment", "Repair", "Prevention"]),
   REFUSED = () => L("治本", "A systemic fix");
 export function layersStage(s, t, c, g) {
   // The late measure's name fades on the earlier start's words; the start moves once it has gone.
@@ -197,7 +198,8 @@ export function layersStage(s, t, c, g) {
   });
   // The three layers, placed once by their extent with the refusal's.
   const refusedAt = earliest(c.notFix, c.systemic),
-    toBracket = B.slab[1] + NAME_GAP + L(170, 190),
+    // The names' room: the Chinese second layer says its clause's own words, 修掉直接的原因, seven characters.
+    toBracket = B.slab[1] + NAME_GAP + L(226, 190),
     left = B.spine - NAME_GAP - measure(THREE()),
     reach = toBracket + NAME_GAP + measure(REFUSED()) + 42,
     shift = centring(left, reach),

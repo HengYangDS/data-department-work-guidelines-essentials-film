@@ -358,7 +358,16 @@ function along(points, q) {
   }
   return { point: kept.at(-1), kept };
 }
-var drawnShare = (draw, length, extent = 1) => extent * drawShare(draw.t, draw.at, length * extent, draw.least ?? 0.4);
+var drawnShare = (draw, length, extent = 1) => {
+  const least = draw.least ?? 0.4, way = length * extent, share = drawShare(draw.t, draw.at, way, least);
+  layout.draws?.push({
+    scene: layout.scene,
+    at: draw.at,
+    share,
+    pace: 1.5 * Math.abs(way) / drawTime(way, least)
+  });
+  return extent * share;
+};
 var LANDING = 0.15;
 function landedShare(draw, length, extent = 1) {
   const time = drawTime(length * extent, draw.least ?? 0.4), landing = Math.min(LANDING, time), elapsed = voiceTime(draw.t) - voiceTime(draw.at);
@@ -651,72 +660,31 @@ var opensChapter = (s) => {
   const i = film.segments.indexOf(s);
   return i > 0 && film.segments[i - 1].chapter !== s.chapter;
 };
-var CLEAR = 0.4;
-function titlePasses(s, h) {
-  const { start, duration } = riseOf(s);
-  if (h >= 540) return start;
-  if (h <= 72) return Infinity;
-  const share = (540 - h) / (540 - 72);
-  let lo = start, hi = start + duration;
-  for (let i = 0; i < 30; i++) {
-    const mid = (lo + hi) / 2;
-    if (risen(s, mid) < share) lo = mid;
-    else hi = mid;
-  }
-  return hi;
-}
-var clearOfTitle = (s, t, y = 400) => {
-  if (!opensChapter(s)) return 1;
-  const c = cameraOf(s, t);
-  return ramp(t, titlePasses(s, c.oy + c.k * (y - c.ay) - 45), CLEAR);
-};
-var LAND = 0.3;
-var CRUISE = 560;
-var RAMP_IN = 0.12;
-var RAMP_OUT = 0.07;
-var cardLanding = (s) => s.voice_start + LAND;
-function riseOf(s) {
-  const title = film.chapters.find((c) => c.id === s.chapter).title, head = measure(`${chapterNumber(s.chapter)}  ${title}`, 24, false, "chapter"), way = Math.hypot(960 - (96 + head / 2), 540 - 72), start = Math.max(s.start, cardLanding(s) - (1 + RAMP_IN + RAMP_OUT) * way / CRUISE);
-  return { way, start, duration: cardLanding(s) - start };
-}
-var covered2 = (x) => x ** 3 - x ** 4 / 2;
-function risen(s, t) {
-  const { start, duration } = riseOf(s), pace = (1 + RAMP_IN + RAMP_OUT) / duration, gather = 2 * RAMP_IN / pace, settle = 2 * RAMP_OUT / pace, into = t - start;
-  if (into <= 0) return 0;
-  if (into < gather) return pace * gather * covered2(into / gather);
-  if (into < duration - settle) return RAMP_IN + pace * (into - gather);
-  if (into < duration) {
-    const y = (into - duration + settle) / settle;
-    return 1 - RAMP_OUT + pace * settle * (y - covered2(y));
-  }
-  return 1;
-}
+var CARD_IN = 0.3;
+var CARD_LEAD = 0.1;
+var CARD_OUT = 0.35;
+var CARD_STANDS = 0.6;
+var AHEAD = 0.15;
+var HEAD_INK = 0.72;
+var opening = (s) => opensChapter(s) ? Math.max(
+  s.start,
+  Math.min(s.voice_start - 0.55, Math.max(s.voice_start - 0.75, s.start + CARD_STANDS))
+) : s.start;
+var cardLeaves = (s) => opening(s) - AHEAD;
 function chapterCard(s, t) {
-  if (!opensChapter(s) || t >= cardLanding(s)) return;
-  const enter = ramp(t, s.start, 0.3);
-  if (enter <= 0) return;
+  if (!opensChapter(s)) return;
+  const shown = ramp(t, s.start - CARD_LEAD, CARD_IN) * (1 - ramp(t, cardLeaves(s), CARD_OUT));
+  if (shown <= 0) return;
   const chapter = film.chapters.find((c) => c.id === s.chapter), number = chapterNumber(s.chapter);
-  const large = en ? 54 : 60, q = risen(s, t), size = mix(large, 24, q);
+  const size = en ? 54 : 60;
   ctx.save();
   ctx.font = font(24, false, `${number}  ${chapter.title}`);
   const prefix = ctx.measureText(`${number}  `).width;
   ctx.restore();
-  const gap = prefix * size / 24, total = gap + measure(chapter.title, size, false, "chapter");
-  const left = mix(960 - total / 2, 96, q), y = mix(540, 72, q), ink = mix(1, 0.72, q) * enter;
-  text(number, left, y, size, {
-    color: blend(P.evidence, P.muted, q),
-    alpha: ink,
-    role: "chapter"
-  });
-  text(chapter.title, left + gap, y, size, {
-    color: blend(P.ink, P.muted, q),
-    alpha: ink,
-    role: "chapter"
-  });
-  line(900, 600, 1020, 600, {
-    color: P.line,
-    alpha: enter * (1 - ramp(t, riseOf(s).start + 0.2, 0.4))
-  });
+  const gap = prefix * size / 24, left = 960 - (gap + measure(chapter.title, size, false, "chapter")) / 2;
+  text(number, left, 540, size, { color: P.evidence, alpha: shown, role: "chapter" });
+  text(chapter.title, left + gap, 540, size, { color: P.ink, alpha: shown, role: "chapter" });
+  line(900, 600, 1020, 600, { color: P.line, alpha: shown });
 }
 function illustrative(alpha) {
   if (alpha < 0.015 || measuring) return;
@@ -737,7 +705,7 @@ function illustrative(alpha) {
 function runningHead(s, t) {
   if (t < film.segments[0].voice_start) return;
   const first = film.segments.find((v) => v.chapter === s.chapter);
-  const a = 0.72 * (first === film.segments[0] ? ramp(t, first.voice_start, 0.6) : t >= cardLanding(first) ? 1 : 0);
+  const a = HEAD_INK * (first === film.segments[0] ? ramp(t, first.voice_start, 0.6) : ramp(t, cardLeaves(first), CARD_OUT));
   const chapter = film.chapters.find((c) => c.id === s.chapter);
   text(`${chapterNumber(s.chapter)}  ${chapter.title}`, 96, 72, 24, {
     color: P.muted,
@@ -748,15 +716,15 @@ function runningHead(s, t) {
 function partHead(v, t) {
   const parts = film.segments.filter((x2) => x2.chapter === v.chapter);
   if (parts.length < 2) return;
-  const a = ramp(t, cardLanding(parts[0]), 0.3);
+  const a = ramp(t, cardLeaves(parts[0]), CARD_OUT);
   if (a <= 0) return;
   const chapter = film.chapters.find((c) => c.id === v.chapter), x = 96 + measure(`${chapterNumber(v.chapter)}  ${chapter.title}`, 24, false, "chapter") + 22, first = v.words?.[0]?.start ?? v.voice_start, settle = ramp(t, pauseHold(thoughtEnd(first + 0.01)) + 0.05, 0.5), size = mix(LABEL * TYPE, 24, settle), number = `${parts.indexOf(v) + 1}  `;
-  line(x, 61, x, 83, { color: P.line, alpha: 0.72 * a });
+  line(x, 61, x, 83, { color: P.line, alpha: HEAD_INK * a });
   ctx.save();
   ctx.font = font(24, false, `${number}${v.title}`);
   const gap = ctx.measureText(number).width * size / 24;
   ctx.restore();
-  const ink = mix(1, 0.72, settle) * a;
+  const ink = mix(1, HEAD_INK, settle) * a;
   text(number.trim(), x + 22, 72, size, {
     color: blend(P.evidence, P.muted, settle),
     alpha: ink,
@@ -1908,8 +1876,8 @@ function compactNight(a, t) {
   });
 }
 var arrivals = (c) => [c.vendor, c.patch, c.meeting + 0.2, c.pages - 0.25];
-var GLIDE = 1.15;
-function opening(t, c) {
+var GLIDE = 1.22;
+function opening2(t, c) {
   const at2 = c.meeting + 0.05, pitch = XS[1] - XS[0], arm = SPAN3 - pitch;
   return {
     dx: pitch * (1 - travel(t, at2, GLIDE)),
@@ -1955,7 +1923,7 @@ function figure(k, x, t, a, c, busy = false) {
 }
 function stageFailures(t, a, c) {
   compactNight(a, t);
-  const { dx, span, arm, hang, close } = opening(t, c);
+  const { dx, span, arm, hang, close } = opening2(t, c);
   const rail = { color: P.line, alpha: a * ramp(t, c.vendor - 0.15, 0.4), width: 2.5 };
   line(960, 362, 960, CROSS_Y, rail);
   path(
@@ -2344,7 +2312,7 @@ var COLLEAGUE = () => L("那位同事", "The colleague");
 var ONLY_FIRST = () => L("只做到了第一件", "only the first");
 var OUTCOMES = () => [
   [[L("解决问题", "Problem resolved")], []],
-  [[L("检验判断", "Judgment tested")], [L("成立的条件", "when it holds")]],
+  [[L("检验判断", "Judgment tested")], [L("什么情况下成立", "when it holds")]],
   [
     [L("工作体系", "The system")],
     L(["更好地发现", "或应对"], ["better able", " to recognize", " or handle"])
@@ -2506,7 +2474,7 @@ var AGENTS = [1180, 1240];
 var ROW_NAMES = ROW + 22 + NAME_GAP;
 function stageGuide2(s, t, a, c) {
   const x = 960 - PAGE.w / 2 - (measure(L("契约", "Contract")) - measure(L("这份指南", "The guidelines"))) / 2;
-  const g = a * clearOfTitle(s, t, PAGE_TOP), bottom = PAGE_TOP + PAGE.h, mid = bottom + CROSS, agentsX = (AGENTS[0] + AGENTS[1]) / 2;
+  const g = a, bottom = PAGE_TOP + PAGE.h, mid = bottom + CROSS, agentsX = (AGENTS[0] + AGENTS[1]) / 2;
   const sealAt = guidePage(x, PAGE_TOP, PAGE.w, PAGE.h, {
     alpha: g * ramp(t, s.voice_start - 0.4, 0.35),
     seal: ramp(t, c.seal - 0.15, 0.4),
@@ -3177,7 +3145,7 @@ function leadPlaces() {
 }
 function stageFacts(t, a, c) {
   const { xs, widths } = leadPlaces();
-  const records = a * ramp(t, c.primary - 0.15, 0.4), observed = a * ramp(t, c.observe - 0.15, 0.4);
+  const records = a * ramp(t, c.primary - 0.15, 0.4), observed = a * ramp(t, c.observe - 0.5, 0.4);
   recordMark(xs[0], ROW_Y3, ...RECORD, { alpha: records });
   nameText(L("原始记录", "Primary records"), xs[0], NAMES_Y, {
     valign: "top",
@@ -3200,6 +3168,12 @@ function stageFacts(t, a, c) {
     alpha: a * ramp(t, c.leads[0] - 0.15, 0.4),
     width: 2.5
   });
+  const lit = c.leads.reduce(
+    (v, at2, i) => i ? mix(v, xs[i], drawShare(t, at2 - 0.15, xs[i] - xs[i - 1])) : xs[0],
+    xs[0]
+  );
+  if (lit > xs[0] + 0.5)
+    line(xs[0], JOIN_Y, lit, JOIN_Y, { color: P.ink, alpha: a * 0.9, width: 4 });
   LEAD_ORDER().forEach((k, i) => {
     const on2 = a * ramp(t, c.leads[i] - 0.15, 0.4);
     line(xs[i], JOIN_Y, xs[i], LEADS_Y - LEAD_HALF - 4, { color: P.line, alpha: on2, width: 2.5 });
@@ -3244,7 +3218,7 @@ var KINDS = { left: 560, right: 1360, y: 490, name: 350 };
 var SEAL_R = 58;
 var RECORD2 = [110, 140];
 function twoKinds(s, t, a, c, { facts = false } = {}) {
-  const g = a * clearOfTitle(s, t, KINDS.name - 30), marks = facts ? 1 : named(t, s.words[0].start - 0.2), name = facts ? 1 : early(t, s.words[0].start, c.two), on = g * marks, fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD2[1] / 2) + NAME_GAP;
+  const g = a, marks = facts ? 1 : named(t, s.words[0].start - 0.2), name = facts ? 1 : early(t, s.words[0].start, c.two), on = g * marks, fork2 = KINDS.name + 16, joint = fork2 + 24, names = Math.max(KINDS.y + SEAL_R, KINDS.y + RECORD2[1] / 2) + NAME_GAP;
   nameText(L("两种依据", "Two kinds of authority"), 960, KINDS.name, {
     valign: "bottom",
     alpha: g * name
@@ -3589,7 +3563,7 @@ function speaker(cx, cy, { alpha = 1, agent: agent2 = false } = {}) {
 }
 
 // picture/film/scenes/p04/lines.js
-var FIELD = { y: 480, h: 440 };
+var FIELD = { y: 480, w: 520, h: 440 };
 var TOP2 = FIELD.y - FIELD.h / 2;
 var ROWS2 = () => L(
   [
@@ -3633,10 +3607,16 @@ function listField() {
     textX: iconX + B.icon / 2 + B.toText
   };
 }
-var HANDOVER = 0.9;
-var handover = (t, c) => travel(t, c.ordinals[0] + 0.05, HANDOVER);
+var HANDOVER_PEAK = 425;
+var handoverTime = () => {
+  const to = listField(), way = Math.hypot((to.w - FIELD.w) / 2, to.h - FIELD.h);
+  return Math.max(0.9, 1.5 * way / HANDOVER_PEAK);
+};
+var handover = (t, c) => travel(t, c.ordinals[0] + 0.05, handoverTime());
 function stageLines(t, a, c) {
-  const { first, rowHeight, iconX, textX } = listField(), rowAts = c.rows.map((at2, k) => k ? at2 : Math.max(at2, c.ordinals[0] + 0.05 + HANDOVER + 0.15));
+  const { first, rowHeight, iconX, textX } = listField(), rowAts = c.rows.map(
+    (at2, k) => k ? at2 : Math.max(at2, c.ordinals[0] + 0.05 + handoverTime() + 0.15)
+  );
   ROWS2().forEach(([term, qual], k) => {
     const top = first + k * B.pitch, at2 = rowAts[k], parts = c.quals[k].map((v) => Math.max(v, at2));
     fieldIcon(iconX, top + rowHeight / 2, B.icon, k, {
@@ -3751,7 +3731,7 @@ function radialName(v, cx, cy, r, a, { gap = NAME_GAP, ry = r, width = 260, ...o
 // picture/film/scenes/p04/ladder.js
 var WORK = () => L(
   [
-    { term: ["局部、可逆"], qual: ["无对外承诺"] },
+    { term: ["局部、可逆"], qual: ["不对外承诺"] },
     { term: ["跨角色、周期长"], qual: ["几种方案、重大不确定性"] },
     {
       term: ["生产、", "资金、", "敏感数据、", "安全合规"],
@@ -3956,7 +3936,7 @@ function stageReview(t, a, c) {
       set: "fixes"
     });
   });
-  const y = Math.max(660, workBlock.bottom + 2 * NAME_GAP + BUBBLE), r = E.lens, names = rowNameTop([y + 18, y + 20, y + r * 1.35 + 3]), reviewName = L("独立评审", "Independent review"), authorName = L("作者", "Author"), agentName = L("智能体", "Agent"), account = L("自己怎么说", "Own account"), refusal = (measure(account) + 42) / 2, stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal, reviewHalf = Math.max(r * 1.35 + 3, blockWidth({ term: [reviewName], qual: EXAMINED() }) / 2), lensAt = stop + refusal + 2 * NAME_GAP + reviewHalf, reach = lensAt + reviewHalf, authorX = tierX + nightAt + NIGHT_REACH - reach, agentX = authorX + E.agent, stopX = authorX + stop, lensX = authorX + lensAt;
+  const y = Math.max(660, workBlock.bottom + 2 * NAME_GAP + BUBBLE), r = E.lens, names = rowNameTop([y + 18, y + 20, y + r * 1.35 + 3]), reviewName = L("独立评审", "Independent review"), authorName = L("作者", "Author"), agentName = L("智能体", "Agent"), account = L("自己怎么说", "Own account"), refusal = (measure(account) + 42) / 2, clear = Math.max(2 * NAME_GAP, Math.ceil(1.7 * labelSize(LABEL))), stop = E.agent + measure(agentName) / 2 + clear + refusal, reviewHalf = Math.max(r * 1.35 + 3, blockWidth({ term: [reviewName], qual: EXAMINED() }) / 2), lensAt = stop + refusal + 2 * NAME_GAP + reviewHalf, reach = lensAt + reviewHalf, authorX = tierX + nightAt + NIGHT_REACH - reach, agentX = authorX + E.agent, stopX = authorX + stop, lensX = authorX + lensAt;
   const review = a * ramp(t, c.review - 0.15, 0.4);
   lens(lensX, y, r, { alpha: review });
   termRow(t, [reviewName], [c.review], EXAMINED(), c.examined, lensX, names, {
@@ -4116,7 +4096,8 @@ function cuesOf4(s) {
     duty: cue(s, "该尽的义务", "every duty")
   };
 }
-var A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
+var A = { x: 960, y: FIELD.y, w: FIELD.w, h: FIELD.h };
+var RUN_PEAK = 425;
 function stageField(t, a, c) {
   const q = handover(t, c), to = listField(), w = mix(A.w, to.w, q), h = mix(A.h, to.h, q);
   field(A.x, A.y - A.h / 2 + h / 2, w, h, {
@@ -4129,8 +4110,8 @@ function stageField(t, a, c) {
     valign: "bottom",
     alpha: a * named(t, c.four)
   });
-  const run = ramp(t, c.never - 0.05, 0.8);
-  dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
+  const way = A.w / 2 - 12, time = Math.max(0.8, 1.5 * way / RUN_PEAK), run = ramp(t, c.never + 0.75 - time, time);
+  dot(mix(A.x, A.x + way, run), A.y, 8, {
     color: P.ink,
     alpha: a * ramp(t, c.four - 0.15, 0.3) * (1 - ramp(t, c.ordinals[0] + 0.05, 0.3))
   });
@@ -4379,6 +4360,7 @@ function scopeStage(s, t, c, g) {
   );
 }
 var E2 = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
+var CLIMB_PEAK = 425;
 function viewIcon(i, x, y, a) {
   if (i === 0) documentIcon(x - 34, y, 68, 88, { alpha: a, rows: 2 });
   else if (i === 1) {
@@ -4442,16 +4424,13 @@ function viewsStage(s, t, c, g) {
     { gap: NAME_GAP, alpha: (i) => g * listIn(t, views, i), set: "views" }
   );
   bar(960, barY, { alpha: g * ramp(t, c.become + 0.05, 0.3), length: 48 });
-  runPoint(
-    [
-      [xs[3], E2.icon - 10],
-      [xs[3], E2.bus],
-      [960, E2.bus],
-      [960, barY + 10]
-    ],
-    ramp(t, c.become - 0.1, 1.55),
-    { alpha: shown[3] }
-  );
+  const climb = [
+    [xs[3], E2.icon - 10],
+    [xs[3], E2.bus],
+    [960, E2.bus],
+    [960, barY + 10]
+  ], climbTime = Math.max(1.55, 1.5 * lengthOf(climb) / CLIMB_PEAK);
+  runPoint(climb, ramp(t, c.become + 1.45 - climbTime, climbTime), { alpha: shown[3] });
   const truth = g * named(t, c.truth), sx = 960 + cw / 2 + 48, sy = E2.top + ch / 2;
   seal(sx, sy, 26, { color: P.evidence, alpha: truth });
   nameText(L("权威来源", "Source of truth"), sx + 26 + NAME_GAP, sy, {
@@ -4720,7 +4699,7 @@ function nightWay(c) {
   return (v) => (4 - mix(2, -0.6, ease((v - from) / MOVE))) * HOUR * B3.scale;
 }
 var THREE2 = () => L("三层", "Three layers");
-var LAYERS = () => L(["止住影响", "修复", "防止再发生"], ["Containment", "Repair", "Prevention"]);
+var LAYERS = () => L(["止住影响", "修掉直接的原因", "防止再发生"], ["Containment", "Repair", "Prevention"]);
 var REFUSED = () => L("治本", "A systemic fix");
 function layersStage(s, t, c, g) {
   const move = startMoved(t, c), names = {
@@ -4778,7 +4757,7 @@ function layersStage(s, t, c, g) {
     valign: "top",
     alpha: guard
   });
-  const refusedAt = earliest(c.notFix, c.systemic), toBracket = B3.slab[1] + NAME_GAP + L(170, 190), left = B3.spine - NAME_GAP - measure(THREE2()), reach = toBracket + NAME_GAP + measure(REFUSED()) + 42, shift = centring(left, reach), spine = B3.spine + shift, [x0, x1] = B3.slab.map((x) => x + shift), ats = c.layers, top = B3.ys[0] - B3.h / 2, bottom = B3.ys[2] + B3.h / 2, count = g * early(t, c.first2, c.three);
+  const refusedAt = earliest(c.notFix, c.systemic), toBracket = B3.slab[1] + NAME_GAP + L(226, 190), left = B3.spine - NAME_GAP - measure(THREE2()), reach = toBracket + NAME_GAP + measure(REFUSED()) + 42, shift = centring(left, reach), spine = B3.spine + shift, [x0, x1] = B3.slab.map((x) => x + shift), ats = c.layers, top = B3.ys[0] - B3.h / 2, bottom = B3.ys[2] + B3.h / 2, count = g * early(t, c.first2, c.three);
   line(spine, top, spine, mix(top, bottom, drawShare(t, c.three - 0.1, bottom - top)), {
     color: P.ink,
     alpha: count,
@@ -4838,7 +4817,8 @@ function layersStage(s, t, c, g) {
 }
 
 // picture/film/scenes/p06/claims.js
-var C2 = { y: 690, pitch: 182, icon: 634, slim: 802 };
+var C2 = { y: 690, pitch: 188, over: 30, icon: 634, slim: 802 };
+var RUN_PEAK2 = 425;
 var STATIONS = () => L(
   ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
   ["Decision owner", "Limits", "Change", "The runs", "The claim", "Acceptance", "Learning"]
@@ -4847,8 +4827,8 @@ var CHAIN = () => L("信任链", "Chain of trust");
 var LESS = () => L("手续变轻", "Less process");
 var reachOut = (v) => Math.max(30, measure(v) / 2);
 function chainShift() {
-  const stations = STATIONS(), half = (stations.length - 1) * C2.pitch / 2, left = -half - reachOut(stations[0]), last = half + reachOut(stations.at(-1)), named2 = left - NAME_GAP - measure(CHAIN()), lighter = Math.max(last, half + 30 + NAME_GAP + measure(LESS())), shifts = [
-    [left, half + 30],
+  const stations = STATIONS(), half = (stations.length - 1) * C2.pitch / 2, left = -half - reachOut(stations[0]), last = half + reachOut(stations.at(-1)), named2 = left - NAME_GAP - measure(CHAIN()), lighter = Math.max(last, half + 5 + NAME_GAP + measure(LESS())), shifts = [
+    [left, half + C2.over],
     [named2, last],
     [named2, lighter]
   ].map(([l, r]) => -(l + r) / 2);
@@ -4901,18 +4881,22 @@ function chainStage(s, t, c, g) {
     (v, at2, i) => i ? mix(v, xs[i], drawShare(t, at2 - 0.15, C2.pitch)) : xs[0],
     xs[0]
   );
-  line(xs[0] - 30, C2.y, xs[n - 1] + 30, C2.y, {
+  line(xs[0] - C2.over, C2.y, xs[n - 1] + C2.over, C2.y, {
     color: P.line,
     alpha: g * ramp(t, ats[0] - 0.15, 0.4),
     width: 2.5
   });
-  line(xs[0] - 30, C2.y, reach + 30, C2.y, {
+  line(xs[0] - C2.over, C2.y, reach + C2.over, C2.y, {
     color: P.ink,
     alpha: g * 0.9,
     width: 5
   });
-  const runs = flowAt(t, xs[n - 1] - xs[0], { from: ats[n - 1] + 0.6 });
-  flowDot(mix(xs[0], xs[n - 1], runs?.q ?? 0), C2.y, 6, runs, { color: P.evidence, alpha: g });
+  const from = ats[n - 1] + 0.6, span = voiceTime(thoughtEnd(from)) - voiceTime(from), into = voiceTime(t) - voiceTime(from);
+  if (into > 0 && span > 0 && 1.5 * (xs[n - 1] - xs[0]) / span <= RUN_PEAK2)
+    dot(mix(xs[0], xs[n - 1], ease(into / span)), C2.y, 6 * ease(into / 0.15), {
+      color: P.evidence,
+      alpha: g
+    });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4), lit = speaking(t, ats, i);
     dot(x, C2.y, 6, { color: P.ink, alpha: a });
@@ -4930,9 +4914,9 @@ function chainStage(s, t, c, g) {
     alpha: g * named(t, c.chain)
   });
   const lighter = g * named(t, c.lighter);
-  line(xs[0] - 30, C2.slim, xs[n - 1] + 30, C2.slim, { color: P.ink, alpha: lighter, width: 2.5 });
+  line(xs[0], C2.slim, xs[n - 1], C2.slim, { color: P.ink, alpha: lighter, width: 2.5 });
   xs.forEach((x) => dot(x, C2.slim, 5, { color: P.ink, alpha: lighter }));
-  nameText(LESS(), xs[n - 1] + 30 + NAME_GAP, C2.slim, {
+  nameText(LESS(), xs[n - 1] + 5 + NAME_GAP, C2.slim, {
     align: "left",
     alpha: lighter
   });
@@ -5136,8 +5120,8 @@ function claimStage(s, t, c, g) {
   ring(sx, F2.y, 18, { color: P.evidence, alpha: sign, width: 2.5 });
   check(sx, F2.y + 1, 18, { alpha: sign });
   nameText(SIGNED(), sx, under, { valign: "top", alpha: sign });
-  const cy = top + F2.h + 40, split = cl + F2.narrow, covered3 = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
-  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered3 * 0.85, radius: 4 });
+  const cy = top + F2.h + 40, split = cl + F2.narrow, covered2 = g * named(t, c.covering), unproved = g * named(t, c.unproved), one = (cl + split) / 2, two = (split + cl + F2.w) / 2, row1 = cy + 12 + NAME_GAP, row2 = row1 + 29 + 16;
+  box(cl, cy - 12, split - cl, 24, { fill: P.evidence, alpha: covered2 * 0.85, radius: 4 });
   box(split + 6, cy - 12, cl + F2.w - split - 6, 24, {
     stroke: P.unknown,
     alpha: unproved,
@@ -5145,7 +5129,7 @@ function claimStage(s, t, c, g) {
     width: 2.5,
     dash: [6, 6]
   });
-  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered3 });
+  nameText(L("覆盖了什么", "Covering what"), one, row1, { valign: "top", alpha: covered2 });
   nameText(L("没证明", "Unproved"), two, row1, { valign: "top", alpha: unproved });
   nameText(L("收窄说法", "A narrower claim"), one, row2, {
     valign: "top",
@@ -5449,7 +5433,7 @@ function callerStage(s, t, c, g) {
   const ownNames = L(
     ["背景材料", "权限", "核验", "结果"],
     ["Context", "Permissions", "Verification", "Result"]
-  ), pitch = L(170, 196), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns, callerName = L("调用智能体的人", "The caller"), agentName = L("智能体", "Agent"), reach = Math.max(
+  ), pitch = L(170, 202), xs = [-1.5, -0.5, 0.5, 1.5].map((k) => 960 + k * pitch), ats = c.owns, callerName = L("调用智能体的人", "The caller"), agentName = L("智能体", "Agent"), reach = Math.max(
     960 - E3.caller,
     E3.agent - 960,
     960 - xs[0] + (measure(callerName) + measure(ownNames[0])) / 2 + END_CLEAR,
@@ -5730,9 +5714,8 @@ scenes["07"] = function(s, t) {
 
 // picture/film/scenes/p08/lanes.js
 var A4 = { x: 940, up: 380, low: 600, scale: 0.8, stamp: 1460 };
-var LANES_TOP = 248;
 function lanesStage(s, t, c, g0) {
-  const g = g0 * clearOfTitle(s, t, LANES_TOP), upper = lastNight(A4.x, A4.up, A4.scale, {
+  const g = g0, upper = lastNight(A4.x, A4.up, A4.scale, {
     alpha: g,
     due: 1,
     arrival: 1,
@@ -6040,6 +6023,15 @@ function retireStage(s, t, c, g) {
   [-1, 1].forEach(
     (side) => dot(row.railX + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried })
   );
+  const [left, right] = [row.railX - row.half, row.railX + row.half], stops = [xs[0], xs[1], xs[2], right], lit = ats.reduce(
+    (v, at2, i) => mix(v, stops[i], drawShare(t, at2 - 0.15, stops[i] - (i ? stops[i - 1] : left))),
+    left
+  );
+  if (lit > left + 0.5) {
+    line(left, R.rail, lit, R.rail, { color: P.ink, alpha: g * 0.9, width: 5 });
+    dot(left, R.rail, 6, { color: P.ink, alpha: g * 0.9 * ramp(t, ats[0] - 0.15, 0.3) });
+    dot(right, R.rail, 6, { color: P.ink, alpha: g * 0.9 * ease((lit - right + 12) / 12) });
+  }
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(REASONS(), xs, R.rail, {
     gap: 16 + NAME_GAP,
@@ -6182,7 +6174,7 @@ scenes["08"] = function(s, t) {
   if (D3 > 0) retireStage(s, t, c, D3);
   if (E13 > 0) nextUserStage(s, t, c, E13);
   if (E22 > 0) aimsStage(s, t, c, E22);
-  illustrative(A5 * clearOfTitle(s, t, LANES_TOP) + B6 + C4 + E13);
+  illustrative(A5 + B6 + C4 + E13);
 };
 
 // picture/film/playback.js
@@ -6235,7 +6227,7 @@ function drawScene(s, t, fade, words = fade) {
   window.__sceneId = null;
 }
 function drawAt(t) {
-  setDrawing({ layout: { texts: [], scene: null, time: t } });
+  setDrawing({ layout: { texts: [], draws: [], scene: null, time: t } });
   ctx.setTransform(resolution, 0, 0, resolution, 0, 0);
   ctx.globalAlpha = 1;
   ctx.fillStyle = P.ground;
@@ -6255,7 +6247,7 @@ function drawAt(t) {
   let shown = index;
   while (shown > 0 && continues(shown) && t < visualStart(shown)) shown--;
   if (next && continues(index + 1) && t >= visualStart(index + 1)) shown = index + 1;
-  const fadeIn = index === 0 || prev && prev.chapter === s.chapter ? 1 : ramp(t, s.start, 0.6);
+  const fadeIn = index === 0 || prev && prev.chapter === s.chapter ? 1 : ramp(t, opening(s), 0.6);
   const fadeOut = next && next.chapter === s.chapter ? 1 : 1 - ramp(t, s.end - 0.5, 0.5);
   const keep = Math.min(fadeIn, fadeOut);
   const v = film.segments[shown];
@@ -6269,7 +6261,7 @@ function drawAt(t) {
   publish(t);
 }
 function publish(t) {
-  window.__filmLayout = { time: t, texts: layout.texts };
+  window.__filmLayout = { time: t, texts: layout.texts, draws: layout.draws };
 }
 window.renderFrame = (t) => drawAt(t + (film.render_offset || 0));
 window.renderCover = () => {

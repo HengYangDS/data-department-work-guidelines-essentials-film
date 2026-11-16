@@ -12,7 +12,6 @@
 import { link } from "../../drawing/links.js";
 import { dot, flowAt, flowDot, labelSize, line, measure, ring } from "../../drawing/strokes.js";
 import { check, cross } from "../../drawing/symbols.js";
-import { clearOfTitle } from "../../framing/chapters.js";
 import { SECOND, listIn, named } from "../../naming/lists.js";
 import {
   NAME_GAP,
@@ -91,7 +90,7 @@ function stageGuide(s, t, a, c) {
     960 -
     PAGE.w / 2 -
     (measure(L("契约", "Contract")) - measure(L("这份指南", "The guidelines"))) / 2;
-  const g = a * clearOfTitle(s, t, PAGE_TOP),
+  const g = a,
     bottom = PAGE_TOP + PAGE.h,
     mid = bottom + CROSS,
     agentsX = (AGENTS[0] + AGENTS[1]) / 2;

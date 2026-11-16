@@ -165,13 +165,15 @@ function cuesOf(s) {
 
 /* A: the field centred, its four sides counting in on 「四条底线」/ "Four boundaries", lit in the colour of authority, and
  * named over itself, where B and C name it too; a point stands at its centre, and on 「不能越过」/ "never be crossed" it
- * runs to its right side and stops there. The phrase ends its thought within a second, so the run eases out over 0.8 s
- * of the film's own time and settles before the quiet that follows (at most 465 px/s), rather than resting part way.
- * On 04.2's first words A hands its field over to B's list without a cut (ZH6-4): the point fades out over 0.3 s, and
- * the field glides from A's size to B's, keeping its top, over 0.9 s of voice time (lines.js handover, at most about
- * 400 px/s), its sides but the first easing back to the line colour, to light again on their ordinals as B says
- * them. */
-const A = { x: 960, y: FIELD.y, w: 520, h: FIELD.h };
+ * runs to its right side and stops there. The phrase ends its thought within a second, so the run eases out in the
+ * film's own time and settles 0.75 s after the words, before the quiet that follows, rather than resting part way; it
+ * takes the time its way needs at RUN_PEAK px/s, within the film's pace limit of 450 px/s under the camera's push. On
+ * 04.2's first words A hands its field over to B's list without a cut (ZH6-4): the point fades out over 0.3 s, and
+ * the field glides from A's size to B's, keeping its top, in voice time, over the time its sides' way needs within
+ * the pace limit (lines.js handover), its sides but the first easing back to the line colour, to light again on their
+ * ordinals as B says them. */
+const A = { x: 960, y: FIELD.y, w: FIELD.w, h: FIELD.h },
+  RUN_PEAK = 425;
 function stageField(t, a, c) {
   const q = handover(t, c),
     to = listField(),
@@ -188,8 +190,10 @@ function stageField(t, a, c) {
     alpha: a * named(t, c.four),
   });
   // A point stands inside from the first words; on 「不能越过」/ "never be crossed" it runs to the right side and stops.
-  const run = ramp(t, c.never - 0.05, 0.8);
-  dot(mix(A.x, A.x + A.w / 2 - 12, run), A.y, 8, {
+  const way = A.w / 2 - 12,
+    time = Math.max(0.8, (1.5 * way) / RUN_PEAK),
+    run = ramp(t, c.never + 0.75 - time, time);
+  dot(mix(A.x, A.x + way, run), A.y, 8, {
     color: P.ink,
     alpha: a * ramp(t, c.four - 0.15, 0.3) * (1 - ramp(t, c.ordinals[0] + 0.05, 0.3)),
   });

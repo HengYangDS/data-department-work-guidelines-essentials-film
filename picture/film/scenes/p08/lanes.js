@@ -8,7 +8,6 @@ import { ctx } from "../../canvas.js";
 import { dot, flowAt, flowDot, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, seal } from "../../drawing/symbols.js";
 import { HOUR, lastNight, nights } from "../../drawing/timeline.js";
-import { clearOfTitle } from "../../framing/chapters.js";
 import { beats, listIn, named } from "../../naming/lists.js";
 import { NAME_GAP, growName, nameText, rejectedName } from "../../naming/names.js";
 import { P } from "../../palette.js";
@@ -24,12 +23,10 @@ import { centring, early, earliest, openMark } from "../p05/kit.js";
  * schedule and flashes as a run passes the agreed time without the data. The stamp of "fixed" stands open at the right
  * until the check is left, near enough the lanes that the picture with it, before the schedule is named at the left,
  * stays within the reviewers' 50 px, and the schedule's name, its noun alone as 07.4 names it, keeps the picture with
- * both as near the centre (EN9-n12). Every mark waits for the rising chapter title to clear it. */
+ * both as near the centre (EN9-n12). */
 const A = { x: 940, up: 380, low: 600, scale: 0.8, stamp: 1460 };
-/* The height from which A's marks wait for the rising chapter title; the scene's Illustrative chip waits with them. */
-export const LANES_TOP = 248;
 export function lanesStage(s, t, c, g0) {
-  const g = g0 * clearOfTitle(s, t, LANES_TOP),
+  const g = g0,
     upper = lastNight(A.x, A.up, A.scale, {
       alpha: g,
       due: 1,

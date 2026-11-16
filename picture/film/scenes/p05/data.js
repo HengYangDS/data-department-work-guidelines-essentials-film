@@ -7,7 +7,7 @@
  * source of truth. */
 
 import { link } from "../../drawing/links.js";
-import { dot, labelSize, line, measure, ring, stroke } from "../../drawing/strokes.js";
+import { dot, labelSize, lengthOf, line, measure, ring, stroke } from "../../drawing/strokes.js";
 import { diamond, documentIcon, person, seal, tableIcon } from "../../drawing/symbols.js";
 import { ctx } from "../../canvas.js";
 import { listIn, named, speaking } from "../../naming/lists.js";
@@ -381,6 +381,8 @@ export function scopeStage(s, t, c, g) {
  * trunk below the data and a point runs up from the last view and stops at it, and the data takes its seal as the
  * source of truth. */
 const E = { card: [220, 130], top: 300, bus: 530, icon: 570, xs: [570, 830, 1090, 1350] };
+/* The peak pace of the point that climbs the trunk and is turned back (see its stage). */
+const CLIMB_PEAK = 425;
 function viewIcon(i, x, y, a) {
   if (i === 0) documentIcon(x - 34, y, 68, 88, { alpha: a, rows: 2 });
   else if (i === 1) {
@@ -456,19 +458,18 @@ export function viewsStage(s, t, c, g) {
     { gap: NAME_GAP, alpha: (i) => g * listIn(t, views, i), set: "views" },
   );
   // None may climb back: a bar shuts the trunk, and a point runs up from the last view and stops below it. Its way is
-  // about 480 px and the thought ends some 1.7 s after the words, so it eases in and out over 1.55 s from just before
-  // them (at most about 470 px/s) and settles before the quiet.
+  // about 480 px and the thought ends some 1.7 s after the words, so it eases in and out from before them and settles
+  // 1.45 s after them, before the quiet, over the time its way needs to peak at CLIMB_PEAK px/s, within the film's pace
+  // limit of 450 px/s under the camera's push.
   bar(960, barY, { alpha: g * ramp(t, c.become + 0.05, 0.3), length: 48 });
-  runPoint(
-    [
+  const climb = [
       [xs[3], E.icon - 10],
       [xs[3], E.bus],
       [960, E.bus],
       [960, barY + 10],
     ],
-    ramp(t, c.become - 0.1, 1.55),
-    { alpha: shown[3] },
-  );
+    climbTime = Math.max(1.55, (1.5 * lengthOf(climb)) / CLIMB_PEAK);
+  runPoint(climb, ramp(t, c.become + 1.45 - climbTime, climbTime), { alpha: shown[3] });
   // The source of truth: the data takes its seal on the words that name it.
   const truth = g * named(t, c.truth),
     sx = 960 + cw / 2 + 48,

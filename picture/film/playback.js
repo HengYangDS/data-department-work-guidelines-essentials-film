@@ -4,7 +4,7 @@ import { ctx, layout, measuring, resolution, sceneFade, setDrawing, wordFade } f
 import { contrastOf } from "./drawing/colour.js";
 import { push } from "./framing/camera.js";
 import { caption } from "./framing/captions.js";
-import { chapterCard, opensChapter, partHead, runningHead } from "./framing/chapters.js";
+import { chapterCard, opening, opensChapter, partHead, runningHead } from "./framing/chapters.js";
 import { measuringContext } from "./framing/measuring.js";
 import { credits, titleSignature } from "./framing/titles.js";
 import { P } from "./palette.js";
@@ -80,7 +80,7 @@ function drawScene(s, t, fade, words = fade) {
   window.__sceneId = null;
 }
 function drawAt(t) {
-  setDrawing({ layout: { texts: [], scene: null, time: t } });
+  setDrawing({ layout: { texts: [], draws: [], scene: null, time: t } });
   ctx.setTransform(resolution, 0, 0, resolution, 0, 0);
   ctx.globalAlpha = 1;
   ctx.fillStyle = P.ground;
@@ -102,8 +102,9 @@ function drawAt(t) {
   let shown = index;
   while (shown > 0 && continues(shown) && t < visualStart(shown)) shown--;
   if (next && continues(index + 1) && t >= visualStart(index + 1)) shown = index + 1;
-  // Chapters fade through the ground: every mark of the scene carries the fade, so checks see what is shown.
-  const fadeIn = index === 0 || (prev && prev.chapter === s.chapter) ? 1 : ramp(t, s.start, 0.6);
+  // Chapters fade through the ground: every mark of the scene carries the fade, so checks see what is shown. A
+  // chapter's first scene begins as its card leaves (opening), so the card and the scene never show together.
+  const fadeIn = index === 0 || (prev && prev.chapter === s.chapter) ? 1 : ramp(t, opening(s), 0.6);
   const fadeOut = next && next.chapter === s.chapter ? 1 : 1 - ramp(t, s.end - 0.5, 0.5);
   const keep = Math.min(fadeIn, fadeOut);
   const v = film.segments[shown];
@@ -111,7 +112,7 @@ function drawAt(t) {
   // A chapter card already shows while the previous chapter's last scene fades out.
   chapterCard(next && opensChapter(next) && t >= next.start - 0.15 ? next : s, t);
   // A chapter's heads leave with its last scene, through the same fade, rather than in one frame as the next chapter
-  // begins (ZH10-2); the next chapter's heads are its title, which rises into place, so they keep their own entrance.
+  // begins (ZH10-2); the next chapter's heads fade in at their places as its card dissolves.
   setDrawing({ sceneFade: fadeOut, wordFade: fadeOut });
   runningHead(s, t);
   partHead(v, t);
@@ -120,7 +121,7 @@ function drawAt(t) {
   publish(t);
 }
 function publish(t) {
-  window.__filmLayout = { time: t, texts: layout.texts };
+  window.__filmLayout = { time: t, texts: layout.texts, draws: layout.draws };
 }
 window.renderFrame = (t) => drawAt(t + (film.render_offset || 0));
 window.renderCover = () => {

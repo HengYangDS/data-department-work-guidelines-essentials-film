@@ -67,6 +67,11 @@ fonts = [
   "assets/fonts/ibm-plex-sans-bold.ttf",
 ]
 
+# The fastest a glide or a flow may move, in px/s at 1080p: the film's own glide pace, the line the reviews of the
+# sister films hold a calm picture to. The picture gate refuses a stretch whose peak exceeds it.
+[picture.motion]
+pace_limit = 450
+
 [player]
 background = "#0F1519"
 text = "#ECE8DF"

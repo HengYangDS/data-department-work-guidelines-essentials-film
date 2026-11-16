@@ -48,7 +48,7 @@ import { lens, speaker, tierDoc } from "./marks.js";
 const WORK = () =>
   L(
     [
-      { term: ["局部、可逆"], qual: ["无对外承诺"] },
+      { term: ["局部、可逆"], qual: ["不对外承诺"] },
       { term: ["跨角色、周期长"], qual: ["几种方案、重大不确定性"] },
       {
         term: ["生产、", "资金、", "敏感数据、", "安全合规"],
@@ -350,7 +350,10 @@ export function stageReview(t, a, c) {
     agentName = L("智能体", "Agent"),
     account = L("自己怎么说", "Own account"),
     refusal = (measure(account) + 42) / 2,
-    stop = E.agent + measure(agentName) / 2 + 2 * NAME_GAP + refusal,
+    // The account's words stand 1.7 times the names' size from the Agent's name beside them on the row; at two gaps
+    // the English "Agent" and "Own account" stood 47.9 px apart, 1.61 times.
+    clear = Math.max(2 * NAME_GAP, Math.ceil(1.7 * labelSize(LABEL))),
+    stop = E.agent + measure(agentName) / 2 + clear + refusal,
     reviewHalf = Math.max(r * 1.35 + 3, blockWidth({ term: [reviewName], qual: EXAMINED() }) / 2),
     lensAt = stop + refusal + 2 * NAME_GAP + reviewHalf,
     reach = lensAt + reviewHalf,

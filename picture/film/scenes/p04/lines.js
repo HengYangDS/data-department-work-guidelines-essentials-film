@@ -20,7 +20,7 @@ import { field, fieldIcon } from "./marks.js";
 
 /* The centre line and height of A's field (scene.js). B's and C's fields keep its top, so the name over each stands
  * where A set it. */
-export const FIELD = { y: 480, h: 440 };
+export const FIELD = { y: 480, w: 520, h: 440 };
 const TOP = FIELD.y - FIELD.h / 2;
 
 /* The four boundaries, each its name and, in key words, what it rules out or covers, said in parts: each item the
@@ -80,14 +80,23 @@ export function listField() {
   };
 }
 /* A hands its field over to B on 04.2's first words, 「第一」/ "First", without a cut: the field glides from A's size to
- * B's over HANDOVER seconds of voice time, keeping its top (scene.js), and the list's first row enters once the field
- * has its size, since its icon stands beyond A's sides (ZH6-4). */
-export const HANDOVER = 0.9;
-export const handover = (t, c) => travel(t, c.ordinals[0] + 0.05, HANDOVER);
+ * B's in voice time, keeping its top (scene.js), and the list's first row enters once the field has its size, since
+ * its icon stands beyond A's sides (ZH6-4). The glide lasts at least 0.9 s and as long as its sides' way needs to peak
+ * at HANDOVER_PEAK px/s (a travel peaks at 1.5 times its mean pace): a side moves half the width's change across and,
+ * since the top is kept, up to the height's whole change down. The wider English list took its sides 518 px/s at 0.9 s. */
+const HANDOVER_PEAK = 425;
+export const handoverTime = () => {
+  const to = listField(),
+    way = Math.hypot((to.w - FIELD.w) / 2, to.h - FIELD.h);
+  return Math.max(0.9, (1.5 * way) / HANDOVER_PEAK);
+};
+export const handover = (t, c) => travel(t, c.ordinals[0] + 0.05, handoverTime());
 export function stageLines(t, a, c) {
   const { first, rowHeight, iconX, textX } = listField(),
     // The first row's words come within the hand-over; it enters as the field reaches its size.
-    rowAts = c.rows.map((at, k) => (k ? at : Math.max(at, c.ordinals[0] + 0.05 + HANDOVER + 0.15)));
+    rowAts = c.rows.map((at, k) =>
+      k ? at : Math.max(at, c.ordinals[0] + 0.05 + handoverTime() + 0.15),
+    );
   ROWS().forEach(([term, qual], k) => {
     const top = first + k * B.pitch,
       at = rowAts[k],

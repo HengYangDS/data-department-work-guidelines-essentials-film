@@ -1,15 +1,16 @@
-/* C2 (03.4, from 「优先看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has
- * named authority about facts and what it answers under its record (C1, kinds.js); this one cuts in on the primary
- * records' words, so the list's first item is never told over the previous picture: a primary record stands at its top
- * from the cut and a repeatable observation joins it on its own words, over the outer columns of the leads' row and at
- * the size of C1's record; under them what each must
- * state builds part by part as one name. The leads build one row at the foot under their common way, at one pitch wide
- * enough for the widest neighbouring names, the middle lead on the frame's axis: the way stands whole with the first
- * lead, on its words, and each lead joins it on its words, with its own way down from it, in its edition's order, at
- * its place in the whole row. The stage stands where its first state, the pair named, and its last, the leads named,
- * stand equally far off the content centre, so nothing moves as it builds. On 「都未经核实」/ "are unverified"
- * their way rises on that axis toward the records and stops at a bar under them; on 「线索」/ "leads" a bracket
- * that ends the same distance past each outer name's ink names the row. */
+/* C2 (03.4, from 「优先看原始记录」/ "primary records"): what can establish a fact, centred. The stage it cuts into has named
+ * authority about facts and what it answers under its record (C1, kinds.js); this one cuts in on the primary records'
+ * words, so the list's first item is never told over the previous picture: a primary record stands at its top from
+ * the cut and a repeatable observation joins it half a second before its own words, over the outer columns of
+ * the leads' row and at the size of C1's record; under them what each must state builds part by part as one name. The
+ * leads build one row at the foot under their common way, at one pitch wide enough for the widest neighbouring names,
+ * the middle lead on the frame's axis: the way stands whole in the line tone with the first lead, on its words, and
+ * lights along itself to each lead on that lead's words, as 06's chain does, so no lit way stands ahead of the name
+ * under it (EN17-n3); each lead joins it on its words, with its own way down from it, in its edition's order, at its
+ * place in the whole row. The stage stands where its first state, the pair named, and its last, the leads named,
+ * stand equally far off the content centre, so nothing moves as it builds. On 「都未经核实」/ "are unverified" their way
+ * rises on that axis toward the records and stops at a bar under them; on 「线索」/ "leads" a bracket that ends the same
+ * distance past each outer name's ink names the row. */
 
 import { ctx } from "../../canvas.js";
 import { flowAt, flowDot, line, measure, stroke } from "../../drawing/strokes.js";
@@ -18,6 +19,7 @@ import { NAME_GAP, NOTE, growName, nameText } from "../../naming/names.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
 import { mix, ramp, soon } from "../../timing/easing.js";
+import { drawShare } from "../../timing/pauses.js";
 import { LEAD_ORDER, LEADS, bar, eye, leadMark, recordMark } from "./marks.js";
 
 /* The record is C1's (110 by 140) and the eye beside it in proportion. The names hang one gap under the record, the
@@ -51,9 +53,11 @@ function leadPlaces() {
 export function stageFacts(t, a, c) {
   const { xs, widths } = leadPlaces();
   // A primary record and a repeatable observation over the row's outer columns, named under themselves on one
-  // baseline.
+  // baseline. The observation's eye inks in half a second before its words, within the 0.6 s a mark may stand before
+  // its name, so the record does not stand alone at the far left for long: with the eye on its words the English
+  // record stood 430 px off the centre for 0.77 s (the off-centre scan at 400 px for 0.5 s).
   const records = a * ramp(t, c.primary - 0.15, 0.4),
-    observed = a * ramp(t, c.observe - 0.15, 0.4);
+    observed = a * ramp(t, c.observe - 0.5, 0.4);
   recordMark(xs[0], ROW_Y, ...RECORD, { alpha: records });
   nameText(L("原始记录", "Primary records"), xs[0], NAMES_Y, {
     valign: "top",
@@ -79,6 +83,13 @@ export function stageFacts(t, a, c) {
     alpha: a * ramp(t, c.leads[0] - 0.15, 0.4),
     width: 2.5,
   });
+  // The way lights along itself to each lead as the lead is said, at the tip pace.
+  const lit = c.leads.reduce(
+    (v, at, i) => (i ? mix(v, xs[i], drawShare(t, at - 0.15, xs[i] - xs[i - 1])) : xs[0]),
+    xs[0],
+  );
+  if (lit > xs[0] + 0.5)
+    line(xs[0], JOIN_Y, lit, JOIN_Y, { color: P.ink, alpha: a * 0.9, width: 4 });
   LEAD_ORDER().forEach((k, i) => {
     const on = a * ramp(t, c.leads[i] - 0.15, 0.4);
     line(xs[i], JOIN_Y, xs[i], LEADS_Y - LEAD_HALF - 4, { color: P.line, alpha: on, width: 2.5 });

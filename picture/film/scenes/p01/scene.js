@@ -138,13 +138,14 @@ const arrivals = (c) => [c.vendor, c.patch, c.meeting + 0.2, c.pages - 0.25];
  * place, draws on from the stem at the tip pace on the patch's words, passing the second link's top as that link sets
  * off, and no arm stands empty before its failure is told (EN15-n4). On 01.3's first words, 「开了一场会」/ "A meeting",
  * the rail's two ends draw outward at the tip pace to the whole row's width, and the two members glide once, in voice
- * time, one pitch to their places at the row's left, peaking at 1.5 x 340 / 1.15, under 450 px/s, as the meeting
+ * time, one pitch to their places at the row's left, peaking at 1.5 x 340 / 1.22, 418 px/s, so that with the camera's
+ * push and the pipe's drip, which falls while the row glides, no mark passes the film's pace limit of 450 px/s, as the meeting
  * arrives at the third place, which moves with them. The open end carries no stroke across the names it passes, and it
  * closes, turning down to the names' line, as the row's last failure arrives. Every state stays centred, no place
  * stands empty across 01.2, and no member leaves; this is the stage's one glide (EN9-n5). Returns the row's shift, the
  * rail's half width, the share of 01.2's right arm drawn, when a member told while the rail opens hangs from it (once
  * its end has passed the member's link), and the share of the closing turn drawn. */
-const GLIDE = 1.15;
+const GLIDE = 1.22;
 function opening(t, c) {
   const at = c.meeting + 0.05,
     pitch = XS[1] - XS[0],

@@ -82,7 +82,7 @@ const TASK_NAME = () => L("一项任务", "A task"),
  * since its parts are one clause, 更好地发现或应对, and the columns leave it room. */
 const OUTCOMES = () => [
   [[L("解决问题", "Problem resolved")], []],
-  [[L("检验判断", "Judgment tested")], [L("成立的条件", "when it holds")]],
+  [[L("检验判断", "Judgment tested")], [L("什么情况下成立", "when it holds")]],
   [
     [L("工作体系", "The system")],
     L(["更好地发现", "或应对"], ["better able", " to recognize", " or handle"]),

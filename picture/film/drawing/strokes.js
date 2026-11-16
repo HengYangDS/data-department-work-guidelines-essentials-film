@@ -169,8 +169,20 @@ export function along(points, q) {
 /* The share drawn of a stroke that `draw` ({t, at, least}) draws on from `at` over `extent` (the share of its full
  * `length` it reaches) at the film's tip pace (drawShare): a long stroke takes longer than a short one, so no tip races,
  * and it rests with the voice in a quiet. */
-export const drawnShare = (draw, length, extent = 1) =>
-  extent * drawShare(draw.t, draw.at, length * extent, draw.least ?? 0.4);
+export const drawnShare = (draw, length, extent = 1) => {
+  const least = draw.least ?? 0.4,
+    way = length * extent,
+    share = drawShare(draw.t, draw.at, way, least);
+  // The frame publishes each such stroke's share and its tip's peak pace, so a checker can list one that rests
+  // part-drawn in a quiet or whose tip races.
+  layout.draws?.push({
+    scene: layout.scene,
+    at: draw.at,
+    share,
+    pace: (1.5 * Math.abs(way)) / drawTime(way, least),
+  });
+  return extent * share;
+};
 /* How far a mark that such a stroke lands on has grown: from 0, LANDING seconds of voice time before the stroke is
  * drawn (or from its start when it draws in less), to 1 as it is drawn, so the mark grows over the same time however
  * short the stroke and never appears whole within a frame. */

@@ -37,10 +37,16 @@ import { nightPlace, nightWay } from "./night.js";
  * name. Lower risk, less process: a slim rail under the chain with a point at every station, so the lighter chain keeps
  * every link, fading in whole on its words and named at its end (EN9-n17). The stations stand right of the frame's
  * axis by `chainShift`, so the chain named at its left alone, while its words wait for the lighter chain's, stands
- * within the reviewers' 50 px, as its other states do. The pitch keeps 1.5 em between the English names that stand
- * closest, "Decision owner" and "Limits", and "The claim" and "Acceptance": at 180 px they stood 44 px apart, half a
- * pixel under it. */
-const C = { y: 690, pitch: 182, icon: 634, slim: 802 };
+ * within the reviewers' 50 px, as its other states do. The pitch keeps 1.7 times their size between the English names
+ * that stand closest, "Decision owner" and "Limits", and "The claim" and "Acceptance": at 182 px they stood 46.2 and
+ * 45.5 px apart, 1.56 and 1.55 times; at 188 px they stand 52 and 51.5 px apart. The chain's rail reaches `over` px
+ * past its end stations; the lighter chain's rail ends on its end points, and its name follows one gap after the last,
+ * so the wider chain with both its names stays inside the safe area in English, under the camera's reveal, and each
+ * of its states within the reviewers' 50 px. */
+const C = { y: 690, pitch: 188, over: 30, icon: 634, slim: 802 };
+/* The peak pace of the point that runs the whole chain: within the film's pace limit of 450 px/s under the camera's
+ * move. */
+const RUN_PEAK = 425;
 const STATIONS = () =>
     L(
       ["决策负责人", "范围", "改动", "当前的运行", "说法", "验收", "学习"],
@@ -61,9 +67,9 @@ function chainShift() {
     left = -half - reachOut(stations[0]),
     last = half + reachOut(stations.at(-1)),
     named = left - NAME_GAP - measure(CHAIN()),
-    lighter = Math.max(last, half + 30 + NAME_GAP + measure(LESS())),
+    lighter = Math.max(last, half + 5 + NAME_GAP + measure(LESS())),
     shifts = [
-      [left, half + 30],
+      [left, half + C.over],
       [named, last],
       [named, lighter],
     ].map(([l, r]) => -(l + r) / 2);
@@ -118,23 +124,32 @@ export function chainStage(s, t, c, g) {
     x0 = 960 - ((n - 1) * C.pitch) / 2 + chainShift(),
     xs = ats.map((_, i) => x0 + i * C.pitch);
   // The whole rail stands in the line tone from the first station; the chain lights along it to each station as it is
-  // said, at the tip pace; a point runs along it once it is whole.
+  // said, at the tip pace. Once it is whole a point runs it, from the words that name the chain, and comes to rest on
+  // its last station as the thought's last word ends, so it passes every link while the voice says none may be
+  // skipped (EN17-n4: paced by the looping flow it rested a quarter of the way past the fifth station). It runs only
+  // where the thought leaves its way the time to keep the film's pace; else the chain's lighting carries the passage.
   const reach = ats.reduce(
     (v, at, i) => (i ? mix(v, xs[i], drawShare(t, at - 0.15, C.pitch)) : xs[0]),
     xs[0],
   );
-  line(xs[0] - 30, C.y, xs[n - 1] + 30, C.y, {
+  line(xs[0] - C.over, C.y, xs[n - 1] + C.over, C.y, {
     color: P.line,
     alpha: g * ramp(t, ats[0] - 0.15, 0.4),
     width: 2.5,
   });
-  line(xs[0] - 30, C.y, reach + 30, C.y, {
+  line(xs[0] - C.over, C.y, reach + C.over, C.y, {
     color: P.ink,
     alpha: g * 0.9,
     width: 5,
   });
-  const runs = flowAt(t, xs[n - 1] - xs[0], { from: ats[n - 1] + 0.6 });
-  flowDot(mix(xs[0], xs[n - 1], runs?.q ?? 0), C.y, 6, runs, { color: P.evidence, alpha: g });
+  const from = ats[n - 1] + 0.6,
+    span = voiceTime(thoughtEnd(from)) - voiceTime(from),
+    into = voiceTime(t) - voiceTime(from);
+  if (into > 0 && span > 0 && (1.5 * (xs[n - 1] - xs[0])) / span <= RUN_PEAK)
+    dot(mix(xs[0], xs[n - 1], ease(into / span)), C.y, 6 * ease(into / 0.15), {
+      color: P.evidence,
+      alpha: g,
+    });
   xs.forEach((x, i) => {
     const a = g * ramp(t, ats[i] - 0.15, 0.4),
       lit = speaking(t, ats, i);
@@ -156,9 +171,9 @@ export function chainStage(s, t, c, g) {
   });
   // Lower risk: the lighter chain, a slim rail with a point at every station, named at its end on its words.
   const lighter = g * named(t, c.lighter);
-  line(xs[0] - 30, C.slim, xs[n - 1] + 30, C.slim, { color: P.ink, alpha: lighter, width: 2.5 });
+  line(xs[0], C.slim, xs[n - 1], C.slim, { color: P.ink, alpha: lighter, width: 2.5 });
   xs.forEach((x) => dot(x, C.slim, 5, { color: P.ink, alpha: lighter }));
-  nameText(LESS(), xs[n - 1] + 30 + NAME_GAP, C.slim, {
+  nameText(LESS(), xs[n - 1] + 5 + NAME_GAP, C.slim, {
     align: "left",
     alpha: lighter,
   });

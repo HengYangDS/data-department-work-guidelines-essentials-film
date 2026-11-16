@@ -4,11 +4,11 @@
  * with what a judgment owes to the next person (08.4). Each thought's stage cuts in on its first words. The Illustrative
  * chip stands while the made-up case shows (08.1 A, 08.2, 08.3 C, 08.4 E1). */
 
-import { clearOfTitle, illustrative } from "../../framing/chapters.js";
+import { illustrative } from "../../framing/chapters.js";
 import { cue, cueFrom, cues } from "../../timing/cues.js";
 import { stageIn, stageOut } from "../../timing/stages.js";
 import { scenes } from "../registry.js";
-import { LANES_TOP, aimStage, lanesStage, signsStage } from "./lanes.js";
+import { aimStage, lanesStage, signsStage } from "./lanes.js";
 import { aimsStage, monitorStage, nextUserStage, retireStage } from "./rules.js";
 
 /* The spoken cues, in the order they are said; words the part says more than once are cued from their thought. */
@@ -94,7 +94,7 @@ scenes["08"] = function (s, t) {
   if (D > 0) retireStage(s, t, c, D);
   if (E1 > 0) nextUserStage(s, t, c, E1);
   if (E2 > 0) aimsStage(s, t, c, E2);
-  // The chip of the made-up case comes in with the case's first stage, as its marks clear the rising chapter title,
-  // not with the chapter card before it.
-  illustrative(A * clearOfTitle(s, t, LANES_TOP) + B + C + E1);
+  // The chip of the made-up case comes in with the case's first stage, under the scene's fade, not with the chapter
+  // card before it.
+  illustrative(A + B + C + E1);
 };

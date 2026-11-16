@@ -14,7 +14,7 @@ import { NAME_GAP, nameText } from "../../naming/names.js";
 import { railNames, rowNameTop } from "../../naming/placement.js";
 import { P } from "../../palette.js";
 import { L } from "../../timeline.js";
-import { mix, ramp, soon } from "../../timing/easing.js";
+import { ease, mix, ramp, soon } from "../../timing/easing.js";
 import { drawShare } from "../../timing/pauses.js";
 import { early, openMark } from "../p05/kit.js";
 
@@ -77,8 +77,10 @@ export function monitorStage(s, t, c, g) {
 }
 
 /* D: a rule over the four reasons to retire it. The page stands on the frame's axis, named over itself; the rail
- * under it, joined to it, stands whole with the first reason, on its words, and the reasons take the rail's stations
- * on their words, open marks named under them, one list. As the sentence closes the page fades where it stands while
+ * under it, joined to it, stands whole in the line tone with the first reason, on its words, and lights along itself
+ * to each reason on that reason's words, and on to its end with the last, as 06's chain does, so no lit rail stands
+ * ahead of the name under it (EN17-n3); the reasons take the rail's stations on their words, open marks named under
+ * them, one list. As the sentence closes the page fades where it stands while
  * its names and the reasons stay; its seal, the rule's authority, leaves as it fades, so no gold rests below 4.5:1. */
 /* The English reasons are longer, so their stations stand wider apart. */
 const R = { x: 960, y: 420, rail: 640, pitch: () => L(300, 400) };
@@ -127,6 +129,19 @@ export function retireStage(s, t, c, g) {
   [-1, 1].forEach((side) =>
     dot(row.railX + side * row.half, R.rail, 6, { color: P.line, alpha: g * carried }),
   );
+  // The rail lights from its left end to each reason as the reason is said, at the tip pace, and with the last reason
+  // on to its right end; each end's point lights as the lit rail stands on it.
+  const [left, right] = [row.railX - row.half, row.railX + row.half],
+    stops = [xs[0], xs[1], xs[2], right],
+    lit = ats.reduce(
+      (v, at, i) => mix(v, stops[i], drawShare(t, at - 0.15, stops[i] - (i ? stops[i - 1] : left))),
+      left,
+    );
+  if (lit > left + 0.5) {
+    line(left, R.rail, lit, R.rail, { color: P.ink, alpha: g * 0.9, width: 5 });
+    dot(left, R.rail, 6, { color: P.ink, alpha: g * 0.9 * ramp(t, ats[0] - 0.15, 0.3) });
+    dot(right, R.rail, 6, { color: P.ink, alpha: g * 0.9 * ease((lit - right + 12) / 12) });
+  }
   xs.forEach((x, i) => openMark(x, R.rail, 16, { alpha: g * ramp(t, ats[i] - 0.15, 0.4) }));
   railNames(REASONS(), xs, R.rail, {
     gap: 16 + NAME_GAP,
